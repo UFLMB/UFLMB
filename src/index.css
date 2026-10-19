@@ -146,3 +146,24 @@ body{background:var(--page-bg,#0b0d12);color:var(--text-color,#f3f5f8)}
   text-align:center;
   text-shadow:0 2px 10px rgba(0,0,0,.95);
 }
+
+
+/* Explicit fixed overlay above every rotating background image.
+   The app shell sits above this layer, so text and controls remain crisp. */
+body.has-background-images::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:linear-gradient(
+    180deg,
+    rgba(5,8,14,.78) 0%,
+    rgba(5,8,14,.84) 48%,
+    rgba(5,8,14,.90) 100%
+  );
+}
+body.has-background-images .app-shell{
+  position:relative;
+  z-index:1;
+}
