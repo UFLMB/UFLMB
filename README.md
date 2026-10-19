@@ -32,7 +32,8 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 - Data-quality dashboard for missing fields, old verification dates, invalid sources and possible duplicates
 - Select and delete multiple records in the admin manager
 - Local spreadsheet and JSON imports work without Google sign-in
-- Empty initial dataset: no invented sample player cards are included
+- Empty production dataset: no invented records are included in the verified starter collection
+- Optional two-team test fixture: 22 explicitly fictional demo records, split into two editable 11-player squads and visibly labelled as synthetic test data
 
 ## Run locally
 
@@ -59,6 +60,16 @@ Open the card manager from the public page using **Admin / data entry**. Require
 ```
 
 Only add records that have been checked against a reliable source. Export a JSON backup regularly.
+
+## Demo squads for testing
+
+Open **Admin / data entry → Card manager → Load / reset 22 demo cards** to load Demo Team A and Demo Team B (11 cards each). Switch teams in the squad builder. These are fictional UI test fixtures: names, OVR, stats, perks, nations and clubs are synthetic; the source link is deliberately a placeholder. They are not real UFL Mobile records and must not be treated as verified data. Edit them in the card manager or delete them before entering real cards. Reloading the demo fixture overwrites the demo records only and preserves records whose IDs are not demo IDs.
+
+## Shared database groundwork
+
+- `supabase/schema.sql` defines shared card records, community reviews/ratings, public read access, and authenticated-only card maintenance policies.
+- A daily GitHub Actions workflow runs a source-dataset quality audit. It intentionally does not scrape or invent card data; a reliable supported source/API must be selected before true automated card updates can be enabled.
+- The SQL schema is groundwork only. Until a Supabase project is created, the SQL is run, public environment values are configured for the Pages build, and an admin account/authentication flow is connected, the live app still uses this browser's local storage. The shared database and community reviews are not active yet.
 
 ## Important storage and security note
 
