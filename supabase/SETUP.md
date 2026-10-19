@@ -33,5 +33,5 @@ The two-team demo fixture is local-only and is excluded from shared-database pub
 - Never add the Supabase service-role key to GitHub Pages variables or frontend code.
 - The SQL grants card writes to authenticated users. Keep public sign-ups disabled and create only trusted admin accounts.
 - Community review insertion is currently open to anonymous visitors for the initial test. Before a broad public launch, add CAPTCHA, rate limits, moderation/reporting and preferably verified-user controls.
-- The daily GitHub Actions job audits the checked-in production starter dataset; it does not scrape third-party pages or change player ratings. Reliable automated content refresh needs a supported source/API and an explicit mapping/verification policy. Do not treat the audit as an automatic facts refresh.
+- The daily GitHub Actions job audits the checked-in production starter dataset and, when Supabase is configured, checks shared source-link reachability and flags verification dates older than 90 days. It does not scrape third-party pages or change player ratings. Reliable automatic content refresh needs a supported source/API and an explicit mapping/verification policy. Do not treat the audit as an automatic facts refresh.
 - Shared background/branding settings are still browser-local; this backend currently covers cards and reviews.
