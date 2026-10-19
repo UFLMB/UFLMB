@@ -134,6 +134,7 @@ export default function App() {
   const isAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin') || window.location.hash === '#admin'
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
   const [query, setQuery] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
   const [category, setCategory] = useState<Category>('All cards')
   const [nationFilter, setNationFilter] = useState('All nations')
   const [positionFilter, setPositionFilter] = useState('All positions')
@@ -919,9 +920,15 @@ export default function App() {
 
   return (
     <main className="app-shell">
-      <header className="topbar">
-        <a className="brand" href="/UFLMB/" aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
-        <div className="top-actions"><span className="status-pill"><span className={import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY ? "status-dot" : "status-dot status-dot-off"} /> {import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY ? "Shared database" : "Local mode"}</span><a className="admin-link" href="/UFLMB/#admin">Admin / data entry ↗</a></div>
+      <header className={menuOpen ? "topbar topbar-menu-open" : "topbar"}>
+        <a className="brand" href="/UFLMB/" aria-label="UFLMB home" onClick={() => setMenuOpen(false)}>{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
+        <nav className={menuOpen ? "site-nav site-nav-open" : "site-nav"} id="uflmb-main-navigation" aria-label="Main navigation">
+          <a href="#squad-title" onClick={() => setMenuOpen(false)}><span aria-hidden="true">◈</span> Squad builder</a>
+          <a href="#analytics-title" onClick={() => setMenuOpen(false)}><span aria-hidden="true">▥</span> Analytics</a>
+          <a href="#database-title" onClick={() => setMenuOpen(false)}><span aria-hidden="true">▦</span> Card database</a>
+          <a href="/UFLMB/#admin" onClick={() => setMenuOpen(false)}><span aria-hidden="true">⚙</span> Card manager</a>
+        </nav>
+        <div className="top-actions"><span className="status-pill"><span className={import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY ? "status-dot" : "status-dot status-dot-off"} /> {import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY ? "Shared database" : "Local mode"}</span><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
       </header>
       <section className="hero">
         <p className="eyebrow">COMMUNITY DATABASE PROJECT</p>
