@@ -174,7 +174,7 @@ export default function App() {
       const statsKeys = ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY', 'DIV', 'REF', 'HAN', 'KIC', 'SPD', 'POS']
       const imported: PlayerCard[] = []
       let skipped = 0
-      rows.forEach(row => {
+      rows.forEach((row: Record<string, unknown>) => {
         const playerName = asText(get(row, ['playername', 'name', 'player']))
         const rawRating = get(row, ['ovr', 'overallrating', 'overall', 'rating'])
         const overallRating = Number(rawRating)
