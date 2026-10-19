@@ -94,7 +94,7 @@ export default function App() {
   const [googleClientId, setGoogleClientId] = useState(() => localStorage.getItem(DRIVE_CLIENT_KEY) ?? '')
   const [googleApiKey, setGoogleApiKey] = useState(() => localStorage.getItem(DRIVE_API_KEY) ?? '')
   const [driveBusy, setDriveBusy] = useState(false)
-  const [siteTheme, setSiteTheme] = useState<SiteTheme>(loadTheme)
+  const [siteTheme] = useState<SiteTheme>(loadTheme)
   const [siteBranding, setSiteBranding] = useState<SiteBranding>(loadBranding)
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
