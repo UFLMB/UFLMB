@@ -48,8 +48,6 @@ export default function SharedDatabasePanel({ cards, onLoad, onMessage }: Props)
   const [loadedIds, setLoadedIds] = useState<string[] | null>(null)
   // Ref avoids a second autosave loop when the successfully-synced ID snapshot is updated.
   const loadedIdsRef = useRef<string[] | null>(null)
-  const tokenRef = useRef(token)
-  tokenRef.current = token
 
   const signIn = async () => {
     if (!enabled) { onMessage('Shared database is not configured. Follow supabase/SETUP.md first.'); return }
