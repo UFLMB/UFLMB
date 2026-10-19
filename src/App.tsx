@@ -76,6 +76,8 @@ export default function App() {
   const [googleClientId, setGoogleClientId] = useState(() => localStorage.getItem(DRIVE_CLIENT_KEY) ?? '')
   const [googleApiKey, setGoogleApiKey] = useState(() => localStorage.getItem(DRIVE_API_KEY) ?? '')
   const [driveBusy, setDriveBusy] = useState(false)
+  const [compareIds, setCompareIds] = useState<string[]>([])
+  const [showCompare, setShowCompare] = useState(false)
 
   useEffect(() => {
     try { saveCards(allCards) } catch {
@@ -97,6 +99,21 @@ export default function App() {
   }).sort((a, b) => sortBy === 'ovr-desc' ? b.overallRating - a.overallRating || a.playerName.localeCompare(b.playerName) :
     sortBy === 'ovr-asc' ? a.overallRating - b.overallRating || a.playerName.localeCompare(b.playerName) :
       a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, positionFilter, cardTypeFilter, sortBy])
+
+  const comparedCards = useMemo(() => compareIds.map(id => allCards.find(card => card.id === id)).filter((card): card is PlayerCard => Boolean(card)), [allCards, compareIds])
+  const statLeaders = useMemo(() => {
+    const statKeys = Array.from(new Set(allCards.flatMap(card => Object.keys(card.stats ?? {}))))
+      .filter(key => allCards.some(card => typeof card.stats?.[key] === 'number'))
+      .sort((a, b) => a.localeCompare(b))
+    return statKeys.map(key => ({ key, cards: allCards.filter(card => typeof card.stats?.[key] === 'number').sort((a, b) => (b.stats?.[key] ?? -Infinity) - (a.stats?.[key] ?? -Infinity)).slice(0, 5) })).filter(item => item.cards.length)
+  }, [allCards])
+
+  const toggleCompare = (id: string) => setCompareIds(current => {
+    if (current.includes(id)) return current.filter(value => value !== id)
+    if (current.length >= 3) { setNotice('Compare up to three cards at once. Remove one selection first.'); return current }
+    return [...current, id]
+  })
+  const exportVisibleCsv = () => downloadCsv(visibleCards)
 
   const adminCards = useMemo(() => allCards.filter(card =>
     [card.playerName, card.nation, card.club, card.cardName, card.id].filter(Boolean).join(' ').toLowerCase().includes(adminSearch.toLowerCase())
@@ -641,14 +658,26 @@ export default function App() {
           {(nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sortBy !== 'ovr-desc') && <button className="category" type="button" onClick={() => { setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSortBy('ovr-desc') }}>Reset filters</button>}
         </div>
       </section>
+      <section className="analytics-section" aria-labelledby="analytics-title">
+        <div className="section-heading"><div><p className="eyebrow">LIVE COLLECTION INSIGHTS</p><h2 id="analytics-title">Rankings & analytics</h2></div><span className="count-label">{allCards.length} verified records in this browser</span></div>
+        <div className="analytics-grid">
+          <article className="analytics-panel"><p className="eyebrow">OVERALL RATING</p><h3>Top OVR cards</h3>{allCards.length ? <ol className="leader-list">{[...allCards].sort((a,b) => b.overallRating-a.overallRating || a.playerName.localeCompare(b.playerName)).slice(0,5).map((card,index) => <li key={card.id}><span className="leader-rank">{index+1}</span>{card.imageUrl ? <img src={card.imageUrl} alt="" /> : <span className="leader-avatar">U</span>}<span className="leader-name"><strong>{card.playerName}</strong><small>{card.positions.join(' / ')} · {card.nation}</small></span><b className="leader-value">{card.overallRating}</b></li>)}</ol> : <p className="muted-copy">Rankings will appear when verified cards are added. No sample records are used.</p>}</article>
+          <article className="analytics-panel"><p className="eyebrow">DATABASE SNAPSHOT</p><h3>Collection coverage</h3><div className="snapshot-grid"><div><strong>{allCards.length}</strong><span>Total cards</span></div><div><strong>{new Set(allCards.map(card => card.playerName.trim().toLowerCase())).size}</strong><span>Unique player names</span></div><div><strong>{allCards.filter(card => card.imageUrl?.trim()).length}</strong><span>With card image</span></div><div><strong>{allCards.filter(card => card.stats && Object.keys(card.stats).length).length}</strong><span>With stats</span></div><div><strong>{allCards.filter(card => /^https?:\/\//i.test(card.sourceUrl || '')).length}</strong><span>With source link</span></div><div><strong>{allCards.filter(card => card.verifiedAt && (Date.now()-new Date(card.verifiedAt+'T00:00:00').getTime()) <= 90*86400000).length}</strong><span>Checked within 90 days</span></div></div></article>
+        </div>
+        {statLeaders.length > 0 && <div className="stat-leader-grid">{statLeaders.map(item => <article className="analytics-panel stat-leader-panel" key={item.key}><p className="eyebrow">STAT LEADERBOARD</p><h3>{item.key}</h3><ol className="leader-list">{item.cards.map((card,index) => <li key={card.id}><span className="leader-rank">{index+1}</span><span className="leader-name"><strong>{card.playerName}</strong><small>{card.positions.join(' / ')} · OVR {card.overallRating}</small></span><b className="leader-value">{card.stats?.[item.key]}</b></li>)}</ol></article>)}</div>}
+      </section>
       <section className="database-section" aria-labelledby="database-title">
-        <div className="section-heading"><div><p className="eyebrow">THE COLLECTION</p><h2 id="database-title">Card database</h2></div><span className="count-label">{allCards.length} cards · local dataset</span></div>
+        <div className="section-heading"><div><p className="eyebrow">THE COLLECTION</p><h2 id="database-title">Card database</h2></div><div className="collection-actions"><span className="count-label">{visibleCards.length} shown / {allCards.length} total</span><button className="button secondary" type="button" onClick={exportVisibleCsv}>Export filtered CSV</button></div></div>
         {visibleCards.length === 0 ? <div className="empty-state"><div className="empty-emblem" aria-hidden="true">U<span>+</span></div><h3>{query.trim() ? 'No matching cards found' : 'The database starts here'}</h3><p>{query.trim() ? `No verified card matches “${query.trim()}”. Try another search or category.` : 'No card records have been entered yet. Open the admin area to add verified cards, images, stats and sources.'}</p><a className="button primary" href="/UFLMB/#admin">Open card manager</a><span className="empty-tag">VERIFIED DATA ONLY</span></div> :
           <div className="card-grid">{visibleCards.map(card => <article className="player-card" key={card.id}>
-            <div className="player-image">{card.imageUrl ? <img src={card.imageUrl} alt={`${card.playerName} card`} loading="lazy" /> : <div className="no-image">UFL<span>MB</span></div>}<span className="ovr-badge">{card.overallRating}</span><span className="position-badge">{card.positions.join(' / ')}</span></div>
+            <div className="player-image">{card.imageUrl ? <img src={card.imageUrl} alt={`${card.playerName} card`} loading="lazy" /> : <div className="no-image">UFL<span>MB</span></div>}<span className="ovr-badge">{card.overallRating}</span><span className="position-badge">{card.positions.join(' / ')}</span><label className={compareIds.includes(card.id) ? 'compare-toggle selected' : 'compare-toggle'}><input type="checkbox" checked={compareIds.includes(card.id)} onChange={() => toggleCompare(card.id)} aria-label={`Compare ${card.playerName}`} /> Compare</label></div>
             <div className="player-card-body"><h3>{card.playerName}</h3><p>{card.nation}{card.club ? ` · ${card.club}` : ''}</p>{card.cardName && <span className="card-type">{card.cardName}</span>}{card.stats && <div className="stats-grid">{Object.entries(card.stats).slice(0, 6).map(([key, value]) => <span key={key}><b>{value}</b><small>{key}</small></span>)}</div>}{card.perks?.length ? <div className="perk-row">{card.perks.map(perk => <span key={perk}>{perk}</span>)}</div> : null}<a className="source-link" href={card.sourceUrl} target="_blank" rel="noreferrer">Verified source ↗</a><small className="verified-date">Checked {card.verifiedAt}</small></div>
           </article>)}</div>}
       </section>
+      {compareIds.length > 0 && <section className="compare-section" aria-labelledby="compare-title"><div className="section-heading"><div><p className="eyebrow">SIDE-BY-SIDE ANALYSIS</p><h2 id="compare-title">Compare cards ({compareIds.length}/3)</h2></div><div className="form-actions"><button className="button secondary" type="button" onClick={() => setShowCompare(value => !value)}>{showCompare ? 'Hide comparison' : 'Show comparison'}</button><button className="button secondary" type="button" onClick={() => { setCompareIds([]); setShowCompare(false) }}>Clear selection</button></div></div>
+        <div className="compare-chips">{comparedCards.map(card => <span className="compare-chip" key={card.id}>{card.playerName} · {card.overallRating}<button type="button" onClick={() => toggleCompare(card.id)} aria-label={`Remove ${card.playerName} from comparison`}>×</button></span>)}</div>
+        {showCompare && <div className="comparison-table-wrap"><table className="comparison-table"><thead><tr><th>Attribute</th>{comparedCards.map(card => <th key={card.id}>{card.playerName}</th>)}</tr></thead><tbody>{[['OVR','overallRating'],['Position','positions'],['Nation','nation'],['Club','club'],['Card type','cardName'],...Array.from(new Set(comparedCards.flatMap(card => Object.keys(card.stats ?? {}))).values()).sort().map(key => [key, `stat:${key}`])].map(([label,key]) => <tr key={key}><th>{label}</th>{comparedCards.map(card => { const value = key === 'overallRating' ? card.overallRating : key === 'positions' ? card.positions.join(' / ') : key.startsWith('stat:') ? card.stats?.[key.slice(5)] ?? '—' : card[key as 'nation' | 'club' | 'cardName'] ?? '—'; return <td key={card.id}>{value}</td> })}</tr>)}</tbody></table></div>}
+      </section>}
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><span className="footer-muted">Independent community project; not affiliated with or endorsed by the game’s publisher.</span><a href="/UFLMB/#admin">Card manager</a></footer>
     </main>
   )
