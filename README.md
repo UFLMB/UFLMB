@@ -5,6 +5,9 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 ## Current features
 
 - Responsive dark card gallery for desktop and mobile
+- Installable progressive web app (PWA) with an app manifest and custom icon
+- Offline app-shell caching for returning visitors; card data remains browser-local until a shared backend is configured
+- Improved keyboard focus visibility and reduced-motion support
 - Search by player name, nation, club, card type and position
 - Search by player name, nation, club, card type, position, stats, perks, and source URL
 - Sort by OVR, name, or most recently verified
@@ -53,7 +56,7 @@ Only add records that have been checked against a reliable source. Export a JSON
 
 ## Important storage and security note
 
-The current admin tool stores data in the **current browser's local storage**. It is a working local prototype, not a shared online database:
+The current admin tool stores data in the **current browser's local storage**. The app shell can be cached for offline return visits, but this does not turn local card records into a shared database. It is a working local prototype, not a shared online database:
 - Records entered in one browser/device are not automatically visible to other visitors or devices.
 - Clearing browser site data may remove locally stored records. Export JSON backups.
 - The admin page has no server-side authentication. Do not treat it as a secure private admin panel.
