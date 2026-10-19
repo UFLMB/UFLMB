@@ -95,7 +95,14 @@ The GitHub Actions workflow in `.github/workflows/deploy.yml` builds the app and
 - `src/index.css` — responsive styling
 - `public/_redirects` — static-host SPA fallback
 
-## Database Core hardening\n\n- JSON paste imports validate the complete payload before changing anything, reject repeated IDs in the incoming file, and show a confirmation summary for updates, additions, and likely duplicates.\n- Duplicate records with different IDs are skipped instead of silently replacing an existing card identity.\n- Supabase card write policies require an explicit `public.admin_users` allowlist entry; a generic authenticated session no longer grants card-edit permissions.\n- Important: the SQL file must still be run in the actual Supabase project to apply the new policies. A GitHub commit alone does not change a live database.\n\n## Second major feature package
+## Database Core hardening
+
+- JSON paste imports validate the complete payload before changing anything, reject repeated IDs in the incoming file, and show a confirmation summary for updates, additions, and likely duplicates.
+- Duplicate records with different IDs are skipped instead of silently replacing an existing card identity.
+- Supabase card write policies require an explicit `public.admin_users` allowlist entry; a generic authenticated session no longer grants card-edit permissions.
+- Important: the SQL file must still be run in the actual Supabase project to apply the new policies. A GitHub commit alone does not change a live database.
+
+## Second major feature package
 
 - **Card comparison:** select up to three cards from the public gallery and compare OVR, positions, nation, club, edition and every stat key shared across the selected records. Selections can be removed individually or cleared.
 - **Live rankings:** top five cards by OVR plus a leaderboard for every stat present in the actual dataset. Rankings are generated from verified records only; no demo cards or fabricated values are introduced.
