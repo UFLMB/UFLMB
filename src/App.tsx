@@ -100,7 +100,7 @@ export default function App() {
     const rating = Number(draft.overallRating)
     const positions = draft.positions.split(/[;,]/).map(p => p.trim().toUpperCase()).filter(Boolean)
     if (!draft.playerName.trim() || !draft.nation.trim() || !positions.length || !draft.sourceUrl.trim()) {
-      setNotice('Enter the player's name, nation, at least one position, and a verifiable source.')
+      setNotice("Enter the player's name, nation, at least one position, and a verifiable source.")
       return
     }
     if (!Number.isInteger(rating) || rating < 1 || rating > 999) { setNotice('OVR must be a whole number between 1 and 999.'); return }
