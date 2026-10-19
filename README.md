@@ -32,7 +32,7 @@ npm run preview
 
 ## Entering card data
 
-Open `/admin` from the public page using **Admin / adatbevitel**. Required fields are player name, OVR, positions, nation and a source URL. Stats must be a JSON object with numeric values, for example:
+Open the card manager from the public page using **Admin / data entry**. Required fields are player name, OVR, positions, nation and a source URL. Stats must be a JSON object with numeric values, for example:
 
 ```json
 {"PAC": 90, "SHO": 85, "PAS": 88, "DRI": 91, "DEF": 42, "PHY": 78}
