@@ -793,3 +793,16 @@ input,select,textarea{accent-color:var(--lime)}
     animation: none !important;
   }
 }
+
+
+/* Subtle ambient glow: opacity-only pulse, no continuous blur or layout work. */
+@keyframes uflmb-soft-pulse {
+  0%, 100% { opacity: .72; }
+  50% { opacity: 1; }
+}
+.status-dot {
+  animation: uflmb-soft-pulse 2.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .status-dot { animation: none !important; }
+}
