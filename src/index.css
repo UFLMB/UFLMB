@@ -382,3 +382,10 @@ body.has-background-images .app-shell{
   .squad-toolbar{align-items:flex-start}.squad-summary{min-width:100%;order:3}
   .squad-toolbar>.button{margin-left:auto}
 }
+
+/* Demo teams and explicit test-data disclosure */
+.demo-data-tools{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin:0 0 20px;padding:16px 18px;border:1px solid rgba(197,244,103,.2);border-radius:12px;background:rgba(197,244,103,.045)}
+.demo-data-tools strong{font-size:13px;color:var(--lime)}
+.demo-data-tools p{margin:6px 0 0;max-width:610px;color:var(--muted);font-size:11px;line-height:1.7}
+.squad-team-switch{display:flex;gap:7px;flex-wrap:wrap}
+@media(max-width:650px){.demo-data-tools{align-items:stretch;flex-direction:column}.demo-data-tools>.button{width:100%}.squad-team-switch{width:100%}.squad-team-switch>.button{flex:1}}
