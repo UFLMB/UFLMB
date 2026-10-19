@@ -234,3 +234,110 @@ body.has-background-images .app-shell{
     -webkit-backdrop-filter:none;
   }
 }
+
+
+/* Player discovery and full-detail profile interactions */
+.ovr-range input{
+  width:88px;
+  min-width:0;
+  padding:9px 10px;
+  border:1px solid rgba(220,230,245,.18);
+  border-radius:9px;
+  background:rgba(10,13,19,.94);
+  color:#f3f5f8;
+  font:12px 'DM Mono',monospace;
+}
+.bookmark-toggle{
+  position:absolute;
+  top:9px;
+  right:9px;
+  display:grid;
+  place-items:center;
+  width:36px;
+  height:36px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:10px;
+  background:rgba(7,10,15,.92);
+  color:#f0f2f6;
+  font-size:23px;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 5px 16px rgba(0,0,0,.3);
+}
+.bookmark-toggle.saved{
+  color:var(--accent,#c5f467);
+  border-color:color-mix(in srgb,var(--accent,#c5f467) 60%,transparent);
+  background:rgba(17,23,15,.96);
+}
+.card-actions{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:12px}
+.card-actions .button{width:100%}
+.card-actions .source-link{margin-top:5px}
+.profile-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+  overflow-y:auto;
+  background:rgba(3,5,9,.82);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.profile-modal{
+  position:relative;
+  width:min(760px,100%);
+  max-height:min(90vh,900px);
+  overflow:auto;
+  padding:28px;
+  border:1px solid rgba(220,230,245,.2);
+  border-radius:20px;
+  background:linear-gradient(150deg,#171d28,#0d1118 70%);
+  box-shadow:0 30px 100px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.profile-close{
+  position:absolute;
+  top:14px;
+  right:14px;
+  display:grid;
+  place-items:center;
+  width:36px;
+  height:36px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:10px;
+  background:#0b0e14;
+  color:#fff;
+  font-size:25px;
+}
+.profile-heading{display:grid;grid-template-columns:120px minmax(0,1fr);align-items:center;gap:22px;padding:8px 36px 24px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.profile-heading>img,.profile-placeholder{width:120px;height:155px;object-fit:contain;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#090c12}
+.profile-placeholder{display:grid;place-items:center;color:#8b95a5;font-size:19px;font-weight:800}
+.profile-placeholder span{color:var(--accent,#c5f467)}
+.profile-heading h2{margin:0 0 8px;font-size:clamp(24px,4vw,36px);letter-spacing:-1px;overflow-wrap:anywhere}
+.profile-heading .eyebrow{margin-bottom:9px}
+.profile-meta{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:15px}
+.profile-meta>*{padding:7px 9px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(0,0,0,.24);font-size:11px}
+.profile-meta strong{color:var(--accent,#c5f467);font:12px 'DM Mono',monospace}
+.profile-section{padding:22px 0;border-bottom:1px solid rgba(255,255,255,.09)}
+.profile-section h3{margin-bottom:15px}
+.profile-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 22px}
+.profile-stats>div{display:grid;grid-template-columns:44px 36px minmax(0,1fr);align-items:center;gap:10px;font-size:11px}
+.profile-stats span{color:#b9c2d0}
+.profile-stats strong{font:13px 'DM Mono',monospace;color:#fff;text-align:right}
+.profile-stats i{height:6px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.08)}
+.profile-stats i b{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#7eaa3b,var(--accent,#c5f467))}
+.profile-footer{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding-top:20px}
+.profile-footer .verified-date{margin:0 auto 0 0}
+@media(max-width:560px){
+  .ovr-range input{width:76px}
+  .profile-backdrop{padding:10px;align-items:flex-start}
+  .profile-modal{max-height:calc(100vh - 20px);padding:18px;border-radius:15px}
+  .profile-heading{grid-template-columns:82px minmax(0,1fr);gap:13px;padding-right:24px}
+  .profile-heading>img,.profile-placeholder{width:82px;height:112px}
+  .profile-heading h2{font-size:23px}
+  .profile-meta>*{font-size:9px;padding:6px}
+  .profile-stats{grid-template-columns:1fr;gap:10px}
+  .profile-footer{align-items:stretch;flex-direction:column}
+  .profile-footer .verified-date{margin:0}
+}
