@@ -52,7 +52,7 @@ Before public launch with shared data, connect a server-side database and image 
 
 ## Deployment
 
-The app can be deployed to a static host that supports SPA rewrites. The `public/_redirects` file includes the fallback used by Cloudflare Pages. Configure the host to run `npm run build` and publish `dist`.
+The GitHub Actions workflow in `.github/workflows/deploy.yml` builds the app and deploys `dist` to GitHub Pages on pushes to `main`. In repository Settings → Pages, set Source to **GitHub Actions**. The app is served under `/UFLMB/`; the admin route is `/UFLMB/#admin`. The admin currently saves to this browser's local storage only, so it is not a shared database. The `public/_redirects` file also includes the fallback used by Cloudflare Pages.
 
 ## Project structure
 
