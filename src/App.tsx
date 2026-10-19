@@ -8,6 +8,16 @@ const STORAGE_KEY = 'uflmb.cards.v1'
 const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
 const DRIVE_API_KEY = 'uflmb.google.apiKey'
 const THEME_KEY = 'uflmb.site-theme.v1'
+const BRANDING_KEY = 'uflmb.site-branding.v1'
+type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrl: string }
+const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrl: '' }
+const loadBranding = (): SiteBranding => {
+  try {
+    const value = JSON.parse(localStorage.getItem(BRANDING_KEY) || 'null')
+    if (value && typeof value === 'object') return { ...defaultBranding, ...value }
+  } catch { /* use defaults */ }
+  return defaultBranding
+}
 type SiteTheme = { preset: string; accent: string; background: string; panel: string; text: string; mode: 'gradient' | 'solid'; radius: number }
 const themePresets: Record<string, Omit<SiteTheme, 'preset'>> = {
   arena: { accent: '#c5f467', background: '#0b0d12', panel: '#11141b', text: '#f3f5f8', mode: 'gradient', radius: 15 },
@@ -95,6 +105,7 @@ export default function App() {
   const [googleApiKey, setGoogleApiKey] = useState(() => localStorage.getItem(DRIVE_API_KEY) ?? '')
   const [driveBusy, setDriveBusy] = useState(false)
   const [siteTheme, setSiteTheme] = useState<SiteTheme>(loadTheme)
+  const [siteBranding, setSiteBranding] = useState<SiteBranding>(loadBranding)
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
 
@@ -108,6 +119,25 @@ export default function App() {
     root.dataset.themeMode = siteTheme.mode
     try { localStorage.setItem(THEME_KEY, JSON.stringify(siteTheme)) } catch { /* theme still applies for this session */ }
   }, [siteTheme])
+
+  useEffect(() => {
+    const image = siteBranding.backgroundImageUrl.trim()
+    document.body.style.backgroundImage = image
+      ? `linear-gradient(rgba(5,8,14,.58), rgba(5,8,14,.72)), url("${image.replace(/["\\\\]/g, '')}")`
+      : ''
+    document.body.style.backgroundSize = image ? 'cover' : ''
+    document.body.style.backgroundPosition = image ? 'center center' : ''
+    document.body.style.backgroundAttachment = image ? 'fixed' : ''
+    try { localStorage.setItem(BRANDING_KEY, JSON.stringify(siteBranding)) } catch { /* applies for this session */ }
+    let favicon = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
+    if (!favicon) {
+      favicon = document.createElement('link')
+      favicon.rel = 'icon'
+      document.head.appendChild(favicon)
+    }
+    if (siteBranding.faviconUrl.trim()) favicon.href = siteBranding.faviconUrl.trim()
+    else favicon.removeAttribute('href')
+  }, [siteBranding])
 
   useEffect(() => {
     try { saveCards(allCards) } catch {
@@ -581,7 +611,7 @@ export default function App() {
   if (isAdmin) return (
     <main className="app-shell admin-shell">
       <header className="topbar">
-        <a className="brand" href="/UFLMB/" aria-label="UFLMB home"><span className="brand-mark">U</span><span className="brand-word">UFL<span>MB</span></span></a>
+        <a className="brand" href="/UFLMB/" aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
         <a className="back-link" href="/UFLMB/">← Public database</a>
       </header>
       <section className="admin-intro">
@@ -605,6 +635,22 @@ export default function App() {
         </div>
         <div className="theme-live-preview" style={{ background: siteTheme.mode === 'gradient' ? `radial-gradient(ellipse at 20% 0%, ${siteTheme.accent}25, transparent 55%), ${siteTheme.background}` : siteTheme.background, color: siteTheme.text, borderRadius: siteTheme.radius }}><div className="theme-preview-top"><span className="theme-preview-mark" style={{ background: siteTheme.accent, color: siteTheme.background }}>U</span><strong>UFLMB <small>PREVIEW</small></strong><span className="theme-preview-pill" style={{ borderColor: siteTheme.accent, color: siteTheme.accent }}>LIVE THEME</span></div><div className="theme-preview-card" style={{ background: siteTheme.panel, borderRadius: Math.max(0, siteTheme.radius - 3) }}><span className="theme-preview-accent" style={{ color: siteTheme.accent }}>SITE DESIGN</span><h3>Build your own look.</h3><p style={{ opacity: .72 }}>This is how the selected colors and styling work together.</p><button type="button" style={{ background: siteTheme.accent, color: siteTheme.background, borderRadius: Math.max(0, siteTheme.radius - 5) }}>Sample action</button></div></div>
         <div className="form-actions"><button className="button secondary" type="button" onClick={() => setSiteTheme(defaultTheme)}>Reset to default</button></div>
+        <section className="branding-editor">
+          <div className="section-heading"><div><p className="eyebrow">BRAND IDENTITY</p><h2>Logo, icon & background image</h2></div></div>
+          <p className="muted-copy">Paste direct image URLs (HTTPS recommended). Changes preview immediately and save in this browser.</p>
+          <div className="theme-controls branding-controls">
+            <label>Brand icon / symbol<input maxLength={5} value={siteBranding.iconText} onChange={e => setSiteBranding(current => ({ ...current, iconText: e.target.value.slice(0, 5) }))} placeholder="U, ⚽, ★" /><small>Text, initials or emoji shown in the square brand mark</small></label>
+            <label>Logo image URL<input type="url" value={siteBranding.logoUrl} onChange={e => setSiteBranding(current => ({ ...current, logoUrl: e.target.value }))} placeholder="https://example.com/logo.png" /><small>Direct URL to a PNG, SVG, WebP or JPG logo</small></label>
+            <label>Browser tab icon (favicon) URL<input type="url" value={siteBranding.faviconUrl} onChange={e => setSiteBranding(current => ({ ...current, faviconUrl: e.target.value }))} placeholder="https://example.com/icon.png" /><small>Small icon shown on the browser tab</small></label>
+            <label className="branding-wide">Background image URL<input type="url" value={siteBranding.backgroundImageUrl} onChange={e => setSiteBranding(current => ({ ...current, backgroundImageUrl: e.target.value }))} placeholder="https://example.com/background.jpg" /><small>Use a direct image-file URL. A dark overlay keeps text readable.</small></label>
+          </div>
+          <div className="branding-preview">
+            <div className="branding-preview-item"><strong>Brand mark / logo</strong>{siteBranding.logoUrl.trim() ? <img src={siteBranding.logoUrl.trim()} alt="Logo preview" onError={e => { e.currentTarget.style.display = 'none' }} /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}</div>
+            {siteBranding.faviconUrl.trim() && <div className="branding-preview-item"><strong>Browser icon</strong><img className="favicon-preview" src={siteBranding.faviconUrl.trim()} alt="Favicon preview" /></div>}
+            {siteBranding.backgroundImageUrl.trim() && <div className="branding-background-preview" style={{ backgroundImage: `linear-gradient(rgba(5,8,14,.45), rgba(5,8,14,.6)), url("${siteBranding.backgroundImageUrl.replace(/["\\\\]/g, '')}")` }}><span>Background preview</span></div>}
+          </div>
+          <div className="form-actions"><button className="button secondary" type="button" onClick={() => setSiteBranding(defaultBranding)}>Reset branding</button></div>
+        </section>
         <p className="field-help">Current limitation: because UFLMB is a static site without a shared settings backend, these theme choices affect this browser only. They do not change the theme for every visitor.</p>
       </section>
       <section className="admin-panel">
@@ -687,7 +733,7 @@ export default function App() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/UFLMB/" aria-label="UFLMB home"><span className="brand-mark">U</span><span className="brand-word">UFL<span>MB</span></span></a>
+        <a className="brand" href="/UFLMB/" aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
         <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Community database</span><a className="admin-link" href="/UFLMB/#admin">Admin / data entry ↗</a></div>
       </header>
       <section className="hero">
