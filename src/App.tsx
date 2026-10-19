@@ -175,7 +175,7 @@ export default function App() {
       const valid = parsed.filter((card): card is PlayerCard => Boolean(card && typeof card === 'object' &&
         typeof (card as PlayerCard).playerName === 'string' && Number.isFinite((card as PlayerCard).overallRating) &&
         Array.isArray((card as PlayerCard).positions) && typeof (card as PlayerCard).nation === 'string' &&
-        typeof (card as PlayerCard).sourceUrl === 'string' && /^https?:\/\/i.test((card as PlayerCard).sourceUrl) &&
+        typeof (card as PlayerCard).sourceUrl === 'string' && /^https?:\/\//i.test((card as PlayerCard).sourceUrl) &&
         typeof (card as PlayerCard).verifiedAt === 'string'))
       const keys = new Set(allCards.map(card => [card.playerName, card.overallRating, card.positions.join('/'), card.nation].join('|').toLowerCase()))
       const additions = valid.filter(card => {
