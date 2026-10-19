@@ -47,16 +47,17 @@ export default function CommunityReviews({ cardId }: { cardId: string }) {
     finally { setBusy(false) }
   }
 
+  const isDemo = cardId.startsWith('uflmb-demo-')
   const average = reviews.length ? reviews.reduce((sum, item) => sum + item.rating, 0) / reviews.length : 0
   return <section className="profile-section community-reviews" aria-label="Community ratings and reviews">
     <div className="community-review-heading"><div><h3>Community reviews</h3><p className="muted-copy">{configured ? reviews.length ? `★ ${average.toFixed(1)} / 5 · ${reviews.length} review(s)` : 'No reviews yet' : 'Shared review backend not configured yet'}</p></div></div>
     {configured && reviews.length > 0 && <div className="community-review-list">{reviews.map(item => <article key={item.id}><div><strong>{item.reviewer_name}</strong><span>{'★'.repeat(item.rating)}{'☆'.repeat(5-item.rating)}</span></div><p>{item.review_text}</p><small>{new Date(item.created_at).toLocaleDateString()}</small></article>)}</div>}
-    <form className="community-review-form" onSubmit={submit}>
+    {isDemo ? <p className="field-help">Demo fixtures are local-only; reviews are available for shared database records after backend setup.</p> : <form className="community-review-form" onSubmit={submit}>
       <label>Display name<input value={name} onChange={event => setName(event.target.value)} maxLength={40} placeholder="Your display name" required /></label>
       <label>Rating<select value={rating} onChange={event => setRating(event.target.value)}><option value="5">5 — Excellent</option><option value="4">4 — Very good</option><option value="3">3 — Average</option><option value="2">2 — Below average</option><option value="1">1 — Poor</option></select></label>
       <label className="full-field">Review<textarea value={reviewText} onChange={event => setReviewText(event.target.value)} maxLength={1000} rows={3} placeholder="Share your experience with this card…" required /></label>
       <button className="button primary" type="submit" disabled={busy || !configured}>{busy ? 'Submitting…' : 'Submit review'}</button>
-    </form>
+    </form>}
     {message && <p className="field-help" role="status">{message}</p>}
     {!configured && <p className="field-help">Reviews will be shared across visitors after the Supabase project URL and public anon key are configured in the GitHub Pages build.</p>}
   </section>
