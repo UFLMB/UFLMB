@@ -57,7 +57,7 @@ as $$
   );
 $$;
 
-revoke all on function public.is_uflmb_admin() from public;
+revoke all on function public.is_uflmb_admin() from public, anon, authenticated;
 grant execute on function public.is_uflmb_admin() to authenticated;
 
 -- Public read access for the card gallery and reviews.
