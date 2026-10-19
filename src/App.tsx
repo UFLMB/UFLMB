@@ -70,6 +70,7 @@ export default function App() {
   const [notice, setNotice] = useState('')
   const [importText, setImportText] = useState('')
   const [adminSearch, setAdminSearch] = useState('')
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [googleClientId, setGoogleClientId] = useState(() => localStorage.getItem(DRIVE_CLIENT_KEY) ?? '')
   const [googleApiKey, setGoogleApiKey] = useState(() => localStorage.getItem(DRIVE_API_KEY) ?? '')
   const [driveBusy, setDriveBusy] = useState(false)
@@ -94,6 +95,44 @@ export default function App() {
   const adminCards = useMemo(() => allCards.filter(card =>
     [card.playerName, card.nation, card.club, card.cardName, card.id].filter(Boolean).join(' ').toLowerCase().includes(adminSearch.toLowerCase())
   ), [allCards, adminSearch])
+
+  const dataQuality = useMemo(() => {
+    const today = new Date()
+    const missingImage = allCards.filter(card => !card.imageUrl?.trim()).length
+    const missingClubOrType = allCards.filter(card => !card.club?.trim() || !card.cardName?.trim()).length
+    const missingStats = allCards.filter(card => !card.stats || !Object.keys(card.stats).length).length
+    const invalidSource = allCards.filter(card => !/^https?:\/\//i.test(card.sourceUrl || '')).length
+    const staleVerification = allCards.filter(card => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(card.verifiedAt || '')) return true
+      const date = new Date(card.verifiedAt + 'T00:00:00')
+      return Number.isNaN(date.getTime()) || (today.getTime() - date.getTime()) > 90 * 24 * 60 * 60 * 1000
+    }).length
+    const keys = new Set<string>()
+    let duplicates = 0
+    allCards.forEach(card => {
+      const key = [card.playerName.trim().toLowerCase(), card.overallRating, [...card.positions].sort().join('/').toLowerCase(), card.nation.trim().toLowerCase()].join('|')
+      if (keys.has(key)) duplicates++
+      else keys.add(key)
+    })
+    return { total: allCards.length, missingImage, missingClubOrType, missingStats, invalidSource, staleVerification, duplicates }
+  }, [allCards])
+
+  const toggleSelected = (id: string) => setSelectedIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id])
+  const selectVisible = () => setSelectedIds(current => {
+    const visibleIds = adminCards.map(card => card.id)
+    return visibleIds.every(id => current.includes(id))
+      ? current.filter(id => !visibleIds.includes(id))
+      : Array.from(new Set([...current, ...visibleIds]))
+  })
+  const deleteSelected = () => {
+    const selected = new Set(selectedIds)
+    if (!selected.size || !window.confirm(`Delete ${selected.size} selected card(s) from this browser? Export a JSON backup first if needed.`)) return
+    const next = allCards.filter(card => !selected.has(card.id))
+    setAllCards(next)
+    setSelectedIds([])
+    if (editingId && selected.has(editingId)) resetForm()
+    setNotice(`${allCards.length - next.length} selected card(s) deleted.`)
+  }
 
   const updateDraft = (key: keyof Draft, value: string) => setDraft(current => ({ ...current, [key]: value }))
 
@@ -519,8 +558,27 @@ export default function App() {
         </form>
       </section>
       <section className="admin-panel">
+        <p className="eyebrow">DATA QUALITY</p><h2>Collection health</h2>
+        <p className="muted-copy">These checks help identify incomplete or potentially stale records. Missing optional fields are warnings, not proof that a card is incorrect. Verification older than 90 days is flagged for review.</p>
+        <div className="quality-grid">
+          <div className="quality-tile"><strong>{dataQuality.total}</strong><span>Total cards</span></div>
+          <div className="quality-tile"><strong>{dataQuality.missingImage}</strong><span>Missing image</span></div>
+          <div className="quality-tile"><strong>{dataQuality.missingStats}</strong><span>Missing stats</span></div>
+          <div className="quality-tile"><strong>{dataQuality.missingClubOrType}</strong><span>Missing club or type</span></div>
+          <div className="quality-tile"><strong>{dataQuality.staleVerification}</strong><span>Needs source review</span></div>
+          <div className="quality-tile"><strong>{dataQuality.invalidSource}</strong><span>Invalid source URL</span></div>
+          <div className={dataQuality.duplicates ? 'quality-tile quality-warning' : 'quality-tile'}><strong>{dataQuality.duplicates}</strong><span>Possible duplicates</span></div>
+        </div>
+      </section>
+      <section className="admin-panel">
         <div className="section-heading"><div><p className="eyebrow">RECORDS</p><h2>Existing cards</h2></div><input className="admin-search" value={adminSearch} onChange={e => setAdminSearch(e.target.value)} placeholder="Search…" aria-label="Search admin records" /></div>
-        {adminCards.length === 0 ? <p className="muted-copy">No cards have been added yet.</p> : <div className="record-list">{adminCards.map(card => <article className="record-row" key={card.id}>
+        <div className="form-actions record-bulk-actions">
+          <button className="button secondary" type="button" onClick={selectVisible}>{adminCards.length > 0 && adminCards.every(card => selectedIds.includes(card.id)) ? 'Deselect visible' : 'Select visible'}</button>
+          <span className="muted-copy">{selectedIds.length} selected</span>
+          <button className="button danger" type="button" disabled={!selectedIds.length} onClick={deleteSelected}>Delete selected</button>
+        </div>
+        {adminCards.length === 0 ? <p className="muted-copy">No cards have been added yet.</p> : <div className="record-list">{adminCards.map(card => <article className={selectedIds.includes(card.id) ? 'record-row record-row-selected' : 'record-row'} key={card.id}>
+          <label className="record-select" aria-label={`Select ${card.playerName}`}><input type="checkbox" checked={selectedIds.includes(card.id)} onChange={() => toggleSelected(card.id)} /></label>
           {card.imageUrl ? <img className="record-thumb" src={card.imageUrl} alt="" /> : <div className="record-thumb placeholder-thumb">U</div>}
           <div className="record-info"><strong>{card.playerName}</strong><span>OVR {card.overallRating} · {card.positions.join('/')} · {card.nation}</span><small>{card.cardName || 'No card type specified'} · verified: {card.verifiedAt}</small></div>
           <button className="button secondary" type="button" onClick={() => startEdit(card)}>Edit</button>
