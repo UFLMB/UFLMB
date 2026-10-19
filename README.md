@@ -19,7 +19,7 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 - Sort by OVR, name, or most recently verified
 - Reset all active search and filter criteria in one action
 - Actionable data-quality review queue with direct record editing
-- Strict JSON backup validation and duplicate detection that distinguishes card editions and clubs
+- Strict JSON backup validation, duplicate-ID rejection, pre-import impact summary, explicit confirmation before overwriting matching IDs, and duplicate-aware merging
 - Filters for goalkeepers, defenders, midfielders and forwards, plus exact position, nation and card type
 - Sort by highest OVR, lowest OVR, or player name
 - Card records with OVR, positions, nation, card type, club, stats, perks, image and verification source/date
@@ -67,7 +67,7 @@ Open **Admin / data entry → Card manager → Load / reset 22 demo cards** to l
 
 ## Shared database groundwork
 
-- `supabase/schema.sql` defines shared card records, community reviews/ratings, public read access, and authenticated-only card maintenance policies.
+- `supabase/schema.sql` defines shared card records, community reviews/ratings, public read access, and row-level security that restricts card writes to explicitly allowlisted Supabase admin user IDs.
 - `src/components/SharedDatabasePanel.tsx` provides Supabase sign-in, loading, and deliberate publishing of card edits from the existing editor. Demo records are excluded from publishing.
 - `src/components/CommunityReviews.tsx` adds ratings/reviews to card profiles. They become shared when the Supabase variables and SQL schema are configured.
 - A daily GitHub Actions workflow audits the production source dataset and, when configured, checks shared source-link reachability and flags verification dates older than 90 days. It intentionally does not scrape or invent card data; a reliable supported source/API must be selected before true automated card updates can be enabled.
@@ -95,7 +95,7 @@ The GitHub Actions workflow in `.github/workflows/deploy.yml` builds the app and
 - `src/index.css` — responsive styling
 - `public/_redirects` — static-host SPA fallback
 
-## Second major feature package
+## Database Core hardening\n\n- JSON paste imports validate the complete payload before changing anything, reject repeated IDs in the incoming file, and show a confirmation summary for updates, additions, and likely duplicates.\n- Duplicate records with different IDs are skipped instead of silently replacing an existing card identity.\n- Supabase card write policies require an explicit `public.admin_users` allowlist entry; a generic authenticated session no longer grants card-edit permissions.\n- Important: the SQL file must still be run in the actual Supabase project to apply the new policies. A GitHub commit alone does not change a live database.\n\n## Second major feature package
 
 - **Card comparison:** select up to three cards from the public gallery and compare OVR, positions, nation, club, edition and every stat key shared across the selected records. Selections can be removed individually or cleared.
 - **Live rankings:** top five cards by OVR plus a leaderboard for every stat present in the actual dataset. Rankings are generated from verified records only; no demo cards or fabricated values are introduced.
