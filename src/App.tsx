@@ -169,7 +169,7 @@ export default function App() {
   if (isAdmin) return (
     <main className="app-shell admin-shell">
       <header className="topbar">
-        <a className="brand" href={import.meta.env.BASE_URL} aria-label="UFLMB főoldal"><span className="brand-mark">U</span><span className="brand-word">UFL<span>MB</span></span></a>
+        <a className="brand" href="/UFLMB/" aria-label="UFLMB főoldal"><span className="brand-mark">U</span><span className="brand-word">UFL<span>MB</span></span></a>
         <a className="back-link" href="/">← Nyilvános adatbázis</a>
       </header>
       <section className="admin-intro">
@@ -222,7 +222,7 @@ export default function App() {
     <main className="app-shell">
       <header className="topbar">
         <a className="brand" href="/" aria-label="UFLMB home"><span className="brand-mark">U</span><span className="brand-word">UFL<span>MB</span></span></a>
-        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Community database</span><a className="admin-link" href={`${import.meta.env.BASE_URL}#admin`}>Admin / adatbevitel ↗</a></div>
+        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Community database</span><a className="admin-link" href="/UFLMB/#admin">Admin / adatbevitel ↗</a></div>
       </header>
       <section className="hero">
         <p className="eyebrow">COMMUNITY DATABASE PROJECT</p>
