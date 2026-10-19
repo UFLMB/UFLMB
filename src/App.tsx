@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import type { PlayerCard } from './types/card'
 import { cards as starterCards } from './data/cards'
@@ -155,6 +155,7 @@ export default function App() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [convertDemoToReal, setConvertDemoToReal] = useState(false)
   const [notice, setNotice] = useState('')
+  const [autoSaveStatus, setAutoSaveStatus] = useState('Auto-save is enabled · every 60 seconds')
   const [importText, setImportText] = useState('')
   const [adminSearch, setAdminSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -168,6 +169,9 @@ export default function App() {
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance'>('cards')
+
+  const autoSaveSnapshot = useRef({ allCards, bookmarkedIds, formationId, squadAssignments, siteTheme, siteBranding, googleClientId, googleApiKey })
+  autoSaveSnapshot.current = { allCards, bookmarkedIds, formationId, squadAssignments, siteTheme, siteBranding, googleClientId, googleApiKey }
 
   useEffect(() => {
     try { localStorage.setItem('uflmb.bookmarks.v1', JSON.stringify(bookmarkedIds)) } catch { /* session-only fallback */ }
@@ -225,6 +229,27 @@ export default function App() {
     if (siteBranding.faviconUrl.trim()) favicon.href = siteBranding.faviconUrl.trim()
     else favicon.removeAttribute('href')
   }, [siteBranding])
+
+  useEffect(() => {
+    if (!isAdmin) return
+    const interval = window.setInterval(() => {
+      const saved = autoSaveSnapshot.current
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved.allCards))
+        localStorage.setItem('uflmb.bookmarks.v1', JSON.stringify(saved.bookmarkedIds))
+        localStorage.setItem('uflmb.squad.formation', saved.formationId)
+        localStorage.setItem('uflmb.squad.assignments', JSON.stringify(saved.squadAssignments))
+        localStorage.setItem(THEME_KEY, JSON.stringify(saved.siteTheme))
+        localStorage.setItem(BRANDING_KEY, JSON.stringify(saved.siteBranding))
+        localStorage.setItem(DRIVE_CLIENT_KEY, saved.googleClientId.trim())
+        localStorage.setItem(DRIVE_API_KEY, saved.googleApiKey.trim())
+        setAutoSaveStatus('Auto-saved at ' + new Date().toLocaleTimeString() + ' · next save in 60 seconds')
+      } catch {
+        setAutoSaveStatus('Auto-save failed: browser storage may be full. Use the manual save / backup button.')
+      }
+    }, 60_000)
+    return () => window.clearInterval(interval)
+  }, [isAdmin])
 
   useEffect(() => {
     try { saveCards(allCards) } catch {
@@ -960,6 +985,7 @@ export default function App() {
         <p className="hero-copy">Manually add, edit, save, and export cards, images, stats, and verification sources.</p>
         <div className="notice warning"><strong>Important:</strong> this version saves data to the current browser's local storage. It does not sync with other visitors or devices, and the admin page is not protected by a login. A public shared database requires server-side storage and authenticated admin access.</div>
         {notice && <div className="notice">{notice}</div>}
+        <div className="notice">{autoSaveStatus}</div>
         <div className="form-actions save-everything-actions">
           <button className="button primary" type="button" onClick={saveEverything}>Save everything + download backup</button>
           <span className="field-help">Saves cards, bookmarks, squads and appearance settings in this browser, then downloads a portable JSON backup. Google Drive credentials stay in this browser and are not included in the backup.</span>
