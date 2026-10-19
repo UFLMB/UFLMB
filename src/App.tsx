@@ -152,6 +152,7 @@ export default function App() {
   const [activeSquad, setActiveSquad] = useState<'A' | 'B'>('A')
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [convertDemoToReal, setConvertDemoToReal] = useState(false)
   const [notice, setNotice] = useState('')
   const [importText, setImportText] = useState('')
   const [adminSearch, setAdminSearch] = useState('')
@@ -475,7 +476,7 @@ export default function App() {
     setNotice('Local card collection cleared. This cannot be undone without a backup.')
   }
 
-  const resetForm = () => { setDraft(emptyDraft()); setEditingId(null) }
+  const resetForm = () => { setDraft(emptyDraft()); setEditingId(null); setConvertDemoToReal(false) }
 
   const submitCard = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -497,7 +498,7 @@ export default function App() {
       } catch { setNotice('Invalid JSON format for stats. Example: {"PAC":90,"SHO":85}'); return }
     }
     const record: PlayerCard = {
-      id: editingId ?? makeId(),
+      id: editingId && !(convertDemoToReal && editingId.startsWith('uflmb-demo-')) ? editingId : makeId(),
       playerName: draft.playerName.trim(),
       overallRating: rating,
       positions,
@@ -515,7 +516,8 @@ export default function App() {
       saveCards(next)
       setAllCards(next)
       resetForm()
-      setNotice(editingId ? 'Card updated.' : 'Card added.')
+      setNotice(editingId ? (convertDemoToReal ? 'Demo fixture converted to a regular card record. Add a reliable source and verify every field before publishing.' : 'Card updated.') : 'Card added.')
+      setConvertDemoToReal(false)
     } catch {
       setNotice('Saving failed; browser storage may be full. Use a smaller image or an image URL.')
     }
@@ -523,6 +525,7 @@ export default function App() {
 
   const startEdit = (card: PlayerCard) => {
     setEditingId(card.id)
+    setConvertDemoToReal(false)
     setDraft({
       playerName: card.playerName, overallRating: String(card.overallRating), positions: card.positions.join(', '),
       nation: card.nation, cardName: card.cardName ?? '', club: card.club ?? '', perks: card.perks?.join(', ') ?? '',
@@ -818,6 +821,7 @@ export default function App() {
         <div className="section-heading"><div><p className="eyebrow">{editingId ? 'EDIT RECORD' : 'NEW RECORD'}</p><h2>{editingId ? 'Edit card' : 'Add card'}</h2></div><span className="count-label">{allCards.length} local records</span></div>
         <div className="demo-data-tools"><div><strong>Test environment</strong><p>Load two fictional 11-player squads (22 cards total). Every record is labelled DEMO and can later be overwritten in this editor.</p></div><button className="button secondary" type="button" onClick={loadDemoSquads}>Load / reset 22 demo cards</button></div>
         <form className="card-form" onSubmit={submitCard}>
+          {editingId?.startsWith('uflmb-demo-') && <label className="full-field demo-convert-option"><input type="checkbox" checked={convertDemoToReal} onChange={event => setConvertDemoToReal(event.target.checked)} /> Convert this test fixture into a regular record when saving. Its ID will change and it can then be published to the shared database. Only enable this after replacing synthetic values and adding a reliable source.</label>}
           <label>Player name *<input value={draft.playerName} onChange={e => updateDraft('playerName', e.target.value)} required placeholder="e.g. Player Name" /></label>
           <label>OVR *<input type="number" min="1" max="999" step="1" value={draft.overallRating} onChange={e => updateDraft('overallRating', e.target.value)} required placeholder="e.g. 95" /></label>
           <label>Position(s) *<input value={draft.positions} onChange={e => updateDraft('positions', e.target.value)} required placeholder="e.g. ST, LW" /></label>
