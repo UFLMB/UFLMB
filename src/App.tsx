@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import type { PlayerCard } from './types/card'
+import * as XLSX from 'xlsx'
 import { cards as starterCards } from './data/cards'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
@@ -150,6 +151,90 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const importExcel = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    event.target.value = ''
+    try {
+      const bytes = await file.arrayBuffer()
+      const workbook = XLSX.read(bytes, { type: 'array', cellDates: true })
+      const firstSheet = workbook.SheetNames[0]
+      if (!firstSheet) { setNotice('The selected spreadsheet has no worksheet.'); return }
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[firstSheet], { defval: '' })
+      if (!rows.length) { setNotice('The selected worksheet contains no data rows.'); return }
+      const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '')
+      const get = (row: Record<string, unknown>, aliases: string[]) => {
+        const entries = Object.entries(row)
+        const match = entries.find(([key]) => aliases.includes(normalize(key)))
+        return match?.[1] ?? ''
+      }
+      const asText = (value: unknown) => value instanceof Date
+        ? value.toISOString().slice(0, 10)
+        : String(value ?? '').trim()
+      const statsKeys = ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY', 'DIV', 'REF', 'HAN', 'KIC', 'SPD', 'POS']
+      const imported: PlayerCard[] = []
+      let skipped = 0
+      rows.forEach(row => {
+        const playerName = asText(get(row, ['playername', 'name', 'player']))
+        const rawRating = get(row, ['ovr', 'overallrating', 'overall', 'rating'])
+        const overallRating = Number(rawRating)
+        const positions = asText(get(row, ['positions', 'position', 'pos'])).split(/[;,/|]/).map(p => p.trim().toUpperCase()).filter(Boolean)
+        const nation = asText(get(row, ['nation', 'nationality', 'country']))
+        const sourceUrl = asText(get(row, ['sourceurl', 'source', 'verificationurl', 'verifiablesourceurl']))
+        if (!playerName || !Number.isInteger(overallRating) || overallRating < 1 || overallRating > 999 || !positions.length || !nation || !/^https?:\/\//i.test(sourceUrl)) {
+          skipped++
+          return
+        }
+        const cardName = asText(get(row, ['cardtype', 'cardname', 'edition', 'cardtypeedition']))
+        const club = asText(get(row, ['club', 'team']))
+        const imageUrl = asText(get(row, ['imageurl', 'cardimageurl', 'image']))
+        const verifiedRaw = get(row, ['verifiedat', 'verificationdate', 'verifieddate', 'checked'])
+        const verifiedAt = asText(verifiedRaw) || new Date().toISOString().slice(0, 10)
+        const stats: Record<string, number> = {}
+        statsKeys.forEach(key => {
+          const value = get(row, [key.toLowerCase(), key.toLowerCase() + 'stat'])
+          if (value !== '' && value !== null && Number.isFinite(Number(value))) stats[key] = Number(value)
+        })
+        const perksRaw = asText(get(row, ['perks', 'attributes', 'traits']))
+        imported.push({
+          id: makeId(), playerName, overallRating, positions, nation,
+          ...(cardName ? { cardName } : {}),
+          ...(club ? { club } : {}),
+          ...(Object.keys(stats).length ? { stats } : {}),
+          ...(perksRaw ? { perks: perksRaw.split(/[;,|]/).map(v => v.trim()).filter(Boolean) } : {}),
+          ...(imageUrl ? { imageUrl } : {}),
+          sourceUrl,
+          verifiedAt: /^\d{4}-\d{2}-\d{2}$/.test(verifiedAt) ? verifiedAt : new Date().toISOString().slice(0, 10),
+        })
+      })
+      if (!imported.length) {
+        setNotice(`No valid cards were imported. ${skipped} row(s) were skipped. Check the required columns: Player Name, OVR, Position(s), Nation, and Source URL.`)
+        return
+      }
+      const existingKeys = new Set(allCards.map(card => [card.playerName, card.overallRating, card.positions.join('/'), card.nation].join('|').toLowerCase()))
+      const uniqueImported = imported.filter(card => {
+        const key = [card.playerName, card.overallRating, card.positions.join('/'), card.nation].join('|').toLowerCase()
+        if (existingKeys.has(key)) { skipped++; return false }
+        existingKeys.add(key)
+        return true
+      })
+      if (!uniqueImported.length) {
+        setNotice(`Nothing new to import. ${skipped} row(s) were skipped as invalid or already present.`)
+        return
+      }
+      const next = [...uniqueImported, ...allCards]
+      try {
+        saveCards(next)
+        setAllCards(next)
+        setNotice(`Excel import complete: ${uniqueImported.length} card(s) added; ${skipped} row(s) skipped. Imported records were added without overwriting existing cards.`)
+      } catch {
+        setNotice('Import could not be saved. Browser storage may be full; try a smaller spreadsheet or remove large images.')
+      }
+    } catch {
+      setNotice('Could not read this spreadsheet. Please use a valid .xlsx, .xls, or .csv file.')
+    }
+  }
+
   const importCards = () => {
     try {
       const parsed: unknown = JSON.parse(importText)
@@ -206,6 +291,11 @@ export default function App() {
           <button className="button secondary" type="button" onClick={() => startEdit(card)}>Edit</button>
           <button className="button danger" type="button" onClick={() => { if (window.confirm(`Are you sure you want to delete this record: ${card.playerName}?`)) { const next = allCards.filter(item => item.id !== card.id); setAllCards(next); setNotice('Record deleted.'); if (editingId === card.id) resetForm() } }}>Delete</button>
         </article>)}</div>}
+      </section>
+      <section className="admin-panel tools-panel">
+        <p className="eyebrow">SPREADSHEET IMPORT</p><h2>Import from Excel</h2>
+        <p className="muted-copy">Import .xlsx, .xls, or .csv files. The first worksheet is read. Required columns: Player Name, OVR, Position(s), Nation, and Source URL. Optional columns: Card Type, Club, Image URL, Perks, Verified At, and individual stat columns such as PAC, SHO, PAS, DRI, DEF, and PHY. Existing matching cards are skipped rather than overwritten.</p>
+        <label className="full-field">Choose spreadsheet file<input type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" onChange={importExcel} /><span className="field-help">Only valid rows are imported. Invalid rows and duplicate player/OVR/position/nation combinations are skipped and counted.</span></label>
       </section>
       <section className="admin-panel tools-panel">
         <p className="eyebrow">BACKUP & DATA TRANSFER</p><h2>Export / import</h2>
