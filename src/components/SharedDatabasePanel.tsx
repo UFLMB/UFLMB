@@ -80,6 +80,7 @@ export default function SharedDatabasePanel({ cards, onLoad, onMessage }: Props)
 
   const loadShared = async () => {
     if (!enabled) { onMessage('Shared database is not configured. Follow supabase/SETUP.md first.'); return }
+    if (!token) { onMessage('Sign in with the trusted admin account before loading records and enabling cloud auto-save.'); return }
     setBusy(true)
     try {
       const response = await fetch(`${baseUrl}/rest/v1/cards?select=*&order=player_name.asc`, {
@@ -186,7 +187,7 @@ export default function SharedDatabasePanel({ cards, onLoad, onMessage }: Props)
       <p className="field-help" role="status" aria-live="polite">{cloudSaving ? 'Saving to Supabase…' : cloudSaveStatus}</p>
       {!token && <div className="card-form shared-login-form"><label>Admin email<input type="email" value={email} onChange={event => setEmail(event.target.value)} autoComplete="username" /></label><label>Admin password<input type="password" value={password} onChange={event => setPassword(event.target.value)} autoComplete="current-password" /></label><button className="button primary" type="button" disabled={busy} onClick={() => void signIn()}>{busy ? 'Connecting…' : 'Sign in'}</button></div>}
       {token && <div className="form-actions"><button className="button secondary" type="button" disabled={busy || cloudSaving} onClick={signOut}>Sign out</button></div>}
-      <div className="form-actions"><button className="button secondary" type="button" disabled={busy || cloudSaving} onClick={() => void loadShared()}>{busy ? 'Working…' : 'Load shared records & enable auto-save'}</button><button className="button primary" type="button" disabled={busy || cloudSaving || !token || loadedIds === null} onClick={() => void publish()}>Publish + apply deletions</button></div>
+      <div className="form-actions"><button className="button secondary" type="button" disabled={busy || cloudSaving || !token} onClick={() => void loadShared()}>{busy ? 'Working…' : 'Load shared records & enable auto-save'}</button><button className="button primary" type="button" disabled={busy || cloudSaving || !token || loadedIds === null} onClick={() => void publish()}>Publish + apply deletions</button></div>
       <p className="field-help">Safe workflow: sign in with an account listed in <code>public.admin_users</code>, load shared records once, then card additions/edits are saved automatically. The explicit publish action is the only action that deletes remote records.</p>
     </>}
   </section>
