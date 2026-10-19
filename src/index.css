@@ -745,3 +745,51 @@ input,select,textarea{accent-color:var(--lime)}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
+
+
+/* Lightweight motion: compositor-friendly transforms and opacity only. */
+@keyframes uflmb-enter {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes uflmb-glow-in {
+  from { opacity: .82; }
+  to { opacity: 1; }
+}
+/* One-time, short entrance; no scroll listeners, timers, or layout animation. */
+.hero .eyebrow,
+.hero h1,
+.hero .hero-copy,
+.hero .search-wrap {
+  animation: uflmb-enter .32s ease-out both;
+}
+.hero h1 { animation-delay: .035s; }
+.hero .hero-copy { animation-delay: .07s; }
+.hero .search-wrap { animation-delay: .1s; }
+.player-card,
+.analytics-panel,
+.admin-panel,
+.squad-toolbar {
+  animation: uflmb-glow-in .24s ease-out both;
+}
+.brand-mark,
+.site-nav a,
+.category,
+.button,
+.admin-tab,
+.player-card,
+.snapshot-grid>div {
+  will-change: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero .eyebrow,
+  .hero h1,
+  .hero .hero-copy,
+  .hero .search-wrap,
+  .player-card,
+  .analytics-panel,
+  .admin-panel,
+  .squad-toolbar {
+    animation: none !important;
+  }
+}
