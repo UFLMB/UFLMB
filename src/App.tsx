@@ -317,6 +317,100 @@ export default function App() {
   })
   const exportVisibleCsv = () => downloadCsv(visibleCards)
 
+  const autoFillSquad = () => {
+    if (!allCards.length) { setNotice('Add verified player cards before building a squad.'); return }
+    const used = new Set<string>()
+    const next: Record<string, string> = { ...squadAssignments }
+    Object.keys(next).filter(key => key.startsWith(activeSquadKey)).forEach(key => delete next[key])
+    for (const slot of squadSlots) {
+      const candidate = allCards
+        .filter(card => !used.has(card.id))
+        .sort((a, b) =>
+          Number(b.positions.some(position => slot.positions.includes(position))) - Number(a.positions.some(position => slot.positions.includes(position))) ||
+          b.overallRating - a.overallRating ||
+          a.playerName.localeCompare(b.playerName))
+        .find(card => !used.has(card.id))
+      if (candidate) {
+        next[`${activeSquadKey}${slot.id}`] = candidate.id
+        used.add(candidate.id)
+      }
+    }
+    setSquadAssignments(next)
+    setNotice(`Auto-filled ${Math.min(squadSlots.length, allCards.length)} positions using position fit first, then OVR. Review the lineup before using it.`)
+  }
+
+  const exportSquad = () => {
+    const payload = {
+      format: 'uflmb-squad-v1',
+      formation: formationId,
+      team: activeSquad,
+      exportedAt: new Date().toISOString(),
+      players: squadSlots.flatMap(slot => {
+        const card = allCards.find(item => item.id === squadAssignments[`${activeSquadKey}${slot.id}`])
+        return card ? [{
+          slotId: slot.id,
+          slotLabel: slot.label,
+          playerName: card.playerName,
+          overallRating: card.overallRating,
+          positions: card.positions,
+          nation: card.nation,
+          club: card.club ?? '',
+          cardName: card.cardName ?? '',
+          sourceUrl: card.sourceUrl,
+        }] : []
+      }),
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `uflmb-squad-${activeSquad}-${formationId}.json`
+    link.click()
+    URL.revokeObjectURL(url)
+    setNotice('Squad exported as a portable JSON file. It includes player references, not images or card database records.')
+  }
+
+  const importSquad = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    try {
+      const parsed: unknown = JSON.parse(await file.text())
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid file')
+      const data = parsed as { format?: unknown; formation?: unknown; players?: unknown }
+      if (data.format !== 'uflmb-squad-v1' || !Array.isArray(data.players)) throw new Error('Unsupported format')
+      const nextFormation: FormationId = data.formation === '4-4-2' || data.formation === '3-5-2' ? data.formation : '4-3-3'
+      const nextSlots = formations[nextFormation]
+      const nextAssignments: Record<string, string> = { ...squadAssignments }
+      Object.keys(nextAssignments).filter(key => key.startsWith(activeSquadKey)).forEach(key => delete nextAssignments[key])
+      const used = new Set<string>()
+      let matched = 0
+      for (const raw of data.players) {
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue
+        const player = raw as { slotId?: unknown; playerName?: unknown; overallRating?: unknown; nation?: unknown; club?: unknown; cardName?: unknown }
+        if (typeof player.slotId !== 'string' || typeof player.playerName !== 'string') continue
+        const slot = nextSlots.find(item => item.id === player.slotId)
+        if (!slot) continue
+        const card = allCards.find(item =>
+          !used.has(item.id) &&
+          item.playerName === player.playerName &&
+          item.overallRating === player.overallRating &&
+          item.nation === player.nation &&
+          (item.club ?? '') === player.club &&
+          (item.cardName ?? '') === player.cardName)
+        if (!card) continue
+        nextAssignments[`${activeSquad}:${slot.id}`] = card.id
+        used.add(card.id)
+        matched++
+      }
+      setFormationId(nextFormation)
+      setSquadAssignments(nextAssignments)
+      setNotice(`Squad imported: ${matched}/${data.players.length} player(s) matched to cards already in this browser. Missing cards were left empty; no card data was added.`)
+    } catch {
+      setNotice('Could not import this squad. Choose a valid UFLMB squad JSON export.')
+    }
+  }
+
   const adminCards = useMemo(() => allCards.filter(card =>
     [card.playerName, card.nation, card.club, card.cardName, card.id, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)])].filter(Boolean).join(' ').toLowerCase().includes(adminSearch.toLowerCase())
   ), [allCards, adminSearch])
@@ -952,7 +1046,7 @@ export default function App() {
       {allCards.some(card => card.id.startsWith('uflmb-demo-')) && <div className="demo-warning" role="status"><strong>TEST DATA LOADED</strong><span>These 22 demo cards are fictional. All OVRs, stats, perks, clubs and nations are synthetic; do not treat them as verified UFL Mobile data. Edit or delete them in Card manager before using real records.</span><a href="/UFLMB/#admin">Open Card manager ↗</a></div>}
       <section className="squad-section" aria-labelledby="squad-title">
         <div className="section-heading"><div><p className="eyebrow">TACTICAL WORKSPACE</p><h2 id="squad-title">My squad builder</h2></div><span className="count-label">Saved in this browser</span></div>
-        <div className="squad-toolbar"><div className="squad-team-switch" role="group" aria-label="Choose squad"><button className={activeSquad === 'A' ? 'button primary' : 'button secondary'} type="button" onClick={() => setActiveSquad('A')}>Demo Team A</button><button className={activeSquad === 'B' ? 'button primary' : 'button secondary'} type="button" onClick={() => setActiveSquad('B')}>Demo Team B</button></div><label>Formation <select value={formationId} onChange={e => setFormationId(e.target.value as FormationId)}><option value="4-3-3">4-3-3</option><option value="4-4-2">4-4-2</option><option value="3-5-2">3-5-2</option></select></label><div className="squad-summary"><span><strong>{squadPlayers.length}/11</strong> selected</span><span><strong>{squadRating || '—'}</strong> avg. OVR</span><span><strong>{squadPositionFits}/{squadPlayers.length || 11}</strong> position fits</span></div><button className="button secondary" type="button" onClick={() => setSquadAssignments(current => Object.fromEntries(Object.entries(current).filter(([key]) => !key.startsWith(activeSquadKey))))}>Clear this squad</button></div>
+        <div className="squad-toolbar"><div className="squad-team-switch" role="group" aria-label="Choose squad"><button className={activeSquad === 'A' ? 'button primary' : 'button secondary'} type="button" onClick={() => setActiveSquad('A')}>Demo Team A</button><button className={activeSquad === 'B' ? 'button primary' : 'button secondary'} type="button" onClick={() => setActiveSquad('B')}>Demo Team B</button></div><label>Formation <select value={formationId} onChange={e => setFormationId(e.target.value as FormationId)}><option value="4-3-3">4-3-3</option><option value="4-4-2">4-4-2</option><option value="3-5-2">3-5-2</option></select></label><div className="squad-summary"><span><strong>{squadPlayers.length}/11</strong> selected</span><span><strong>{squadRating || '—'}</strong> avg. OVR</span><span><strong>{squadPositionFits}/{squadPlayers.length || 11}</strong> position fits</span></div><button className="button secondary" type="button" onClick={autoFillSquad}>Auto-fill best XI</button><button className="button secondary" type="button" onClick={exportSquad}>Export squad</button><label className="button secondary squad-import-button">Import squad<input type="file" accept="application/json,.json" onChange={importSquad} /></label><button className="button secondary" type="button" onClick={() => setSquadAssignments(current => Object.fromEntries(Object.entries(current).filter(([key]) => !key.startsWith(activeSquadKey))))}>Clear this squad</button></div>
         {allCards.length === 0 ? <div className="squad-empty"><strong>Your tactics start with verified cards.</strong><p>No player records are available yet. Add real, source-verified cards in the card manager, then assign them here. UFLMB will never fill the squad with invented players.</p><a className="button primary" href="/UFLMB/#admin">Open card manager</a></div> : <div className={`squad-pitch formation-${formationId.replace('-', '')}`}><div className="pitch-lines" aria-hidden="true" />{squadSlots.map(slot => { const assigned = allCards.find(card => card.id === squadAssignments[`${activeSquadKey}${slot.id}`]); const occupiedElsewhere = new Set(Object.entries(squadAssignments).filter(([key]) => key.startsWith(activeSquadKey) && key !== `${activeSquadKey}${slot.id}`).map(([,id]) => id)); return <div className={`squad-slot squad-slot-${slot.id}`} key={slot.id}><span className="squad-slot-label">{slot.label}</span><select aria-label={`Choose ${slot.label} player`} value={assigned?.id ?? ''} onChange={e => setSquadAssignments(current => ({...current,[`${activeSquadKey}${slot.id}`]:e.target.value}))}><option value="">+ Add player</option>{allCards.filter(card => !occupiedElsewhere.has(card.id)).sort((a,b) => Number(b.positions.some(p => slot.positions.includes(p))) - Number(a.positions.some(p => slot.positions.includes(p))) || b.overallRating-a.overallRating || a.playerName.localeCompare(b.playerName)).map(card => <option key={card.id} value={card.id}>{card.playerName} · {card.overallRating} OVR · {card.positions.join('/')}</option>)}</select>{assigned && <div className={assigned.positions.some(p => slot.positions.includes(p)) ? 'squad-player-rating fit' : 'squad-player-rating'}><strong>{assigned.overallRating}</strong><small>{assigned.playerName}</small></div>}</div>})}</div>}
         <p className="squad-footnote">Average OVR is calculated from assigned cards only. Position fit checks the recorded positions; no chemistry or gameplay performance is fabricated.</p>
       </section>
