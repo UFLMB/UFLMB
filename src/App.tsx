@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import type { PlayerCard } from './types/card'
-import * as XLSX from 'xlsx'
 import { cards as starterCards } from './data/cards'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
@@ -412,6 +411,7 @@ export default function App() {
     if (!(source instanceof File)) source.target.value = ''
     try {
       const bytes = await file.arrayBuffer()
+      const XLSX = await import('xlsx')
       const workbook = XLSX.read(bytes, { type: 'array', cellDates: true })
       const firstSheet = workbook.SheetNames[0]
       if (!firstSheet) { setNotice('The selected spreadsheet has no worksheet.'); return }
