@@ -847,16 +847,62 @@ export default function App() {
     try {
       const parsed: unknown = JSON.parse(importText)
       if (!Array.isArray(parsed)) { setNotice('The import must be a JSON array of card records.'); return }
-      const valid = parsed.every(isValidPlayerCard)
-      if (!valid) { setNotice('Import cancelled: at least one record is invalid. No records were changed. Check IDs, OVR, positions, nation, source URL and verification date.'); return }
-      const unique = new Map<string, PlayerCard>()
-      ;[...allCards, ...(parsed as PlayerCard[])].forEach(card => unique.set(card.id, card))
-      const byFingerprint = new Map<string, PlayerCard>()
-      unique.forEach(card => byFingerprint.set(cardFingerprint(card), card))
-      const next = Array.from(byFingerprint.values())
+      if (!parsed.every(isValidPlayerCard)) {
+        setNotice('Import cancelled: at least one record is invalid. No records were changed. Check IDs, OVR, positions, nation, source URL and verification date.')
+        return
+      }
+      const incoming = parsed as PlayerCard[]
+      const incomingIds = new Set<string>()
+      for (const card of incoming) {
+        if (incomingIds.has(card.id)) {
+          setNotice(`Import cancelled: duplicate ID "${card.id}" appears more than once in the file. No records were changed.`)
+          return
+        }
+        incomingIds.add(card.id)
+      }
+
+      const existingById = new Map(allCards.map(card => [card.id, card]))
+      const incomingById = new Map(incoming.map(card => [card.id, card]))
+      const replacementCount = incoming.filter(card => existingById.has(card.id)).length
+      const existingFingerprints = new Set(allCards.map(cardFingerprint))
+      const importFingerprints = new Set<string>()
+      let duplicateCount = 0
+      const additions: PlayerCard[] = []
+      for (const card of incoming) {
+        if (existingById.has(card.id)) continue
+        const fingerprint = cardFingerprint(card)
+        if (existingFingerprints.has(fingerprint) || importFingerprints.has(fingerprint)) {
+          duplicateCount++
+          continue
+        }
+        importFingerprints.add(fingerprint)
+        additions.push(card)
+      }
+
+      const prompt = [
+        `Import contains ${incoming.length} valid record(s).`,
+        `${replacementCount} existing record(s) share an ID and would be updated.`,
+        `${additions.length} new record(s) would be added.`,
+        `${duplicateCount} likely duplicate(s) would be skipped.`,
+        '',
+        'Continue? Export a backup first if you are unsure.',
+      ].join('\\n')
+      if (!window.confirm(prompt)) {
+        setNotice('Import cancelled. No records were changed.')
+        return
+      }
+
+      const replacements = incoming.filter(card => existingById.has(card.id))
+      const next = [
+        ...replacements,
+        ...additions,
+        ...allCards.filter(card => !incomingById.has(card.id)),
+      ]
       try {
-        saveCards(next); setAllCards(next); setImportText('')
-        setNotice(`Import complete: ${next.length} unique records saved. Existing records with the same ID or card identity were merged.`)
+        saveCards(next)
+        setAllCards(next)
+        setImportText('')
+        setNotice(`Import complete: ${replacements.length} updated, ${additions.length} added, ${duplicateCount} duplicate(s) skipped. ${next.length} total records saved.`)
       } catch {
         setNotice('Import could not be saved. Browser storage may be full; export a backup and try a smaller dataset.')
       }
