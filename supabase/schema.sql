@@ -54,3 +54,7 @@ create policy "Authenticated users can delete cards" on public.cards for delete 
 -- (captcha, rate limits, verified accounts) before promoting this to a large audience.
 drop policy if exists "Public can submit reviews" on public.card_reviews;
 create policy "Public can submit reviews" on public.card_reviews for insert to anon, authenticated with check (true);
+
+grant select on public.cards to anon, authenticated;
+grant insert, update, delete on public.cards to authenticated;
+grant select, insert on public.card_reviews to anon, authenticated;
