@@ -6,6 +6,11 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 
 - Responsive dark card gallery for desktop and mobile
 - Search by player name, nation, club, card type and position
+- Search by player name, nation, club, card type, position, stats, perks, and source URL
+- Sort by OVR, name, or most recently verified
+- Reset all active search and filter criteria in one action
+- Actionable data-quality review queue with direct record editing
+- Strict JSON backup validation and duplicate detection that distinguishes card editions and clubs
 - Filters for goalkeepers, defenders, midfielders and forwards, plus exact position, nation and card type
 - Sort by highest OVR, lowest OVR, or player name
 - Card records with OVR, positions, nation, card type, club, stats, perks, image and verification source/date
