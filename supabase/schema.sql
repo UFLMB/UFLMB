@@ -15,7 +15,7 @@ create table if not exists public.cards (
   stats jsonb not null default '{}'::jsonb,
   perks text[] not null default '{}',
   image_url text,
-  source_url text not null,
+  source_url text not null check (source_url ~* '^https?://'),
   verified_at date not null,
   is_demo boolean not null default false,
   updated_at timestamptz not null default now()
@@ -33,27 +33,66 @@ create table if not exists public.card_reviews (
 create index if not exists card_reviews_card_id_idx on public.card_reviews(card_id);
 create index if not exists cards_verified_at_idx on public.cards(verified_at desc);
 
+-- Admin allowlist. Add only trusted Supabase auth user IDs here.
+create table if not exists public.admin_users (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
 alter table public.cards enable row level security;
 alter table public.card_reviews enable row level security;
+alter table public.admin_users enable row level security;
 
--- Anyone can read the public card database and reviews.
+-- RLS policies call this narrowly-scoped SECURITY DEFINER helper so the
+-- allowlist can remain inaccessible to browser clients.
+create or replace function public.is_uflmb_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.admin_users where user_id = auth.uid()
+  );
+$$;
+
+revoke all on function public.is_uflmb_admin() from public;
+grant execute on function public.is_uflmb_admin() to authenticated;
+
+-- Public read access for the card gallery and reviews.
 drop policy if exists "Public can read cards" on public.cards;
-create policy "Public can read cards" on public.cards for select using (true);
+create policy "Public can read cards" on public.cards for select to anon, authenticated using (true);
 drop policy if exists "Public can read reviews" on public.card_reviews;
-create policy "Public can read reviews" on public.card_reviews for select using (true);
+create policy "Public can read reviews" on public.card_reviews for select to anon, authenticated using (true);
 
--- Only signed-in Supabase users may maintain card records.
+-- Only explicitly allowlisted admins may create, edit, or delete card records.
 drop policy if exists "Authenticated users can add cards" on public.cards;
-create policy "Authenticated users can add cards" on public.cards for insert to authenticated with check (true);
 drop policy if exists "Authenticated users can update cards" on public.cards;
-create policy "Authenticated users can update cards" on public.cards for update to authenticated using (true) with check (true);
 drop policy if exists "Authenticated users can delete cards" on public.cards;
-create policy "Authenticated users can delete cards" on public.cards for delete to authenticated using (true);
+drop policy if exists "UFLMB admins can add cards" on public.cards;
+create policy "UFLMB admins can add cards" on public.cards
+  for insert to authenticated with check (public.is_uflmb_admin());
+drop policy if exists "UFLMB admins can update cards" on public.cards;
+create policy "UFLMB admins can update cards" on public.cards
+  for update to authenticated using (public.is_uflmb_admin()) with check (public.is_uflmb_admin());
+drop policy if exists "UFLMB admins can delete cards" on public.cards;
+create policy "UFLMB admins can delete cards" on public.cards
+  for delete to authenticated using (public.is_uflmb_admin());
 
--- Public reviews are allowed for initial community testing; apply anti-spam controls
--- (captcha, rate limits, verified accounts) before promoting this to a large audience.
+-- Do not expose or allow browser writes to the admin allowlist.
+revoke all on public.admin_users from anon, authenticated;
+
+-- Public reviews are still open for initial community testing. Apply anti-spam
+-- controls (captcha, rate limits, moderation) before promoting this widely.
 drop policy if exists "Public can submit reviews" on public.card_reviews;
-create policy "Public can submit reviews" on public.card_reviews for insert to anon, authenticated with check (true);
+create policy "Public can submit reviews" on public.card_reviews
+  for insert to anon, authenticated
+  with check (
+    length(trim(reviewer_name)) between 1 and 40
+    and rating between 1 and 5
+    and length(review_text) <= 1000
+  );
 
 grant select on public.cards to anon, authenticated;
 grant insert, update, delete on public.cards to authenticated;
