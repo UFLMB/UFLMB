@@ -5,6 +5,9 @@ import * as XLSX from 'xlsx'
 import { cards as starterCards } from './data/cards'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
+const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
+const DRIVE_API_KEY = 'uflmb.google.apiKey'
+type DriveFile = { id: string; name: string; mimeType: string; size?: string }
 const categories = ['All cards', 'Goalkeepers', 'Defenders', 'Midfielders', 'Forwards'] as const
 type Category = typeof categories[number]
 type Draft = {
@@ -50,6 +53,9 @@ export default function App() {
   const [notice, setNotice] = useState('')
   const [importText, setImportText] = useState('')
   const [adminSearch, setAdminSearch] = useState('')
+  const [googleClientId, setGoogleClientId] = useState(() => localStorage.getItem(DRIVE_CLIENT_KEY) ?? '')
+  const [googleApiKey, setGoogleApiKey] = useState(() => localStorage.getItem(DRIVE_API_KEY) ?? '')
+  const [driveBusy, setDriveBusy] = useState(false)
 
   useEffect(() => {
     try { saveCards(allCards) } catch {
@@ -151,10 +157,10 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const importExcel = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+  const importExcel = async (source: ChangeEvent<HTMLInputElement> | File) => {
+    const file = source instanceof File ? source : source.target.files?.[0]
     if (!file) return
-    event.target.value = ''
+    if (!(source instanceof File)) source.target.value = ''
     try {
       const bytes = await file.arrayBuffer()
       const workbook = XLSX.read(bytes, { type: 'array', cellDates: true })
@@ -235,6 +241,130 @@ export default function App() {
     }
   }
 
+
+  const loadGoogleScript = (src: string, id: string) => new Promise<void>((resolve, reject) => {
+    if (document.getElementById(id)) { resolve(); return }
+    const script = document.createElement('script')
+    script.id = id; script.src = src; script.async = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Google sign-in components could not be loaded.'))
+    document.head.appendChild(script)
+  })
+
+  const saveDriveSettings = () => {
+    localStorage.setItem(DRIVE_CLIENT_KEY, googleClientId.trim())
+    localStorage.setItem(DRIVE_API_KEY, googleApiKey.trim())
+    setNotice('Google Drive settings saved in this browser.')
+  }
+
+  const openDrivePicker = async () => {
+    if (!googleClientId.trim() || !googleApiKey.trim()) {
+      setNotice('Enter and save your Google OAuth Client ID and Google Picker API key first.')
+      return
+    }
+    setDriveBusy(true)
+    try {
+      await Promise.all([
+        loadGoogleScript('https://accounts.google.com/gsi/client', 'google-identity-services'),
+        loadGoogleScript('https://apis.google.com/js/api.js', 'google-api-client'),
+      ])
+      const w = window as unknown as { google?: any; gapi?: any }
+      await new Promise<void>((resolve, reject) => w.gapi.load('picker', { callback: resolve, onerror: reject }))
+      const tokenClient = w.google.accounts.oauth2.initTokenClient({
+        client_id: googleClientId.trim(),
+        scope: 'https://www.googleapis.com/auth/drive.readonly',
+        callback: async (tokenResponse: { access_token?: string; error?: string }) => {
+          if (tokenResponse.error || !tokenResponse.access_token) {
+            setNotice('Google Drive sign-in was not completed. Check the OAuth setup and try again.')
+            setDriveBusy(false)
+            return
+          }
+          try {
+            const picker = new w.gapi.picker.PickerBuilder()
+              .setDeveloperKey(googleApiKey.trim())
+              .setOAuthToken(tokenResponse.access_token)
+              .setTitle('Select UFLMB data files and card images')
+              .setSelectableMimeTypes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,application/json,image/jpeg,image/png,image/webp,image/gif')
+              .enableFeature(w.gapi.picker.Feature.MULTISELECT_ENABLED)
+              .addView(new w.gapi.picker.DocsView().setIncludeFolders(false))
+              .setCallback(async (data: { action: string; docs?: DriveFile[] }) => {
+                if (data.action !== w.gapi.picker.Action.PICKED || !data.docs?.length) {
+                  if (data.action === w.gapi.picker.Action.CANCEL) setNotice('Google Drive selection cancelled.')
+                  setDriveBusy(false)
+                  return
+                }
+                let importedFiles = 0
+                let importedImages = 0
+                let skippedFiles = 0
+                for (const doc of data.docs) {
+                  try {
+                    const response = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(doc.id)}?alt=media`, {
+                      headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+                    })
+                    if (!response.ok) throw new Error('Drive download failed')
+                    const blob = await response.blob()
+                    if (doc.mimeType.startsWith('image/')) {
+                      if (blob.size > 8 * 1024 * 1024) { skippedFiles++; continue }
+                      const dataUrl = await new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader()
+                        reader.onload = () => resolve(String(reader.result))
+                        reader.onerror = () => reject(new Error('Image could not be read'))
+                        reader.readAsDataURL(blob)
+                      })
+                      const imageName = doc.name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]/g, '')
+                      const match = allCards.find(card => card.playerName.toLowerCase().replace(/[^a-z0-9]/g, '') === imageName)
+                      if (match) {
+                        const next = allCards.map(card => card.id === match.id ? { ...card, imageUrl: dataUrl } : card)
+                        saveCards(next); setAllCards(next); importedImages++
+                      } else {
+                        setDraft(current => ({ ...current, imageUrl: dataUrl }))
+                        importedImages++
+                      }
+                      continue
+                    }
+                    const file = new File([blob], doc.name, { type: doc.mimeType })
+                    if (/\.(xlsx|xls|csv)$/i.test(doc.name) || /spreadsheet|excel|csv/.test(doc.mimeType)) {
+                      await importExcel(file)
+                      importedFiles++
+                    } else if (/\.json$/i.test(doc.name) || doc.mimeType === 'application/json') {
+                      const parsed: unknown = JSON.parse(await file.text())
+                      if (!Array.isArray(parsed)) { skippedFiles++; continue }
+                      const records = parsed.filter((card): card is PlayerCard => Boolean(card && typeof card === 'object' &&
+                        typeof (card as PlayerCard).playerName === 'string' && Number.isFinite((card as PlayerCard).overallRating) &&
+                        Array.isArray((card as PlayerCard).positions) && typeof (card as PlayerCard).nation === 'string' &&
+                        typeof (card as PlayerCard).sourceUrl === 'string' && typeof (card as PlayerCard).verifiedAt === 'string'))
+                      const existingKeys = new Set(allCards.map(card => [card.playerName, card.overallRating, card.positions.join('/'), card.nation].join('|').toLowerCase()))
+                      const additions = records.filter(card => {
+                        const key = [card.playerName, card.overallRating, card.positions.join('/'), card.nation].join('|').toLowerCase()
+                        if (existingKeys.has(key)) return false
+                        existingKeys.add(key)
+                        return true
+                      }).map(card => ({ ...card, id: makeId() }))
+                      if (additions.length) {
+                        const next = [...additions, ...allCards]
+                        saveCards(next); setAllCards(next); importedFiles += additions.length
+                      }
+                    } else skippedFiles++
+                  } catch { skippedFiles++ }
+                }
+                setNotice(`Google Drive import finished: ${importedFiles} data record(s) imported, ${importedImages} image(s) applied/selected, ${skippedFiles} file(s) skipped. Images are matched to existing cards by filename; an unmatched image is placed in the current card form.`)
+                setDriveBusy(false)
+              })
+              .build()
+            picker.setVisible(true)
+          } catch {
+            setNotice('Could not open Google Drive Picker. Check that the Google Picker API and Drive API are enabled.')
+            setDriveBusy(false)
+          }
+        },
+      })
+      tokenClient.requestAccessToken()
+    } catch {
+      setNotice('Google Drive could not be initialized. Check the client ID, API key, and enabled Google APIs.')
+      setDriveBusy(false)
+    }
+  }
+
   const importCards = () => {
     try {
       const parsed: unknown = JSON.parse(importText)
@@ -291,6 +421,14 @@ export default function App() {
           <button className="button secondary" type="button" onClick={() => startEdit(card)}>Edit</button>
           <button className="button danger" type="button" onClick={() => { if (window.confirm(`Are you sure you want to delete this record: ${card.playerName}?`)) { const next = allCards.filter(item => item.id !== card.id); setAllCards(next); setNotice('Record deleted.'); if (editingId === card.id) resetForm() } }}>Delete</button>
         </article>)}</div>}
+      </section>
+      <section className="admin-panel tools-panel">
+        <p className="eyebrow">GOOGLE DRIVE</p><h2>Import from Google Drive</h2>
+        <p className="muted-copy">Sign in with Google and select Excel, CSV, JSON files, and card images. Data files are imported into this browser. Images are matched to existing cards by filename (for example, “Player Name.jpg”); unmatched images are placed in the current card form. Nothing is uploaded to Google Drive.</p>
+        <label className="full-field">Google OAuth Client ID<input value={googleClientId} onChange={e => setGoogleClientId(e.target.value)} placeholder="xxxx.apps.googleusercontent.com" autoComplete="off" /></label>
+        <label className="full-field">Google Picker API key<input value={googleApiKey} onChange={e => setGoogleApiKey(e.target.value)} placeholder="Google API key" autoComplete="off" /></label>
+        <div className="form-actions"><button className="button secondary" type="button" onClick={saveDriveSettings}>Save Google settings</button><button className="button primary" type="button" disabled={driveBusy} onClick={openDrivePicker}>{driveBusy ? 'Connecting to Google Drive…' : 'Sign in & choose Drive files'}</button></div>
+        <span className="field-help">Setup required in Google Cloud Console: enable Google Drive API and Google Picker API, configure an OAuth web client with this site's origin (https://uflplayer2026.github.io), and restrict the API key to the Picker API. This app requests read-only Drive access.</span>
       </section>
       <section className="admin-panel tools-panel">
         <p className="eyebrow">SPREADSHEET IMPORT</p><h2>Import from Excel</h2>
