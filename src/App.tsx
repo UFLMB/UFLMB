@@ -64,6 +64,8 @@ export default function App() {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<Category>('All cards')
   const [nationFilter, setNationFilter] = useState('All nations')
+  const [positionFilter, setPositionFilter] = useState('All positions')
+  const [cardTypeFilter, setCardTypeFilter] = useState('All card types')
   const [sortBy, setSortBy] = useState<'ovr-desc' | 'ovr-asc' | 'name-asc'>('ovr-desc')
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -82,15 +84,19 @@ export default function App() {
   }, [allCards])
 
   const nations = useMemo(() => Array.from(new Set(allCards.map(card => card.nation).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [allCards])
+  const positions = useMemo(() => Array.from(new Set(allCards.flatMap(card => card.positions).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [allCards])
+  const cardTypes = useMemo(() => Array.from(new Set(allCards.map(card => card.cardName).filter((value): value is string => Boolean(value?.trim())))).sort((a, b) => a.localeCompare(b)), [allCards])
 
   const visibleCards = useMemo(() => allCards.filter(card => {
     const text = [card.playerName, card.nation, card.club, card.cardName, ...card.positions].filter(Boolean).join(' ').toLowerCase()
     return text.includes(query.toLowerCase()) &&
       (category === 'All cards' || positionGroup(card.positions) === category) &&
-      (nationFilter === 'All nations' || card.nation === nationFilter)
+      (nationFilter === 'All nations' || card.nation === nationFilter) &&
+      (positionFilter === 'All positions' || card.positions.includes(positionFilter)) &&
+      (cardTypeFilter === 'All card types' || card.cardName === cardTypeFilter)
   }).sort((a, b) => sortBy === 'ovr-desc' ? b.overallRating - a.overallRating || a.playerName.localeCompare(b.playerName) :
     sortBy === 'ovr-asc' ? a.overallRating - b.overallRating || a.playerName.localeCompare(b.playerName) :
-      a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, sortBy])
+      a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, positionFilter, cardTypeFilter, sortBy])
 
   const adminCards = useMemo(() => allCards.filter(card =>
     [card.playerName, card.nation, card.club, card.cardName, card.id].filter(Boolean).join(' ').toLowerCase().includes(adminSearch.toLowerCase())
@@ -629,8 +635,10 @@ export default function App() {
         <div className="category-row" aria-label="Card categories">{categories.map(item => <button className={category === item ? 'category active' : 'category'} key={item} onClick={() => setCategory(item)} type="button">{item}</button>)}</div>
         <div className="browse-controls" aria-label="Additional filters">
           <label>Nation <select value={nationFilter} onChange={e => setNationFilter(e.target.value)}><option>All nations</option>{nations.map(nation => <option key={nation} value={nation}>{nation}</option>)}</select></label>
+          <label>Position <select value={positionFilter} onChange={e => setPositionFilter(e.target.value)}><option>All positions</option>{positions.map(position => <option key={position} value={position}>{position}</option>)}</select></label>
+          <label>Card type <select value={cardTypeFilter} onChange={e => setCardTypeFilter(e.target.value)}><option>All card types</option>{cardTypes.map(cardType => <option key={cardType} value={cardType}>{cardType}</option>)}</select></label>
           <label>Sort by <select value={sortBy} onChange={e => setSortBy(e.target.value as 'ovr-desc' | 'ovr-asc' | 'name-asc')}><option value="ovr-desc">Highest OVR</option><option value="ovr-asc">Lowest OVR</option><option value="name-asc">Player name A–Z</option></select></label>
-          {(nationFilter !== 'All nations' || sortBy !== 'ovr-desc') && <button className="category" type="button" onClick={() => { setNationFilter('All nations'); setSortBy('ovr-desc') }}>Reset filters</button>}
+          {(nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sortBy !== 'ovr-desc') && <button className="category" type="button" onClick={() => { setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSortBy('ovr-desc') }}>Reset filters</button>}
         </div>
       </section>
       <section className="database-section" aria-labelledby="database-title">
