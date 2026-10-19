@@ -806,3 +806,10 @@ input,select,textarea{accent-color:var(--lime)}
 @media (prefers-reduced-motion: reduce) {
   .status-dot { animation: none !important; }
 }
+
+
+/* Major update: squad planning actions remain compact and mobile-friendly. */
+.squad-import-button{position:relative;overflow:hidden;cursor:pointer}
+.squad-import-button input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.squad-toolbar .button{white-space:nowrap}
+@media(max-width:650px){.squad-toolbar .button,.squad-import-button{flex:1 1 calc(50% - 8px)}.squad-import-button{display:inline-flex;align-items:center;justify-content:center}}
