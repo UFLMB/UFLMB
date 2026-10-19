@@ -77,3 +77,17 @@ body{background:var(--page-bg,#0b0d12);color:var(--text-color,#f3f5f8)}
 .branding-preview-item>img.favicon-preview{width:32px;height:32px}
 .branding-background-preview{display:flex;align-items:center;justify-content:center;flex:1;min-width:220px;min-height:105px;padding:16px;border:1px solid var(--line);border-radius:10px;background-position:center;background-size:cover;color:#fff;font-size:12px;font-weight:800;text-shadow:0 1px 4px #000}
 @media(max-width:480px){.branding-wide{grid-column:auto}.brand-logo-image{max-width:110px;max-height:38px}}
+
+
+/* Admin section navigation */
+.admin-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 24px}
+.admin-tab{display:flex;align-items:center;gap:11px;min-width:0;padding:14px 13px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02);color:var(--text-color,#f3f5f8);text-align:left;cursor:pointer;transition:border-color .15s ease,background .15s ease,transform .15s ease}
+.admin-tab:hover{border-color:rgba(197,244,103,.35);transform:translateY(-1px)}
+.admin-tab.active{border-color:rgba(197,244,103,.55);background:rgba(197,244,103,.075);box-shadow:inset 0 0 0 1px rgba(197,244,103,.08)}
+.admin-tab-icon{display:grid;place-items:center;flex-shrink:0;width:34px;height:34px;border-radius:9px;background:rgba(197,244,103,.09);color:var(--accent,#c5f467);font-size:18px}
+.admin-tab-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.admin-tab-copy strong{font-size:11px}
+.admin-tab-copy small{color:var(--muted);font-size:9px;line-height:1.4}
+.admin-tab-arrow{margin-left:auto;color:var(--accent,#c5f467);font-size:20px}
+@media(max-width:850px){.admin-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.admin-tabs{gap:7px}.admin-tab{padding:11px 9px;gap:8px}.admin-tab-icon{width:29px;height:29px}.admin-tab-copy strong{font-size:10px}.admin-tab-copy small{font-size:8px}.admin-tab-arrow{display:none}}
