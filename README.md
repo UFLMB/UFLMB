@@ -67,3 +67,13 @@ The GitHub Actions workflow in `.github/workflows/deploy.yml` builds the app and
 - `src/data/cards.ts` — initial dataset (intentionally empty)
 - `src/index.css` — responsive styling
 - `public/_redirects` — static-host SPA fallback
+
+## Second major feature package
+
+- **Card comparison:** select up to three cards from the public gallery and compare OVR, positions, nation, club, edition and every stat key shared across the selected records. Selections can be removed individually or cleared.
+- **Live rankings:** top five cards by OVR plus a leaderboard for every stat present in the actual dataset. Rankings are generated from verified records only; no demo cards or fabricated values are introduced.
+- **Collection analytics:** total records, unique player names, image coverage, stat coverage, source-link coverage and recently checked records.
+- **Filtered CSV export:** export the current search/filter result set without exporting unrelated records.
+- **Responsive comparison and analytics layouts** for desktop and mobile.
+
+These are client-side features and use the same local dataset as the existing gallery. They do **not** turn local storage into a shared online database or add server-side authentication; that requires a separate backend/authentication package.
