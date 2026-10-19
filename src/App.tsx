@@ -43,6 +43,21 @@ const downloadJson = (cards: PlayerCard[]) => {
   URL.revokeObjectURL(url)
 }
 
+const downloadCsv = (cards: PlayerCard[]) => {
+  const columns = ['Player Name', 'OVR', 'Position(s)', 'Nation', 'Card Type', 'Club', 'Image URL', 'Perks', 'Verified At', 'Source URL', 'PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY']
+  const quote = (value: unknown) => '"' + String(value ?? '').replace(/"/g, '""') + '"'
+  const rows = cards.map(card => [
+    card.playerName, card.overallRating, card.positions.join('/'), card.nation, card.cardName, card.club,
+    card.imageUrl, card.perks?.join('; '), card.verifiedAt, card.sourceUrl,
+    card.stats?.PAC, card.stats?.SHO, card.stats?.PAS, card.stats?.DRI, card.stats?.DEF, card.stats?.PHY,
+  ].map(quote).join(','))
+  const blob = new Blob(['\\uFEFF' + [columns.map(quote).join(','), ...rows].join('\\r\\n')], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = 'uflmb-cards-export.csv'; a.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function App() {
   const isAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin') || window.location.hash === '#admin'
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
@@ -98,6 +113,88 @@ export default function App() {
       image.src = String(reader.result)
     }
     reader.readAsDataURL(file)
+  }
+
+  const handleBulkImages = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+    event.target.value = ''
+    if (!files.length) return
+    const nextById = new Map(allCards.map(card => [card.id, card]))
+    let matched = 0
+    let skipped = 0
+    const normalize = (value: string) => value.toLowerCase().replace(/\\.[^.]+$/, '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9]/g, '')
+    for (const file of files) {
+      if (!file.type.startsWith('image/') || file.size > 8 * 1024 * 1024) { skipped++; continue }
+      try {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onerror = () => reject(new Error('Read failed'))
+          reader.onload = () => {
+            const image = new Image()
+            image.onerror = () => reject(new Error('Invalid image'))
+            image.onload = () => {
+              const scale = Math.min(1, 1000 / Math.max(image.width, image.height))
+              const canvas = document.createElement('canvas')
+              canvas.width = Math.max(1, Math.round(image.width * scale))
+              canvas.height = Math.max(1, Math.round(image.height * scale))
+              const context = canvas.getContext('2d')
+              if (!context) { reject(new Error('Canvas unavailable')); return }
+              context.drawImage(image, 0, 0, canvas.width, canvas.height)
+              resolve(canvas.toDataURL('image/jpeg', 0.78))
+            }
+            image.src = String(reader.result)
+          }
+          reader.readAsDataURL(file)
+        })
+        const key = normalize(file.name)
+        const match = Array.from(nextById.values()).find(card => normalize(card.playerName) === key)
+        if (!match) { skipped++; continue }
+        nextById.set(match.id, { ...match, imageUrl: dataUrl })
+        matched++
+      } catch { skipped++ }
+    }
+    if (matched) {
+      const next = Array.from(nextById.values())
+      try {
+        saveCards(next)
+        setAllCards(next)
+        setNotice(`Bulk image import complete: ${matched} image(s) matched to cards; ${skipped} file(s) skipped. Name each image after the player (for example, Player Name.jpg).`)
+      } catch {
+        setNotice('The images exceeded available browser storage. Try fewer images at a time or smaller files.')
+      }
+    } else setNotice(`No images were matched. ${skipped} file(s) were skipped. Image filenames must match player names, and each source image must be 8 MB or smaller.`)
+  }
+
+  const handleJsonFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    try {
+      const parsed: unknown = JSON.parse(await file.text())
+      if (!Array.isArray(parsed)) { setNotice('JSON backup must contain an array of card records.'); return }
+      const valid = parsed.filter((card): card is PlayerCard => Boolean(card && typeof card === 'object' &&
+        typeof (card as PlayerCard).playerName === 'string' && Number.isFinite((card as PlayerCard).overallRating) &&
+        Array.isArray((card as PlayerCard).positions) && typeof (card as PlayerCard).nation === 'string' &&
+        typeof (card as PlayerCard).sourceUrl === 'string' && /^https?:\\/\\//i.test((card as PlayerCard).sourceUrl) &&
+        typeof (card as PlayerCard).verifiedAt === 'string'))
+      const keys = new Set(allCards.map(card => [card.playerName, card.overallRating, card.positions.join('/'), card.nation].join('|').toLowerCase()))
+      const additions = valid.filter(card => {
+        const key = [card.playerName, card.overallRating, card.positions.join('/'), card.nation].join('|').toLowerCase()
+        if (keys.has(key)) return false
+        keys.add(key)
+        return true
+      }).map(card => ({ ...card, id: makeId() }))
+      if (!additions.length) { setNotice(`No new records imported. ${parsed.length - valid.length} invalid record(s); all other records may already exist.`); return }
+      const next = [...additions, ...allCards]
+      saveCards(next); setAllCards(next)
+      setNotice(`JSON file import complete: ${additions.length} new record(s) added. Existing cards were preserved; ${parsed.length - valid.length} invalid record(s) rejected.`)
+    } catch { setNotice('Could not read this JSON file. Select a valid UFLMB JSON backup.') }
+  }
+
+  const clearAllLocalData = () => {
+    if (!window.confirm('This deletes every card stored in this browser. Export a JSON backup first. Continue?')) return
+    setAllCards([])
+    setNotice('Local card collection cleared. This cannot be undone without a backup.')
   }
 
   const resetForm = () => { setDraft(emptyDraft()); setEditingId(null) }
@@ -436,9 +533,15 @@ export default function App() {
         <label className="full-field">Choose spreadsheet file<input type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" onChange={importExcel} /><span className="field-help">Only valid rows are imported. Invalid rows and duplicate player/OVR/position/nation combinations are skipped and counted.</span></label>
       </section>
       <section className="admin-panel tools-panel">
+        <p className="eyebrow">LOCAL FILE IMPORT</p><h2>Import images & backups</h2>
+        <p className="muted-copy">No Google account required. Select multiple image files to match them to existing cards by filename, or import a JSON backup. For example, “Kylian Mbappe.jpg” matches a card named “Kylian Mbappe”. Images are optimized before saving in this browser.</p>
+        <label className="full-field">Import multiple card images<input type="file" accept="image/*" multiple onChange={handleBulkImages} /><span className="field-help">Up to 8 MB per source image. Filenames must match player names; unmatched images are skipped. Local browser storage has limited capacity.</span></label>
+        <label className="full-field">Import JSON backup file<input type="file" accept=".json,application/json" onChange={handleJsonFile} /><span className="field-help">Adds valid new records without replacing existing cards. Use JSON backup for full record fields.</span></label>
+      </section>
+      <section className="admin-panel tools-panel">
         <p className="eyebrow">BACKUP & DATA TRANSFER</p><h2>Export / import</h2>
         <p className="muted-copy">Export JSON backups regularly. During import, records with matching IDs are replaced by the versions in the imported file.</p>
-        <div className="form-actions"><button className="button primary" type="button" onClick={() => downloadJson(allCards)}>Download JSON backup</button><button className="button secondary" type="button" onClick={() => setImportText('')}>Clear import field</button></div>
+        <div className="form-actions"><button className="button primary" type="button" onClick={() => downloadJson(allCards)}>Download JSON backup</button><button className="button secondary" type="button" onClick={() => downloadCsv(allCards)}>Export CSV / Excel-compatible</button><button className="button danger" type="button" onClick={clearAllLocalData}>Clear local database</button><button className="button secondary" type="button" onClick={() => setImportText('')}>Clear import field</button></div>
         <label className="full-field">Paste JSON to import<textarea rows={5} value={importText} onChange={e => setImportText(e.target.value)} placeholder="Paste the full contents of the exported JSON file…" /></label>
         <button className="button secondary" type="button" onClick={importCards}>Import JSON</button>
       </section>
