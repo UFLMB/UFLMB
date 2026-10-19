@@ -63,6 +63,8 @@ export default function App() {
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<Category>('All cards')
+  const [nationFilter, setNationFilter] = useState('All nations')
+  const [sortBy, setSortBy] = useState<'ovr-desc' | 'ovr-asc' | 'name-asc'>('ovr-desc')
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
@@ -78,10 +80,16 @@ export default function App() {
     }
   }, [allCards])
 
+  const nations = useMemo(() => Array.from(new Set(allCards.map(card => card.nation).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [allCards])
+
   const visibleCards = useMemo(() => allCards.filter(card => {
     const text = [card.playerName, card.nation, card.club, card.cardName, ...card.positions].filter(Boolean).join(' ').toLowerCase()
-    return text.includes(query.toLowerCase()) && (category === 'All cards' || positionGroup(card.positions) === category)
-  }), [allCards, query, category])
+    return text.includes(query.toLowerCase()) &&
+      (category === 'All cards' || positionGroup(card.positions) === category) &&
+      (nationFilter === 'All nations' || card.nation === nationFilter)
+  }).sort((a, b) => sortBy === 'ovr-desc' ? b.overallRating - a.overallRating || a.playerName.localeCompare(b.playerName) :
+    sortBy === 'ovr-asc' ? a.overallRating - b.overallRating || a.playerName.localeCompare(b.playerName) :
+      a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, sortBy])
 
   const adminCards = useMemo(() => allCards.filter(card =>
     [card.playerName, card.nation, card.club, card.cardName, card.id].filter(Boolean).join(' ').toLowerCase().includes(adminSearch.toLowerCase())
@@ -561,6 +569,11 @@ export default function App() {
         <p className="hero-copy">A searchable home for UFL Mobile player cards. Browse verified records, check card details, and help build a reliable community reference.</p>
         <div className="search-wrap"><span className="search-icon" aria-hidden="true">⌕</span><input aria-label="Search the card database" type="search" placeholder="Search players, nations, positions…" value={query} onChange={e => setQuery(e.target.value)} /><kbd>{visibleCards.length} FOUND</kbd></div>
         <div className="category-row" aria-label="Card categories">{categories.map(item => <button className={category === item ? 'category active' : 'category'} key={item} onClick={() => setCategory(item)} type="button">{item}</button>)}</div>
+        <div className="browse-controls" aria-label="Additional filters">
+          <label>Nation <select value={nationFilter} onChange={e => setNationFilter(e.target.value)}><option>All nations</option>{nations.map(nation => <option key={nation} value={nation}>{nation}</option>)}</select></label>
+          <label>Sort by <select value={sortBy} onChange={e => setSortBy(e.target.value as 'ovr-desc' | 'ovr-asc' | 'name-asc')}><option value="ovr-desc">Highest OVR</option><option value="ovr-asc">Lowest OVR</option><option value="name-asc">Player name A–Z</option></select></label>
+          {(nationFilter !== 'All nations' || sortBy !== 'ovr-desc') && <button className="category" type="button" onClick={() => { setNationFilter('All nations'); setSortBy('ovr-desc') }}>Reset filters</button>}
+        </div>
       </section>
       <section className="database-section" aria-labelledby="database-title">
         <div className="section-heading"><div><p className="eyebrow">THE COLLECTION</p><h2 id="database-title">Card database</h2></div><span className="count-label">{allCards.length} cards · local dataset</span></div>
