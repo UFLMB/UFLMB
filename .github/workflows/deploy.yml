@@ -28,8 +28,8 @@ jobs:
         run: npm install
       - name: Build production site
         env:
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: https://ujuptqzlpubcdelrjmja.supabase.co
+          VITE_SUPABASE_ANON_KEY: sb_publishable_mI4mGppqhAbG3T2H3b7z3Q_PK09LaD_
         run: npm run build
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
