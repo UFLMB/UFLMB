@@ -20,3 +20,8 @@ jobs:
           node-version: 22
       - name: Audit production source dataset
         run: node scripts/check-card-data.mjs
+      - name: Audit shared source freshness and link reachability
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+        run: node scripts/audit-shared-sources.mjs
