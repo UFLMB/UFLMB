@@ -101,3 +101,20 @@ body{background:var(--page-bg,#0b0d12);color:var(--text-color,#f3f5f8)}
 .quality-review .record-info small{color:#ffc35a}
 .quality-review .record-row .button{flex-shrink:0}
 @media(max-width:600px){.quality-review .record-row .button{width:100%}.quality-review .record-row{align-items:flex-start}}
+
+
+/* Accessibility and interaction polish */
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline:2px solid var(--accent,#c5f467);
+  outline-offset:3px;
+}
+:where(button,a,input,select,textarea){-webkit-tap-highlight-color:transparent}
+:where(h1,h2,h3,[id]){scroll-margin-top:24px}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    scroll-behavior:auto!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+}
