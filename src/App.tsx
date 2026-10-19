@@ -8,12 +8,34 @@ const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
 const DRIVE_API_KEY = 'uflmb.google.apiKey'
 const THEME_KEY = 'uflmb.site-theme.v1'
 const BRANDING_KEY = 'uflmb.site-branding.v1'
-type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrl: string }
-const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrl: '' }
+type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[] }
+const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrls: [] }
+const parseBackgroundUrls = (value: string) => Array.from(new Set(
+  value.split(/[\\n,]+/).map(url => url.trim()).filter(url => {
+    try {
+      const parsed = new URL(url)
+      return (parsed.protocol === 'https:' || parsed.protocol === 'http:') && Boolean(parsed.hostname)
+    } catch { return false }
+  }),
+))
 const loadBranding = (): SiteBranding => {
   try {
-    const value = JSON.parse(localStorage.getItem(BRANDING_KEY) || 'null')
-    if (value && typeof value === 'object') return { ...defaultBranding, ...value }
+    const value: unknown = JSON.parse(localStorage.getItem(BRANDING_KEY) || 'null')
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const saved = value as Record<string, unknown>
+      // Migrate the previous single-image setting without losing users' saved background.
+      const legacy = typeof saved.backgroundImageUrl === 'string' ? saved.backgroundImageUrl : ''
+      const savedImages = Array.isArray(saved.backgroundImageUrls)
+        ? saved.backgroundImageUrls.filter((url): url is string => typeof url === 'string').join('\\n')
+        : legacy
+      return {
+        ...defaultBranding,
+        iconText: typeof saved.iconText === 'string' ? saved.iconText : defaultBranding.iconText,
+        logoUrl: typeof saved.logoUrl === 'string' ? saved.logoUrl : '',
+        faviconUrl: typeof saved.faviconUrl === 'string' ? saved.faviconUrl : '',
+        backgroundImageUrls: parseBackgroundUrls(savedImages),
+      }
+    }
   } catch { /* use defaults */ }
   return defaultBranding
 }
@@ -117,6 +139,7 @@ export default function App() {
   const [driveBusy, setDriveBusy] = useState(false)
   const [siteTheme] = useState<SiteTheme>(loadTheme)
   const [siteBranding, setSiteBranding] = useState<SiteBranding>(loadBranding)
+  const [backgroundIndex, setBackgroundIndex] = useState(0)
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance'>('cards')
@@ -133,13 +156,31 @@ export default function App() {
   }, [siteTheme])
 
   useEffect(() => {
-    const image = siteBranding.backgroundImageUrl.trim()
+    const images = siteBranding.backgroundImageUrls
+    const image = images.length ? images[backgroundIndex % images.length] : ''
+    // The gradient is always above the image, preserving legible text regardless of the photo.
     document.body.style.backgroundImage = image
-      ? `linear-gradient(rgba(5,8,14,.58), rgba(5,8,14,.72)), url("${image.replace(/["\\\\]/g, '')}")`
+      ? `linear-gradient(rgba(5,8,14,.74), rgba(5,8,14,.82)), url("${image.replace(/["\\\\]/g, '')}")`
       : ''
+    document.body.style.backgroundColor = '#0b0d12'
     document.body.style.backgroundSize = image ? 'cover' : ''
     document.body.style.backgroundPosition = image ? 'center center' : ''
     document.body.style.backgroundAttachment = image ? 'fixed' : ''
+  }, [siteBranding.backgroundImageUrls, backgroundIndex])
+
+  useEffect(() => {
+    const images = siteBranding.backgroundImageUrls
+    if (images.length <= 1) {
+      setBackgroundIndex(0)
+      return
+    }
+    const interval = window.setInterval(() => {
+      setBackgroundIndex(current => (current + 1) % images.length)
+    }, 30_000)
+    return () => window.clearInterval(interval)
+  }, [siteBranding.backgroundImageUrls])
+
+  useEffect(() => {
     try { localStorage.setItem(BRANDING_KEY, JSON.stringify(siteBranding)) } catch { /* applies for this session */ }
     let favicon = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
     if (!favicon) {
@@ -674,12 +715,12 @@ export default function App() {
             <label>Brand icon / symbol<input maxLength={5} value={siteBranding.iconText} onChange={e => setSiteBranding(current => ({ ...current, iconText: e.target.value.slice(0, 5) }))} placeholder="U, ⚽, ★" /><small>Text, initials or emoji shown in the square brand mark</small></label>
             <label>Logo image URL<input type="url" value={siteBranding.logoUrl} onChange={e => setSiteBranding(current => ({ ...current, logoUrl: e.target.value }))} placeholder="https://example.com/logo.png" /><small>Direct URL to a PNG, SVG, WebP or JPG logo</small></label>
             <label>Browser tab icon (favicon) URL<input type="url" value={siteBranding.faviconUrl} onChange={e => setSiteBranding(current => ({ ...current, faviconUrl: e.target.value }))} placeholder="https://example.com/icon.png" /><small>Small icon shown on the browser tab</small></label>
-            <label className="branding-wide">Background image URL<input type="url" value={siteBranding.backgroundImageUrl} onChange={e => setSiteBranding(current => ({ ...current, backgroundImageUrl: e.target.value }))} placeholder="https://example.com/background.jpg" /><small>Use a direct image-file URL. A dark overlay keeps text readable.</small></label>
+            <label className="branding-wide">Background image URLs (one per line)<textarea rows={5} value={siteBranding.backgroundImageUrls.join('\\n')} onChange={e => { const backgroundImageUrls = parseBackgroundUrls(e.target.value); setSiteBranding(current => ({ ...current, backgroundImageUrls })); setBackgroundIndex(0) }} placeholder={`https://example.com/arena-1.jpg\\nhttps://example.com/arena-2.jpg\\nhttps://example.com/arena-3.jpg`} /><small>Add multiple direct image URLs, one per line (or separated by commas). Valid HTTP/HTTPS links are saved; duplicates and invalid links are ignored. Backgrounds rotate automatically every 30 seconds. A strong dark gradient overlay is applied to every background to keep text readable.</small></label>
           </div>
           <div className="branding-preview">
             <div className="branding-preview-item"><strong>Brand mark / logo</strong>{siteBranding.logoUrl.trim() ? <img src={siteBranding.logoUrl.trim()} alt="Logo preview" onError={e => { e.currentTarget.style.display = 'none' }} /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}</div>
             {siteBranding.faviconUrl.trim() && <div className="branding-preview-item"><strong>Browser icon</strong><img className="favicon-preview" src={siteBranding.faviconUrl.trim()} alt="Favicon preview" /></div>}
-            {siteBranding.backgroundImageUrl.trim() && <div className="branding-background-preview" style={{ backgroundImage: `linear-gradient(rgba(5,8,14,.45), rgba(5,8,14,.6)), url("${siteBranding.backgroundImageUrl.replace(/["\\\\]/g, '')}")` }}><span>Background preview</span></div>}
+            {siteBranding.backgroundImageUrls.length > 0 && <div className="branding-background-preview" style={{ backgroundImage: `linear-gradient(rgba(5,8,14,.74), rgba(5,8,14,.82)), url("${siteBranding.backgroundImageUrls[backgroundIndex % siteBranding.backgroundImageUrls.length].replace(/["\\\\]/g, '')}")` }}><span>Background preview · {backgroundIndex % siteBranding.backgroundImageUrls.length + 1}/{siteBranding.backgroundImageUrls.length} · rotates every 30 seconds</span></div>}
           </div>
           <div className="form-actions"><button className="button secondary" type="button" onClick={() => setSiteBranding(defaultBranding)}>Reset branding</button></div>
         </section>
