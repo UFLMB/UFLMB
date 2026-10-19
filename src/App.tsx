@@ -49,7 +49,7 @@ const isValidPlayerCard = (value: unknown): value is PlayerCard => {
   if (!Number.isInteger(card.overallRating) || (card.overallRating ?? 0) < 1 || (card.overallRating ?? 0) > 999) return false
   if (!Array.isArray(card.positions) || !card.positions.length || card.positions.some(position => typeof position !== 'string' || !position.trim())) return false
   if (typeof card.nation !== 'string' || !card.nation.trim() || typeof card.sourceUrl !== 'string' || !isHttpUrl(card.sourceUrl)) return false
-  if (typeof card.verifiedAt !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(card.verifiedAt) || Number.isNaN(new Date(card.verifiedAt + 'T00:00:00').getTime())) return false
+  if (typeof card.verifiedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(card.verifiedAt) || Number.isNaN(new Date(card.verifiedAt + 'T00:00:00').getTime())) return false
   if (card.cardName !== undefined && typeof card.cardName !== 'string') return false
   if (card.club !== undefined && typeof card.club !== 'string') return false
   if (card.imageUrl !== undefined && typeof card.imageUrl !== 'string') return false
@@ -57,7 +57,7 @@ const isValidPlayerCard = (value: unknown): value is PlayerCard => {
   if (card.stats !== undefined && (!card.stats || typeof card.stats !== 'object' || Array.isArray(card.stats) || Object.values(card.stats).some(stat => typeof stat !== 'number' || !Number.isFinite(stat)))) return false
   return true
 }
-const normalizeIdentityPart = (value: unknown) => String(value ?? '').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
+const normalizeIdentityPart = (value: unknown) => String(value ?? '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 const cardFingerprint = (card: Pick<PlayerCard, 'playerName' | 'overallRating' | 'positions' | 'nation' | 'cardName' | 'club'>) =>
   [normalizeIdentityPart(card.playerName), card.overallRating, [...card.positions].map(normalizeIdentityPart).sort().join('/'), normalizeIdentityPart(card.nation), normalizeIdentityPart(card.cardName), normalizeIdentityPart(card.club)].join('|')
 const loadCards = (): PlayerCard[] => {
@@ -221,7 +221,7 @@ export default function App() {
     if (!card.club?.trim()) issues.push('Missing club')
     if (!card.cardName?.trim()) issues.push('Missing card type')
     if (!isHttpUrl(card.sourceUrl || '')) issues.push('Invalid source')
-    const verified = /^\\d{4}-\\d{2}-\\d{2}$/.test(card.verifiedAt || '') ? new Date(card.verifiedAt + 'T00:00:00') : null
+    const verified = /^\d{4}-\d{2}-\d{2}$/.test(card.verifiedAt || '') ? new Date(card.verifiedAt + 'T00:00:00') : null
     if (!verified || Number.isNaN(verified.getTime()) || (Date.now() - verified.getTime()) > 90 * 86400000) issues.push('Source review due')
     return { card, issues }
   }).filter(item => item.issues.length > 0).sort((a, b) => b.issues.length - a.issues.length || a.card.playerName.localeCompare(b.card.playerName)).slice(0, 50), [allCards])
@@ -278,7 +278,7 @@ export default function App() {
     const nextById = new Map(allCards.map(card => [card.id, card]))
     let matched = 0
     let skipped = 0
-    const normalize = (value: string) => value.toLowerCase().replace(/\\.[^.]+$/, '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9]/g, '')
+    const normalize = (value: string) => value.toLowerCase().replace(/\\.[^.]+$/, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '')
     for (const file of files) {
       if (!file.type.startsWith('image/') || file.size > 8 * 1024 * 1024) { skipped++; continue }
       try {
