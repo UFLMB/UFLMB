@@ -128,6 +128,11 @@ export default function App() {
   const [positionFilter, setPositionFilter] = useState('All positions')
   const [cardTypeFilter, setCardTypeFilter] = useState('All card types')
   const [sortBy, setSortBy] = useState<'ovr-desc' | 'ovr-asc' | 'name-asc' | 'verified-desc'>('ovr-desc')
+  const [minOvr, setMinOvr] = useState('')
+  const [maxOvr, setMaxOvr] = useState('')
+  const [showBookmarked, setShowBookmarked] = useState(false)
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() => { try { const saved = JSON.parse(localStorage.getItem('uflmb.bookmarks.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string') : [] } catch { return [] } })
+  const [selectedCard, setSelectedCard] = useState<PlayerCard | null>(null)
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
@@ -144,6 +149,10 @@ export default function App() {
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance'>('cards')
+
+  useEffect(() => {
+    try { localStorage.setItem('uflmb.bookmarks.v1', JSON.stringify(bookmarkedIds)) } catch { /* session-only fallback */ }
+  }, [bookmarkedIds])
 
   useEffect(() => {
     const root = document.documentElement
@@ -210,11 +219,14 @@ export default function App() {
       (category === 'All cards' || positionGroup(card.positions) === category) &&
       (nationFilter === 'All nations' || card.nation === nationFilter) &&
       (positionFilter === 'All positions' || card.positions.includes(positionFilter)) &&
-      (cardTypeFilter === 'All card types' || card.cardName === cardTypeFilter)
+      (cardTypeFilter === 'All card types' || card.cardName === cardTypeFilter) &&
+      (minOvr === '' || card.overallRating >= Number(minOvr)) &&
+      (maxOvr === '' || card.overallRating <= Number(maxOvr)) &&
+      (!showBookmarked || bookmarkedIds.includes(card.id))
   }).sort((a, b) => sortBy === 'ovr-desc' ? b.overallRating - a.overallRating || a.playerName.localeCompare(b.playerName) :
     sortBy === 'ovr-asc' ? a.overallRating - b.overallRating || a.playerName.localeCompare(b.playerName) :
       sortBy === 'verified-desc' ? (b.verifiedAt || '').localeCompare(a.verifiedAt || '') || a.playerName.localeCompare(b.playerName) :
-        a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, positionFilter, cardTypeFilter, sortBy])
+        a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, positionFilter, cardTypeFilter, sortBy, minOvr, maxOvr, showBookmarked, bookmarkedIds])
 
   const comparedCards = useMemo(() => compareIds.map(id => allCards.find(card => card.id === id)).filter((card): card is PlayerCard => Boolean(card)), [allCards, compareIds])
   const statLeaders = useMemo(() => {
@@ -223,6 +235,8 @@ export default function App() {
       .sort((a, b) => a.localeCompare(b))
     return statKeys.map(key => ({ key, cards: allCards.filter(card => typeof card.stats?.[key] === 'number').sort((a, b) => (b.stats?.[key] ?? -Infinity) - (a.stats?.[key] ?? -Infinity)).slice(0, 5) })).filter(item => item.cards.length)
   }, [allCards])
+
+  const toggleBookmark = (id: string) => setBookmarkedIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id])
 
   const toggleCompare = (id: string) => setCompareIds(current => {
     if (current.includes(id)) return current.filter(value => value !== id)
@@ -840,7 +854,10 @@ export default function App() {
           <label>Position <select value={positionFilter} onChange={e => setPositionFilter(e.target.value)}><option>All positions</option>{positions.map(position => <option key={position} value={position}>{position}</option>)}</select></label>
           <label>Card type <select value={cardTypeFilter} onChange={e => setCardTypeFilter(e.target.value)}><option>All card types</option>{cardTypes.map(cardType => <option key={cardType} value={cardType}>{cardType}</option>)}</select></label>
           <label>Sort by <select value={sortBy} onChange={e => setSortBy(e.target.value as 'ovr-desc' | 'ovr-asc' | 'name-asc' | 'verified-desc')}><option value="ovr-desc">Highest OVR</option><option value="ovr-asc">Lowest OVR</option><option value="name-asc">Player name A–Z</option><option value="verified-desc">Recently verified</option></select></label>
-          {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sortBy !== 'ovr-desc') && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSortBy('ovr-desc') }}>Reset all filters</button>}
+          <label className="ovr-range">Min OVR <input aria-label="Minimum overall rating" type="number" min="1" max="999" value={minOvr} onChange={e => setMinOvr(e.target.value)} placeholder="Any" /></label>
+          <label className="ovr-range">Max OVR <input aria-label="Maximum overall rating" type="number" min="1" max="999" value={maxOvr} onChange={e => setMaxOvr(e.target.value)} placeholder="Any" /></label>
+          <button className={showBookmarked ? 'category active' : 'category'} type="button" aria-pressed={showBookmarked} onClick={() => setShowBookmarked(value => !value)}>★ Saved cards ({bookmarkedIds.length})</button>
+          {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sortBy !== 'ovr-desc' || minOvr !== '' || maxOvr !== '' || showBookmarked) && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setShowBookmarked(false) }}>Reset all filters</button>}
         </div>
       </section>
       <section className="analytics-section" aria-labelledby="analytics-title">
@@ -855,14 +872,15 @@ export default function App() {
         <div className="section-heading"><div><p className="eyebrow">THE COLLECTION</p><h2 id="database-title">Card database</h2></div><div className="collection-actions"><span className="count-label">{visibleCards.length} shown / {allCards.length} total</span><button className="button secondary" type="button" onClick={exportVisibleCsv}>Export filtered CSV</button></div></div>
         {visibleCards.length === 0 ? <div className="empty-state"><div className="empty-emblem" aria-hidden="true">U<span>+</span></div><h3>{query.trim() ? 'No matching cards found' : 'The database starts here'}</h3><p>{query.trim() ? `No verified card matches “${query.trim()}”. Try another search or category.` : 'No card records have been entered yet. Open the admin area to add verified cards, images, stats and sources.'}</p><a className="button primary" href="/UFLMB/#admin">Open card manager</a><span className="empty-tag">VERIFIED DATA ONLY</span></div> :
           <div className="card-grid">{visibleCards.map(card => <article className="player-card" key={card.id}>
-            <div className="player-image">{card.imageUrl ? <img src={card.imageUrl} alt={`${card.playerName} card`} loading="lazy" /> : <div className="no-image">UFL<span>MB</span></div>}<span className="ovr-badge">{card.overallRating}</span><span className="position-badge">{card.positions.join(' / ')}</span><label className={compareIds.includes(card.id) ? 'compare-toggle selected' : 'compare-toggle'}><input type="checkbox" checked={compareIds.includes(card.id)} onChange={() => toggleCompare(card.id)} aria-label={`Compare ${card.playerName}`} /> Compare</label></div>
-            <div className="player-card-body"><h3>{card.playerName}</h3><p>{card.nation}{card.club ? ` · ${card.club}` : ''}</p>{card.cardName && <span className="card-type">{card.cardName}</span>}{card.stats && <div className="stats-grid">{Object.entries(card.stats).slice(0, 6).map(([key, value]) => <span key={key}><b>{value}</b><small>{key}</small></span>)}</div>}{card.perks?.length ? <div className="perk-row">{card.perks.map(perk => <span key={perk}>{perk}</span>)}</div> : null}<a className="source-link" href={card.sourceUrl} target="_blank" rel="noreferrer">Verified source ↗</a><small className="verified-date">Checked {card.verifiedAt}</small></div>
+            <div className="player-image">{card.imageUrl ? <img src={card.imageUrl} alt={`${card.playerName} card`} loading="lazy" /> : <div className="no-image">UFL<span>MB</span></div>}<span className="ovr-badge">{card.overallRating}</span><span className="position-badge">{card.positions.join(' / ')}</span><button className={bookmarkedIds.includes(card.id) ? 'bookmark-toggle saved' : 'bookmark-toggle'} type="button" aria-label={bookmarkedIds.includes(card.id) ? `Remove ${card.playerName} from saved cards` : `Save ${card.playerName}`} aria-pressed={bookmarkedIds.includes(card.id)} onClick={() => toggleBookmark(card.id)}>{bookmarkedIds.includes(card.id) ? '★' : '☆'}</button><label className={compareIds.includes(card.id) ? 'compare-toggle selected' : 'compare-toggle'}><input type="checkbox" checked={compareIds.includes(card.id)} onChange={() => toggleCompare(card.id)} aria-label={`Compare ${card.playerName}`} /> Compare</label></div>
+            <div className="player-card-body"><h3>{card.playerName}</h3><p>{card.nation}{card.club ? ` · ${card.club}` : ''}</p>{card.cardName && <span className="card-type">{card.cardName}</span>}{card.stats && <div className="stats-grid">{Object.entries(card.stats).slice(0, 6).map(([key, value]) => <span key={key}><b>{value}</b><small>{key}</small></span>)}</div>}{card.perks?.length ? <div className="perk-row">{card.perks.map(perk => <span key={perk}>{perk}</span>)}</div> : null}<div className="card-actions"><button className="button secondary" type="button" onClick={() => setSelectedCard(card)}>Full player profile ↗</button><a className="source-link" href={card.sourceUrl} target="_blank" rel="noreferrer">Verified source ↗</a></div><small className="verified-date">Checked {card.verifiedAt}</small></div>
           </article>)}</div>}
       </section>
       {compareIds.length > 0 && <section className="compare-section" aria-labelledby="compare-title"><div className="section-heading"><div><p className="eyebrow">SIDE-BY-SIDE ANALYSIS</p><h2 id="compare-title">Compare cards ({compareIds.length}/3)</h2></div><div className="form-actions"><button className="button secondary" type="button" onClick={() => setShowCompare(value => !value)}>{showCompare ? 'Hide comparison' : 'Show comparison'}</button><button className="button secondary" type="button" onClick={() => { setCompareIds([]); setShowCompare(false) }}>Clear selection</button></div></div>
         <div className="compare-chips">{comparedCards.map(card => <span className="compare-chip" key={card.id}>{card.playerName} · {card.overallRating}<button type="button" onClick={() => toggleCompare(card.id)} aria-label={`Remove ${card.playerName} from comparison`}>×</button></span>)}</div>
         {showCompare && <div className="comparison-table-wrap"><table className="comparison-table"><thead><tr><th>Attribute</th>{comparedCards.map(card => <th key={card.id}>{card.playerName}</th>)}</tr></thead><tbody>{[['OVR','overallRating'],['Position','positions'],['Nation','nation'],['Club','club'],['Card type','cardName'],...Array.from(new Set(comparedCards.flatMap(card => Object.keys(card.stats ?? {}))).values()).sort().map(key => [key, `stat:${key}`])].map(([label,key]) => <tr key={key}><th>{label}</th>{comparedCards.map(card => { const value = key === 'overallRating' ? card.overallRating : key === 'positions' ? card.positions.join(' / ') : key.startsWith('stat:') ? card.stats?.[key.slice(5)] ?? '—' : card[key as 'nation' | 'club' | 'cardName'] ?? '—'; return <td key={card.id}>{value}</td> })}</tr>)}</tbody></table></div>}
       </section>}
+      {selectedCard && <div className="profile-backdrop" role="presentation" onClick={() => setSelectedCard(null)}><section className="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title" onClick={event => event.stopPropagation()}><button className="profile-close" type="button" onClick={() => setSelectedCard(null)} aria-label="Close player profile">×</button><div className="profile-heading">{selectedCard.imageUrl ? <img src={selectedCard.imageUrl} alt={`${selectedCard.playerName} card`} /> : <div className="profile-placeholder">UFL<span>MB</span></div>}<div><p className="eyebrow">PLAYER PROFILE</p><h2 id="profile-title">{selectedCard.playerName}</h2><p className="muted-copy">{selectedCard.nation}{selectedCard.club ? ` · ${selectedCard.club}` : ''}</p><div className="profile-meta"><strong>OVR {selectedCard.overallRating}</strong><span>{selectedCard.positions.join(' / ')}</span>{selectedCard.cardName && <span>{selectedCard.cardName}</span>}</div></div></div><div className="profile-section"><h3>Attributes</h3>{selectedCard.stats && Object.keys(selectedCard.stats).length ? <div className="profile-stats">{Object.entries(selectedCard.stats).sort(([a],[b]) => a.localeCompare(b)).map(([key,value]) => <div key={key}><span>{key}</span><strong>{value}</strong><i><b style={{width:`${Math.max(0,Math.min(100,Number(value)))}%`}} /></i></div>)}</div> : <p className="muted-copy">No verified attribute data has been entered for this card yet.</p>}</div>{selectedCard.perks?.length ? <div className="profile-section"><h3>Perks</h3><div className="perk-row">{selectedCard.perks.map(perk => <span key={perk}>{perk}</span>)}</div></div> : null}<div className="profile-footer"><span className="verified-date">Verified {selectedCard.verifiedAt}</span><a className="button primary" href={selectedCard.sourceUrl} target="_blank" rel="noreferrer">Open verified source ↗</a><button className="button secondary" type="button" onClick={() => toggleBookmark(selectedCard.id)}>{bookmarkedIds.includes(selectedCard.id) ? '★ Saved' : '☆ Save card'}</button></div></section></div>}
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><span className="footer-muted">Independent community project; not affiliated with or endorsed by the game’s publisher.</span><a href="/UFLMB/#admin">Card manager</a></footer>
     </main>
   )
