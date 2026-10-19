@@ -85,7 +85,10 @@ create policy "UFLMB admins can delete cards" on public.cards
   for delete to authenticated using (private.is_uflmb_admin());
 
 -- Do not expose or allow browser writes to the admin allowlist.
-revoke all on public.admin_users from anon, authenticated;\n\n-- Remove the helper from public if this schema is reapplied over an older setup.\ndrop function if exists public.is_uflmb_admin();
+revoke all on public.admin_users from anon, authenticated;
+
+-- Remove the helper from public if this schema is reapplied over an older setup.
+drop function if exists public.is_uflmb_admin();
 
 -- Public reviews are still open for initial community testing. Apply anti-spam
 -- controls (captcha, rate limits, moderation) before promoting this widely.
