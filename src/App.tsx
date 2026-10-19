@@ -160,8 +160,9 @@ export default function App() {
     const images = siteBranding.backgroundImageUrls
     const image = images.length ? images[backgroundIndex % images.length] : ''
     // The gradient is always above the image, preserving legible text regardless of the photo.
+    document.body.classList.toggle('has-background-images', Boolean(image))
     document.body.style.backgroundImage = image
-      ? `linear-gradient(rgba(5,8,14,.74), rgba(5,8,14,.82)), url("${image.replace(/["\\\\]/g, '')}")`
+      ? `url("${image.replace(/["\\\\]/g, '')}")`
       : ''
     document.body.style.backgroundColor = '#0b0d12'
     document.body.style.backgroundSize = image ? 'cover' : ''
