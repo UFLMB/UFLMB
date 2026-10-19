@@ -432,3 +432,80 @@ body.has-background-images .app-shell{
 }
 @keyframes nav-drop-in{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.site-nav a,.menu-toggle-icon i{transition:none}.site-nav.site-nav-open{animation:none}}
+
+
+/* Final responsive QA pass: prevent narrow-screen overflow and keep controls comfortable. */
+html{scroll-behavior:smooth}
+img,svg,video,canvas{max-width:100%}
+.app-shell,.app-shell *{min-width:0}
+.app-shell{overflow-wrap:anywhere}
+.topbar .brand{min-width:max-content}
+.hero h1{overflow-wrap:normal}
+.search-wrap{min-width:0}
+.search-wrap input{width:100%}
+.category-row,.browse-controls,.collection-actions,.squad-team-switch{min-width:0}
+.browse-controls select{width:auto;min-width:0}
+.card-grid>*{min-width:0}
+.player-card-body h3,.player-card-body p,.card-type,.source-link{overflow-wrap:anywhere}
+.admin-panel,.analytics-panel,.theme-live-preview,.branding-editor,.quality-review,.comparison-table-wrap{min-width:0}
+.card-form input,.card-form select,.card-form textarea,.tools-panel input,.tools-panel select,.tools-panel textarea,.admin-search{max-width:100%;min-width:0}
+.record-row>*{min-width:0}
+.comparison-table-wrap{max-width:100%;overscroll-behavior-x:contain}
+button,.button{touch-action:manipulation}
+@media(min-width:761px) and (max-width:1000px){
+  .app-shell{width:calc(100% - 40px)}
+  .topbar{gap:10px}
+  .site-nav{justify-content:flex-end}
+  .site-nav a{padding:9px 6px;font-size:10px}
+  .site-nav a span{display:none}
+  .topbar .brand-word{font-size:17px}
+  .top-actions{gap:6px}
+  .status-pill{font-size:10px;padding:7px 8px}
+}
+@media(max-width:760px){
+  .app-shell{width:calc(100% - 32px)}
+  .topbar{gap:8px}
+  .topbar .brand{gap:8px}
+  .topbar .brand-mark{width:33px;height:33px}
+  .topbar .brand-word{font-size:18px}
+  .top-actions{gap:8px}
+  .menu-toggle{min-height:44px}
+  .hero{padding:58px 0 46px}
+  h1{font-size:clamp(38px,9vw,58px);letter-spacing:-2px}
+  .hero-copy{font-size:13px;line-height:1.75}
+  .search-wrap{gap:8px;padding:6px 7px 6px 11px}
+  .search-wrap input{font-size:12px}
+  .search-wrap kbd{font-size:8px;letter-spacing:.4px;padding:8px 7px}
+  .section-heading{gap:10px}
+  .section-heading h2,h2{font-size:clamp(21px,5vw,25px)}
+  .browse-controls{justify-content:stretch}
+  .browse-controls label{flex:1 1 140px;justify-content:space-between}
+  .browse-controls select{max-width:100%;flex:1}
+  .squad-toolbar select{max-width:100%}
+  .profile-backdrop{overscroll-behavior:contain}
+}
+@media(max-width:420px){
+  .app-shell{width:calc(100% - 24px)}
+  .topbar{min-height:66px}
+  .topbar .brand-word{font-size:16px}
+  .topbar .brand-mark{width:30px;height:30px;font-size:17px}
+  .menu-toggle{padding:0 10px;font-size:10px}
+  .hero{padding:48px 0 38px}
+  .hero .eyebrow{font-size:9px;letter-spacing:1.5px}
+  h1{font-size:clamp(34px,9.5vw,42px);letter-spacing:-1.8px}
+  .hero-copy{margin:17px auto 22px}
+  .search-icon{font-size:23px}
+  .search-wrap kbd{font-size:7px;padding:7px 5px}
+  .category-row{gap:6px}
+  .category{padding:8px 10px;font-size:10px}
+  .card-grid{gap:9px}
+  .player-image{height:132px}
+  .player-card-body{padding:10px}
+  .player-card-body h3{font-size:13px}
+  .player-card-body>p{font-size:10px}
+  .snapshot-grid{gap:7px}
+  .snapshot-grid>div{padding:10px}
+  .snapshot-grid strong{font-size:19px}
+  .admin-panel{padding:13px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
