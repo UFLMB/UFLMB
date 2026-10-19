@@ -6,12 +6,18 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 
 - Responsive dark card gallery for desktop and mobile
 - Search by player name, nation, club, card type and position
-- Filters for goalkeepers, defenders, midfielders and forwards
+- Filters for goalkeepers, defenders, midfielders and forwards, plus exact position, nation and card type
+- Sort by highest OVR, lowest OVR, or player name
 - Card records with OVR, positions, nation, card type, club, stats, perks, image and verification source/date
 - Separate manual content manager at `/admin`
 - Add, edit and delete card records
 - Upload an image (client-side resize/compression) or use an image URL
 - JSON export/import for backups and moving records between browsers
+- CSV export compatible with spreadsheet apps
+- Bulk image import by player-name filename matching, with client-side optimization
+- Data-quality dashboard for missing fields, old verification dates, invalid sources and possible duplicates
+- Select and delete multiple records in the admin manager
+- Local spreadsheet and JSON imports work without Google sign-in
 - Empty initial dataset: no invented sample player cards are included
 
 ## Run locally
@@ -42,13 +48,13 @@ Only add records that have been checked against a reliable source. Export a JSON
 
 ## Important storage and security note
 
-The current admin tool stores data in the **current browser's local storage**. It is a working manual-entry prototype, not a shared online database:
+The current admin tool stores data in the **current browser's local storage**. It is a working local prototype, not a shared online database:
 - Records entered in one browser/device are not automatically visible to other visitors or devices.
 - Clearing browser site data may remove locally stored records. Export JSON backups.
 - The admin page has no server-side authentication. Do not treat it as a secure private admin panel.
 - Uploaded images are stored as compressed data URLs in local storage and can consume browser storage quota.
 
-Before public launch with shared data, connect a server-side database and image storage, add authenticated admin access and server-side validation, then migrate the JSON records. Never place service-role keys or private secrets in client-side `VITE_*` variables.
+Before public launch with shared data, connect a server-side database and image storage, add authenticated admin access and server-side validation, then migrate the JSON records. The Google Drive picker is optional and requires a separate Google Cloud setup; all local-file import/export features work without it. Never place service-role keys or private secrets in client-side `VITE_*` variables.
 
 ## Deployment
 
