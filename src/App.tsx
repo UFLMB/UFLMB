@@ -7,6 +7,24 @@ import { cards as starterCards } from './data/cards'
 const STORAGE_KEY = 'uflmb.cards.v1'
 const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
 const DRIVE_API_KEY = 'uflmb.google.apiKey'
+const THEME_KEY = 'uflmb.site-theme.v1'
+type SiteTheme = { preset: string; accent: string; background: string; panel: string; text: string; mode: 'gradient' | 'solid'; radius: number }
+const themePresets: Record<string, Omit<SiteTheme, 'preset'>> = {
+  arena: { accent: '#c5f467', background: '#0b0d12', panel: '#11141b', text: '#f3f5f8', mode: 'gradient', radius: 15 },
+  ocean: { accent: '#59d8ff', background: '#07131d', panel: '#0d202d', text: '#eef8ff', mode: 'gradient', radius: 15 },
+  royal: { accent: '#b69cff', background: '#100d1a', panel: '#1b1628', text: '#f6f1ff', mode: 'gradient', radius: 15 },
+  fire: { accent: '#ff9a62', background: '#170d0b', panel: '#261713', text: '#fff4ef', mode: 'gradient', radius: 15 },
+  light: { accent: '#3166d5', background: '#f3f5f8', panel: '#ffffff', text: '#172033', mode: 'solid', radius: 12 },
+  forest: { accent: '#63e6a2', background: '#081610', panel: '#10241a', text: '#effff5', mode: 'gradient', radius: 15 },
+}
+const defaultTheme: SiteTheme = { preset: 'arena', ...themePresets.arena }
+const loadTheme = (): SiteTheme => {
+  try {
+    const value = JSON.parse(localStorage.getItem(THEME_KEY) || 'null')
+    if (value && typeof value === 'object') return { ...defaultTheme, ...value }
+  } catch { /* use defaults */ }
+  return defaultTheme
+}
 type DriveFile = { id: string; name: string; mimeType: string; size?: string }
 const categories = ['All cards', 'Goalkeepers', 'Defenders', 'Midfielders', 'Forwards'] as const
 type Category = typeof categories[number]
@@ -76,8 +94,20 @@ export default function App() {
   const [googleClientId, setGoogleClientId] = useState(() => localStorage.getItem(DRIVE_CLIENT_KEY) ?? '')
   const [googleApiKey, setGoogleApiKey] = useState(() => localStorage.getItem(DRIVE_API_KEY) ?? '')
   const [driveBusy, setDriveBusy] = useState(false)
+  const [siteTheme, setSiteTheme] = useState<SiteTheme>(loadTheme)
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
+
+  useEffect(() => {
+    const root = document.documentElement
+    root.style.setProperty('--accent', siteTheme.accent)
+    root.style.setProperty('--page-bg', siteTheme.background)
+    root.style.setProperty('--panel-bg', siteTheme.panel)
+    root.style.setProperty('--text-color', siteTheme.text)
+    root.style.setProperty('--card-radius', `${siteTheme.radius}px`)
+    root.dataset.themeMode = siteTheme.mode
+    try { localStorage.setItem(THEME_KEY, JSON.stringify(siteTheme)) } catch { /* theme still applies for this session */ }
+  }, [siteTheme])
 
   useEffect(() => {
     try { saveCards(allCards) } catch {
@@ -560,6 +590,22 @@ export default function App() {
         <p className="hero-copy">Manually add, edit, save, and export cards, images, stats, and verification sources.</p>
         <div className="notice warning"><strong>Important:</strong> this version saves data to the current browser's local storage. It does not sync with other visitors or devices, and the admin page is not protected by a login. A public shared database requires server-side storage and authenticated admin access.</div>
         {notice && <div className="notice">{notice}</div>}
+      </section>
+      <section className="admin-panel theme-editor">
+        <div className="section-heading"><div><p className="eyebrow">SITE APPEARANCE</p><h2>Theme & design studio</h2></div><span className="count-label">Live preview</span></div>
+        <p className="muted-copy">Change the site's accent, background, panel and text colors, background style and corner radius. The preview updates immediately and the settings are saved in this browser.</p>
+        <div className="theme-presets" aria-label="Theme presets">{Object.entries(themePresets).map(([key, value]) => <button type="button" key={key} className={siteTheme.preset === key ? 'theme-preset active' : 'theme-preset'} onClick={() => setSiteTheme({ preset: key, ...value })}><span style={{ background: value.background, borderColor: value.accent }}><i style={{ background: value.accent }} /><i style={{ background: value.panel }} /></span><strong>{({ arena: 'Arena', ocean: 'Ocean', royal: 'Royal', fire: 'Fire', light: 'Light', forest: 'Forest' } as Record<string, string>)[key]}</strong></button>)}</div>
+        <div className="theme-controls">
+          <label>Accent color<input type="color" value={siteTheme.accent} onChange={e => setSiteTheme(current => ({ ...current, preset: 'custom', accent: e.target.value }))} /><small>Buttons, highlights and active states</small></label>
+          <label>Page background<input type="color" value={siteTheme.background} onChange={e => setSiteTheme(current => ({ ...current, preset: 'custom', background: e.target.value }))} /><small>Main site canvas</small></label>
+          <label>Panel / card color<input type="color" value={siteTheme.panel} onChange={e => setSiteTheme(current => ({ ...current, preset: 'custom', panel: e.target.value }))} /><small>Cards, forms and panels</small></label>
+          <label>Text color<input type="color" value={siteTheme.text} onChange={e => setSiteTheme(current => ({ ...current, preset: 'custom', text: e.target.value }))} /><small>Main text color</small></label>
+          <label>Background style<select value={siteTheme.mode} onChange={e => setSiteTheme(current => ({ ...current, mode: e.target.value as SiteTheme['mode'], preset: 'custom' }))}><option value="gradient">Soft gradient</option><option value="solid">Solid color</option></select><small>Gradient or plain background</small></label>
+          <label>Corner roundness <output>{siteTheme.radius}px</output><input type="range" min="0" max="28" step="1" value={siteTheme.radius} onChange={e => setSiteTheme(current => ({ ...current, radius: Number(e.target.value), preset: 'custom' }))} /><small>Card and panel corners</small></label>
+        </div>
+        <div className="theme-live-preview" style={{ background: siteTheme.mode === 'gradient' ? `radial-gradient(ellipse at 20% 0%, ${siteTheme.accent}25, transparent 55%), ${siteTheme.background}` : siteTheme.background, color: siteTheme.text, borderRadius: siteTheme.radius }}><div className="theme-preview-top"><span className="theme-preview-mark" style={{ background: siteTheme.accent, color: siteTheme.background }}>U</span><strong>UFLMB <small>PREVIEW</small></strong><span className="theme-preview-pill" style={{ borderColor: siteTheme.accent, color: siteTheme.accent }}>LIVE THEME</span></div><div className="theme-preview-card" style={{ background: siteTheme.panel, borderRadius: Math.max(0, siteTheme.radius - 3) }}><span className="theme-preview-accent" style={{ color: siteTheme.accent }}>SITE DESIGN</span><h3>Build your own look.</h3><p style={{ opacity: .72 }}>This is how the selected colors and styling work together.</p><button type="button" style={{ background: siteTheme.accent, color: siteTheme.background, borderRadius: Math.max(0, siteTheme.radius - 5) }}>Sample action</button></div></div>
+        <div className="form-actions"><button className="button secondary" type="button" onClick={() => setSiteTheme(defaultTheme)}>Reset to default</button></div>
+        <p className="field-help">Current limitation: because UFLMB is a static site without a shared settings backend, these theme choices affect this browser only. They do not change the theme for every visitor.</p>
       </section>
       <section className="admin-panel">
         <div className="section-heading"><div><p className="eyebrow">{editingId ? 'EDIT RECORD' : 'NEW RECORD'}</p><h2>{editingId ? 'Edit card' : 'Add card'}</h2></div><span className="count-label">{allCards.length} local records</span></div>
