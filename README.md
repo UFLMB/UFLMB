@@ -102,6 +102,7 @@ The GitHub Actions workflow in `.github/workflows/deploy.yml` builds the app and
 - **Collection analytics:** total records, unique player names, image coverage, stat coverage, source-link coverage and recently checked records.
 - **Filtered CSV export:** export the current search/filter result set without exporting unrelated records.
 - **Responsive comparison and analytics layouts** for desktop and mobile.
+- **Squad Planner Plus:** auto-fill an XI using position fit first and OVR as a tie-breaker, export a portable squad JSON, and import a squad by matching its player references against cards already in the current browser. Missing cards remain empty; imports never invent or silently add player records.
 
 These are client-side features and use the same local dataset as the existing gallery. They do **not** turn local storage into a shared online database or add server-side authentication; that requires a separate backend/authentication package.
 
