@@ -14,6 +14,7 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 - Full player profile modal with complete saved attributes, perk list, verification date and source link
 - Personal saved-card bookmarks and a saved-only browsing filter (stored in the current browser)
 - Minimum and maximum OVR range filters alongside position, nation, card type and text search
+- Local squad builder with 4-3-3, 4-4-2 and 3-5-2 formations, unique player assignments, OVR average and position-fit indicators
 - Sort by OVR, name, or most recently verified
 - Reset all active search and filter criteria in one action
 - Actionable data-quality review queue with direct record editing
