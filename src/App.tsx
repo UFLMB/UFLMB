@@ -38,12 +38,34 @@ const emptyDraft = (): Draft => ({
   perks: '', stats: '', imageUrl: '', sourceUrl: '', verifiedAt: new Date().toISOString().slice(0, 10),
 })
 const makeId = () => `card-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+
+const isHttpUrl = (value: string) => {
+  try { const url = new URL(value); return url.protocol === 'https:' || url.protocol === 'http:' } catch { return false }
+}
+const isValidPlayerCard = (value: unknown): value is PlayerCard => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const card = value as Partial<PlayerCard>
+  if (typeof card.id !== 'string' || !card.id.trim() || typeof card.playerName !== 'string' || !card.playerName.trim()) return false
+  if (!Number.isInteger(card.overallRating) || (card.overallRating ?? 0) < 1 || (card.overallRating ?? 0) > 999) return false
+  if (!Array.isArray(card.positions) || !card.positions.length || card.positions.some(position => typeof position !== 'string' || !position.trim())) return false
+  if (typeof card.nation !== 'string' || !card.nation.trim() || typeof card.sourceUrl !== 'string' || !isHttpUrl(card.sourceUrl)) return false
+  if (typeof card.verifiedAt !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(card.verifiedAt) || Number.isNaN(new Date(card.verifiedAt + 'T00:00:00').getTime())) return false
+  if (card.cardName !== undefined && typeof card.cardName !== 'string') return false
+  if (card.club !== undefined && typeof card.club !== 'string') return false
+  if (card.imageUrl !== undefined && typeof card.imageUrl !== 'string') return false
+  if (card.perks !== undefined && (!Array.isArray(card.perks) || card.perks.some(perk => typeof perk !== 'string'))) return false
+  if (card.stats !== undefined && (!card.stats || typeof card.stats !== 'object' || Array.isArray(card.stats) || Object.values(card.stats).some(stat => typeof stat !== 'number' || !Number.isFinite(stat)))) return false
+  return true
+}
+const normalizeIdentityPart = (value: unknown) => String(value ?? '').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
+const cardFingerprint = (card: Pick<PlayerCard, 'playerName' | 'overallRating' | 'positions' | 'nation' | 'cardName' | 'club'>) =>
+  [normalizeIdentityPart(card.playerName), card.overallRating, [...card.positions].map(normalizeIdentityPart).sort().join('/'), normalizeIdentityPart(card.nation), normalizeIdentityPart(card.cardName), normalizeIdentityPart(card.club)].join('|')
 const loadCards = (): PlayerCard[] => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return starterCards
     const parsed: unknown = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed as PlayerCard[] : starterCards
+    return Array.isArray(parsed) ? parsed.filter(isValidPlayerCard) : starterCards
   } catch { return starterCards }
 }
 const saveCards = (next: PlayerCard[]) => localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
@@ -84,7 +106,7 @@ export default function App() {
   const [nationFilter, setNationFilter] = useState('All nations')
   const [positionFilter, setPositionFilter] = useState('All positions')
   const [cardTypeFilter, setCardTypeFilter] = useState('All card types')
-  const [sortBy, setSortBy] = useState<'ovr-desc' | 'ovr-asc' | 'name-asc'>('ovr-desc')
+  const [sortBy, setSortBy] = useState<'ovr-desc' | 'ovr-asc' | 'name-asc' | 'verified-desc'>('ovr-desc')
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
@@ -141,7 +163,7 @@ export default function App() {
   const cardTypes = useMemo(() => Array.from(new Set(allCards.map(card => card.cardName).filter((value): value is string => Boolean(value?.trim())))).sort((a, b) => a.localeCompare(b)), [allCards])
 
   const visibleCards = useMemo(() => allCards.filter(card => {
-    const text = [card.playerName, card.nation, card.club, card.cardName, ...card.positions].filter(Boolean).join(' ').toLowerCase()
+    const text = [card.playerName, card.nation, card.club, card.cardName, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)])].filter(Boolean).join(' ').toLowerCase()
     return text.includes(query.toLowerCase()) &&
       (category === 'All cards' || positionGroup(card.positions) === category) &&
       (nationFilter === 'All nations' || card.nation === nationFilter) &&
@@ -184,7 +206,7 @@ export default function App() {
     const keys = new Set<string>()
     let duplicates = 0
     allCards.forEach(card => {
-      const key = [card.playerName.trim().toLowerCase(), card.overallRating, [...card.positions].sort().join('/').toLowerCase(), card.nation.trim().toLowerCase()].join('|')
+      const key = cardFingerprint(card)
       if (keys.has(key)) duplicates++
       else keys.add(key)
     })
@@ -298,9 +320,9 @@ export default function App() {
         Array.isArray((card as PlayerCard).positions) && typeof (card as PlayerCard).nation === 'string' &&
         typeof (card as PlayerCard).sourceUrl === 'string' && /^https?:\/\//i.test((card as PlayerCard).sourceUrl) &&
         typeof (card as PlayerCard).verifiedAt === 'string'))
-      const keys = new Set(allCards.map(card => [card.playerName, card.overallRating, card.positions.join('/'), card.nation].join('|').toLowerCase()))
+      const keys = new Set(allCards.map(cardFingerprint))
       const additions = valid.filter(card => {
-        const key = [card.playerName, card.overallRating, card.positions.join('/'), card.nation].join('|').toLowerCase()
+        const key = cardFingerprint(card)
         if (keys.has(key)) return false
         keys.add(key)
         return true
@@ -587,15 +609,19 @@ export default function App() {
     try {
       const parsed: unknown = JSON.parse(importText)
       if (!Array.isArray(parsed)) { setNotice('The import must be a JSON array of card records.'); return }
-      const valid = parsed.every(card => card && typeof card.id === 'string' && typeof card.playerName === 'string' &&
-        Number.isFinite(card.overallRating) && Array.isArray(card.positions) && typeof card.nation === 'string' &&
-        typeof card.sourceUrl === 'string' && typeof card.verifiedAt === 'string')
-      if (!valid) { setNotice('At least one imported record is incomplete or invalid. Check the required fields.'); return }
+      const valid = parsed.every(isValidPlayerCard)
+      if (!valid) { setNotice('Import cancelled: at least one record is invalid. No records were changed. Check IDs, OVR, positions, nation, source URL and verification date.'); return }
       const unique = new Map<string, PlayerCard>()
       ;[...allCards, ...(parsed as PlayerCard[])].forEach(card => unique.set(card.id, card))
-      const next = Array.from(unique.values())
-      saveCards(next); setAllCards(next); setImportText('')
-      setNotice(`Import complete. There are ${next.length} cards in the local database.`)
+      const byFingerprint = new Map<string, PlayerCard>()
+      unique.forEach(card => byFingerprint.set(cardFingerprint(card), card))
+      const next = Array.from(byFingerprint.values())
+      try {
+        saveCards(next); setAllCards(next); setImportText('')
+        setNotice(`Import complete: ${next.length} unique records saved. Existing records with the same ID or card identity were merged.`)
+      } catch {
+        setNotice('Import could not be saved. Browser storage may be full; export a backup and try a smaller dataset.')
+      }
     } catch { setNotice('Invalid JSON. Check the file contents.') }
   }
 
@@ -746,14 +772,14 @@ export default function App() {
         <p className="eyebrow">COMMUNITY DATABASE PROJECT</p>
         <h1>Your UFL Mobile<br /><span>card reference.</span></h1>
         <p className="hero-copy">A searchable home for UFL Mobile player cards. Browse verified records, check card details, and help build a reliable community reference.</p>
-        <div className="search-wrap"><span className="search-icon" aria-hidden="true">⌕</span><input aria-label="Search the card database" type="search" placeholder="Search players, nations, positions…" value={query} onChange={e => setQuery(e.target.value)} /><kbd>{visibleCards.length} FOUND</kbd></div>
+        <div className="search-wrap"><span className="search-icon" aria-hidden="true">⌕</span><input aria-label="Search the card database" type="search" placeholder="Search players, stats, perks, nations, positions…" value={query} onChange={e => setQuery(e.target.value)} /><kbd>{visibleCards.length} FOUND</kbd></div>
         <div className="category-row" aria-label="Card categories">{categories.map(item => <button className={category === item ? 'category active' : 'category'} key={item} onClick={() => setCategory(item)} type="button">{item}</button>)}</div>
         <div className="browse-controls" aria-label="Additional filters">
           <label>Nation <select value={nationFilter} onChange={e => setNationFilter(e.target.value)}><option>All nations</option>{nations.map(nation => <option key={nation} value={nation}>{nation}</option>)}</select></label>
           <label>Position <select value={positionFilter} onChange={e => setPositionFilter(e.target.value)}><option>All positions</option>{positions.map(position => <option key={position} value={position}>{position}</option>)}</select></label>
           <label>Card type <select value={cardTypeFilter} onChange={e => setCardTypeFilter(e.target.value)}><option>All card types</option>{cardTypes.map(cardType => <option key={cardType} value={cardType}>{cardType}</option>)}</select></label>
-          <label>Sort by <select value={sortBy} onChange={e => setSortBy(e.target.value as 'ovr-desc' | 'ovr-asc' | 'name-asc')}><option value="ovr-desc">Highest OVR</option><option value="ovr-asc">Lowest OVR</option><option value="name-asc">Player name A–Z</option></select></label>
-          {(nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sortBy !== 'ovr-desc') && <button className="category" type="button" onClick={() => { setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSortBy('ovr-desc') }}>Reset filters</button>}
+          <label>Sort by <select value={sortBy} onChange={e => setSortBy(e.target.value as 'ovr-desc' | 'ovr-asc' | 'name-asc' | 'verified-desc')}><option value="ovr-desc">Highest OVR</option><option value="ovr-asc">Lowest OVR</option><option value="name-asc">Player name A–Z</option><option value="verified-desc">Recently verified</option></select></label>
+          {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sortBy !== 'ovr-desc') && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSortBy('ovr-desc') }}>Reset all filters</button>}
         </div>
       </section>
       <section className="analytics-section" aria-labelledby="analytics-title">
