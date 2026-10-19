@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import type { PlayerCard } from './types/card'
 import { cards as starterCards } from './data/cards'
+import { demoCards } from './data/demoCards'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
 const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
@@ -145,7 +146,8 @@ export default function App() {
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() => { try { const saved = JSON.parse(localStorage.getItem('uflmb.bookmarks.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string') : [] } catch { return [] } })
   const [selectedCard, setSelectedCard] = useState<PlayerCard | null>(null)
   const [formationId, setFormationId] = useState<FormationId>(() => { try { const v = localStorage.getItem('uflmb.squad.formation'); return v === '4-4-2' || v === '3-5-2' ? v : '4-3-3' } catch { return '4-3-3' } })
-  const [squadAssignments, setSquadAssignments] = useState<Record<string,string>>(() => { try { const v: unknown = JSON.parse(localStorage.getItem('uflmb.squad.assignments') || '{}'); return v && typeof v === 'object' && !Array.isArray(v) ? v as Record<string,string> : {} } catch { return {} } })
+  const [squadAssignments, setSquadAssignments] = useState<Record<string,string>>(() => { try { const v: unknown = JSON.parse(localStorage.getItem('uflmb.squad.assignments') || '{}'); if (!v || typeof v !== 'object' || Array.isArray(v)) return {}; const saved = v as Record<string,string>; return Object.keys(saved).some(key => key.startsWith('A:') || key.startsWith('B:')) ? saved : Object.fromEntries(Object.entries(saved).map(([key,id]) => [`A:${key}`,id])) } catch { return {} } })
+  const [activeSquad, setActiveSquad] = useState<'A' | 'B'>('A')
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
@@ -249,7 +251,8 @@ export default function App() {
 
   const comparedCards = useMemo(() => compareIds.map(id => allCards.find(card => card.id === id)).filter((card): card is PlayerCard => Boolean(card)), [allCards, compareIds])
   const squadSlots = formations[formationId]
-  const squadPlayers = squadSlots.map(slot => ({ slot, card: allCards.find(card => card.id === squadAssignments[slot.id]) })).filter((entry): entry is {slot: SquadSlot; card: PlayerCard} => Boolean(entry.card))
+  const activeSquadKey = `${activeSquad}:`
+  const squadPlayers = squadSlots.map(slot => ({ slot, card: allCards.find(card => card.id === squadAssignments[`${activeSquadKey}${slot.id}`]) })).filter((entry): entry is {slot: SquadSlot; card: PlayerCard} => Boolean(entry.card))
   const squadRating = squadPlayers.length ? Math.round(squadPlayers.reduce((total, entry) => total + entry.card.overallRating, 0) / squadPlayers.length) : 0
   const squadPositionFits = squadPlayers.filter(({slot,card}) => card.positions.some(position => slot.positions.includes(position))).length
   const statLeaders = useMemo(() => {
@@ -258,6 +261,20 @@ export default function App() {
       .sort((a, b) => a.localeCompare(b))
     return statKeys.map(key => ({ key, cards: allCards.filter(card => typeof card.stats?.[key] === 'number').sort((a, b) => (b.stats?.[key] ?? -Infinity) - (a.stats?.[key] ?? -Infinity)).slice(0, 5) })).filter(item => item.cards.length)
   }, [allCards])
+
+  const loadDemoSquads = () => {
+    const realRecords = allCards.filter(card => !card.id.startsWith('uflmb-demo-'))
+    const nextAssignments: Record<string,string> = {}
+    formations['4-3-3'].forEach((slot, index) => {
+      nextAssignments[`A:${slot.id}`] = demoCards[index].id
+      nextAssignments[`B:${slot.id}`] = demoCards[index + 11].id
+    })
+    setAllCards([...demoCards, ...realRecords])
+    setFormationId('4-3-3')
+    setSquadAssignments(nextAssignments)
+    setActiveSquad('A')
+    setNotice('Loaded 22 fictional test cards into Demo Team A and Demo Team B. Their OVR/stats are synthetic, clearly marked DEMO, and can be edited or deleted in Card manager. They are not real UFL data.')
+  }
 
   const toggleBookmark = (id: string) => setBookmarkedIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id])
 
@@ -769,6 +786,7 @@ export default function App() {
       {adminTab === 'cards' && <>
       <section className="admin-panel">
         <div className="section-heading"><div><p className="eyebrow">{editingId ? 'EDIT RECORD' : 'NEW RECORD'}</p><h2>{editingId ? 'Edit card' : 'Add card'}</h2></div><span className="count-label">{allCards.length} local records</span></div>
+        <div className="demo-data-tools"><div><strong>Test environment</strong><p>Load two fictional 11-player squads (22 cards total). Every record is labelled DEMO and can later be overwritten in this editor.</p></div><button className="button secondary" type="button" onClick={loadDemoSquads}>Load / reset 22 demo cards</button></div>
         <form className="card-form" onSubmit={submitCard}>
           <label>Player name *<input value={draft.playerName} onChange={e => updateDraft('playerName', e.target.value)} required placeholder="e.g. Player Name" /></label>
           <label>OVR *<input type="number" min="1" max="999" step="1" value={draft.overallRating} onChange={e => updateDraft('overallRating', e.target.value)} required placeholder="e.g. 95" /></label>
@@ -888,8 +906,8 @@ export default function App() {
       </section>
       <section className="squad-section" aria-labelledby="squad-title">
         <div className="section-heading"><div><p className="eyebrow">TACTICAL WORKSPACE</p><h2 id="squad-title">My squad builder</h2></div><span className="count-label">Saved in this browser</span></div>
-        <div className="squad-toolbar"><label>Formation <select value={formationId} onChange={e => setFormationId(e.target.value as FormationId)}><option value="4-3-3">4-3-3</option><option value="4-4-2">4-4-2</option><option value="3-5-2">3-5-2</option></select></label><div className="squad-summary"><span><strong>{squadPlayers.length}/11</strong> selected</span><span><strong>{squadRating || '—'}</strong> avg. OVR</span><span><strong>{squadPositionFits}/{squadPlayers.length || 11}</strong> position fits</span></div><button className="button secondary" type="button" onClick={() => setSquadAssignments({})}>Clear squad</button></div>
-        {allCards.length === 0 ? <div className="squad-empty"><strong>Your tactics start with verified cards.</strong><p>No player records are available yet. Add real, source-verified cards in the card manager, then assign them here. UFLMB will never fill the squad with invented players.</p><a className="button primary" href="/UFLMB/#admin">Open card manager</a></div> : <div className={`squad-pitch formation-${formationId.replace('-', '')}`}><div className="pitch-lines" aria-hidden="true" />{squadSlots.map(slot => { const assigned = allCards.find(card => card.id === squadAssignments[slot.id]); const occupiedElsewhere = new Set(Object.entries(squadAssignments).filter(([key]) => key !== slot.id).map(([,id]) => id)); return <div className={`squad-slot squad-slot-${slot.id}`} key={slot.id}><span className="squad-slot-label">{slot.label}</span><select aria-label={`Choose ${slot.label} player`} value={assigned?.id ?? ''} onChange={e => setSquadAssignments(current => ({...current,[slot.id]:e.target.value}))}><option value="">+ Add player</option>{allCards.filter(card => !occupiedElsewhere.has(card.id)).sort((a,b) => Number(b.positions.some(p => slot.positions.includes(p))) - Number(a.positions.some(p => slot.positions.includes(p))) || b.overallRating-a.overallRating || a.playerName.localeCompare(b.playerName)).map(card => <option key={card.id} value={card.id}>{card.playerName} · {card.overallRating} OVR · {card.positions.join('/')}</option>)}</select>{assigned && <div className={assigned.positions.some(p => slot.positions.includes(p)) ? 'squad-player-rating fit' : 'squad-player-rating'}><strong>{assigned.overallRating}</strong><small>{assigned.playerName}</small></div>}</div>})}</div>}
+        <div className="squad-toolbar"><div className="squad-team-switch" role="group" aria-label="Choose squad"><button className={activeSquad === 'A' ? 'button primary' : 'button secondary'} type="button" onClick={() => setActiveSquad('A')}>Demo Team A</button><button className={activeSquad === 'B' ? 'button primary' : 'button secondary'} type="button" onClick={() => setActiveSquad('B')}>Demo Team B</button></div><label>Formation <select value={formationId} onChange={e => setFormationId(e.target.value as FormationId)}><option value="4-3-3">4-3-3</option><option value="4-4-2">4-4-2</option><option value="3-5-2">3-5-2</option></select></label><div className="squad-summary"><span><strong>{squadPlayers.length}/11</strong> selected</span><span><strong>{squadRating || '—'}</strong> avg. OVR</span><span><strong>{squadPositionFits}/{squadPlayers.length || 11}</strong> position fits</span></div><button className="button secondary" type="button" onClick={() => setSquadAssignments(current => Object.fromEntries(Object.entries(current).filter(([key]) => !key.startsWith(activeSquadKey))))}>Clear this squad</button></div>
+        {allCards.length === 0 ? <div className="squad-empty"><strong>Your tactics start with verified cards.</strong><p>No player records are available yet. Add real, source-verified cards in the card manager, then assign them here. UFLMB will never fill the squad with invented players.</p><a className="button primary" href="/UFLMB/#admin">Open card manager</a></div> : <div className={`squad-pitch formation-${formationId.replace('-', '')}`}><div className="pitch-lines" aria-hidden="true" />{squadSlots.map(slot => { const assigned = allCards.find(card => card.id === squadAssignments[`${activeSquadKey}${slot.id}`]); const occupiedElsewhere = new Set(Object.entries(squadAssignments).filter(([key]) => key.startsWith(activeSquadKey) && key !== `${activeSquadKey}${slot.id}`).map(([,id]) => id)); return <div className={`squad-slot squad-slot-${slot.id}`} key={slot.id}><span className="squad-slot-label">{slot.label}</span><select aria-label={`Choose ${slot.label} player`} value={assigned?.id ?? ''} onChange={e => setSquadAssignments(current => ({...current,[`${activeSquadKey}${slot.id}`]:e.target.value}))}><option value="">+ Add player</option>{allCards.filter(card => !occupiedElsewhere.has(card.id)).sort((a,b) => Number(b.positions.some(p => slot.positions.includes(p))) - Number(a.positions.some(p => slot.positions.includes(p))) || b.overallRating-a.overallRating || a.playerName.localeCompare(b.playerName)).map(card => <option key={card.id} value={card.id}>{card.playerName} · {card.overallRating} OVR · {card.positions.join('/')}</option>)}</select>{assigned && <div className={assigned.positions.some(p => slot.positions.includes(p)) ? 'squad-player-rating fit' : 'squad-player-rating'}><strong>{assigned.overallRating}</strong><small>{assigned.playerName}</small></div>}</div>})}</div>}
         <p className="squad-footnote">Average OVR is calculated from assigned cards only. Position fit checks the recorded positions; no chemistry or gameplay performance is fabricated.</p>
       </section>
       <section className="analytics-section" aria-labelledby="analytics-title">
