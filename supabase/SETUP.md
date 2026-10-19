@@ -1,6 +1,6 @@
 # UFLMB shared backend setup
 
-The application can use Supabase for shared card records and community ratings/reviews. The project is intentionally not connected to any account until an owner creates and configures the backend.
+The application uses Supabase for shared card records and community ratings/reviews. Admin card auto-save is enabled after a trusted admin signs in and loads the shared records. Browser-local bookmarks, squad assignments, branding, and Google Picker configuration are still local.
 
 ## 1. Create and configure Supabase
 
@@ -28,8 +28,9 @@ After changing the project or rotating the publishable key, update those two val
 
 - Open the live site and go to **Admin / data entry → Import / Export → Shared card database**.
 - Sign in using the trusted Supabase admin user.
-- Click **Load shared records** before publishing. This protects against publishing an unreviewed local snapshot.
-- Edit cards in Card manager, then click **Publish local edits** to publish changes. The publish action synchronizes non-demo records and applies deletions since the last loaded snapshot.
+- Click **Load shared records & enable auto-save** before editing. The app merges shared records with local-only records and enables cloud auto-save for non-demo cards.
+- After a card is added or edited, the app waits briefly and upserts the non-demo collection to Supabase. Auto-save never deletes remote rows.
+- Use **Publish + apply deletions** only when you intentionally want to apply local deletions to the shared database. Review the confirmation carefully.
 - Public visitors can read shared cards and submit ratings/reviews from a card's full profile.
 
 The two-team demo fixture is local-only and is excluded from shared-database publishing.
@@ -40,5 +41,5 @@ The two-team demo fixture is local-only and is excluded from shared-database pub
 - Card writes are protected by row-level security and an explicit `admin_users` allowlist. Public sign-ups should remain disabled; do not add untrusted accounts to the allowlist.
 - Community review insertion is currently open to anonymous visitors for the initial test. Before a broad public launch, add CAPTCHA, rate limits, moderation/reporting and preferably verified-user controls.
 - The daily GitHub Actions job audits the checked-in production starter dataset and, when Supabase is configured, checks shared source-link reachability and flags verification dates older than 90 days. It does not scrape third-party pages or change player ratings. Reliable automatic content refresh needs a supported source/API and an explicit mapping/verification policy. Do not treat the audit as an automatic facts refresh.
-- Shared background/branding settings are still browser-local; this backend currently covers cards and reviews.
+- The current cloud auto-save covers shared card records only. Bookmarks, squad formation/assignments, branding, and Google Picker settings remain browser-local. The local cache and downloadable JSON backup remain enabled as a recovery path.
 - The schema change only changes database permissions when you run it in your Supabase project. Committing the SQL file to GitHub does not apply it to a live Supabase project.
