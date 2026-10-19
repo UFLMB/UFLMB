@@ -729,6 +729,45 @@ export default function App() {
     document.head.appendChild(script)
   })
 
+  const saveEverything = () => {
+    const backup = {
+      format: 'uflmb-full-backup-v1',
+      savedAt: new Date().toISOString(),
+      cards: allCards,
+      bookmarks: bookmarkedIds,
+      squad: { formation: formationId, assignments: squadAssignments, activeTeam: activeSquad },
+      appearance: { theme: siteTheme, branding: siteBranding },
+    }
+
+    let localSaveSucceeded = true
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(allCards))
+      localStorage.setItem('uflmb.bookmarks.v1', JSON.stringify(bookmarkedIds))
+      localStorage.setItem('uflmb.squad.formation', formationId)
+      localStorage.setItem('uflmb.squad.assignments', JSON.stringify(squadAssignments))
+      localStorage.setItem(THEME_KEY, JSON.stringify(siteTheme))
+      localStorage.setItem(BRANDING_KEY, JSON.stringify(siteBranding))
+      localStorage.setItem(DRIVE_CLIENT_KEY, googleClientId.trim())
+      localStorage.setItem(DRIVE_API_KEY, googleApiKey.trim())
+    } catch {
+      localSaveSucceeded = false
+    }
+
+    // Export a portable backup without Google configuration values.
+    // Those settings are saved locally, but should not be copied into a shareable backup.
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'uflmb-full-backup.json'
+    link.click()
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+
+    setNotice(localSaveSucceeded
+      ? 'All UFLMB data and settings were saved in this browser. A full JSON backup was downloaded.'
+      : 'A JSON backup was downloaded, but browser storage could not save everything (possibly full storage). Keep the backup file safe.')
+  }
+
   const saveDriveSettings = () => {
     localStorage.setItem(DRIVE_CLIENT_KEY, googleClientId.trim())
     localStorage.setItem(DRIVE_API_KEY, googleApiKey.trim())
@@ -921,6 +960,10 @@ export default function App() {
         <p className="hero-copy">Manually add, edit, save, and export cards, images, stats, and verification sources.</p>
         <div className="notice warning"><strong>Important:</strong> this version saves data to the current browser's local storage. It does not sync with other visitors or devices, and the admin page is not protected by a login. A public shared database requires server-side storage and authenticated admin access.</div>
         {notice && <div className="notice">{notice}</div>}
+        <div className="form-actions save-everything-actions">
+          <button className="button primary" type="button" onClick={saveEverything}>Save everything + download backup</button>
+          <span className="field-help">Saves cards, bookmarks, squads and appearance settings in this browser, then downloads a portable JSON backup. Google Drive credentials stay in this browser and are not included in the backup.</span>
+        </div>
       </section>
       <nav className="admin-tabs" aria-label="Admin sections">
         {([
