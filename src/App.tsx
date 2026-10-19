@@ -171,7 +171,8 @@ export default function App() {
       (cardTypeFilter === 'All card types' || card.cardName === cardTypeFilter)
   }).sort((a, b) => sortBy === 'ovr-desc' ? b.overallRating - a.overallRating || a.playerName.localeCompare(b.playerName) :
     sortBy === 'ovr-asc' ? a.overallRating - b.overallRating || a.playerName.localeCompare(b.playerName) :
-      a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, positionFilter, cardTypeFilter, sortBy])
+      sortBy === 'verified-desc' ? (b.verifiedAt || '').localeCompare(a.verifiedAt || '') || a.playerName.localeCompare(b.playerName) :
+        a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, positionFilter, cardTypeFilter, sortBy])
 
   const comparedCards = useMemo(() => compareIds.map(id => allCards.find(card => card.id === id)).filter((card): card is PlayerCard => Boolean(card)), [allCards, compareIds])
   const statLeaders = useMemo(() => {
@@ -189,7 +190,7 @@ export default function App() {
   const exportVisibleCsv = () => downloadCsv(visibleCards)
 
   const adminCards = useMemo(() => allCards.filter(card =>
-    [card.playerName, card.nation, card.club, card.cardName, card.id].filter(Boolean).join(' ').toLowerCase().includes(adminSearch.toLowerCase())
+    [card.playerName, card.nation, card.club, card.cardName, card.id, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)])].filter(Boolean).join(' ').toLowerCase().includes(adminSearch.toLowerCase())
   ), [allCards, adminSearch])
 
   const dataQuality = useMemo(() => {
@@ -315,11 +316,7 @@ export default function App() {
     try {
       const parsed: unknown = JSON.parse(await file.text())
       if (!Array.isArray(parsed)) { setNotice('JSON backup must contain an array of card records.'); return }
-      const valid = parsed.filter((card): card is PlayerCard => Boolean(card && typeof card === 'object' &&
-        typeof (card as PlayerCard).playerName === 'string' && Number.isFinite((card as PlayerCard).overallRating) &&
-        Array.isArray((card as PlayerCard).positions) && typeof (card as PlayerCard).nation === 'string' &&
-        typeof (card as PlayerCard).sourceUrl === 'string' && /^https?:\/\//i.test((card as PlayerCard).sourceUrl) &&
-        typeof (card as PlayerCard).verifiedAt === 'string'))
+      const valid = parsed.filter(isValidPlayerCard)
       const keys = new Set(allCards.map(cardFingerprint))
       const additions = valid.filter(card => {
         const key = cardFingerprint(card)
@@ -457,9 +454,9 @@ export default function App() {
         setNotice(`No valid cards were imported. ${skipped} row(s) were skipped. Check the required columns: Player Name, OVR, Position(s), Nation, and Source URL.`)
         return
       }
-      const existingKeys = new Set(allCards.map(card => [card.playerName, card.overallRating, card.positions.join('/'), card.nation].join('|').toLowerCase()))
+      const existingKeys = new Set(allCards.map(cardFingerprint))
       const uniqueImported = imported.filter(card => {
-        const key = [card.playerName, card.overallRating, card.positions.join('/'), card.nation].join('|').toLowerCase()
+        const key = cardFingerprint(card)
         if (existingKeys.has(key)) { skipped++; return false }
         existingKeys.add(key)
         return true
