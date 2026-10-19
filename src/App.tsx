@@ -49,7 +49,7 @@ const isValidPlayerCard = (value: unknown): value is PlayerCard => {
   if (!Number.isInteger(card.overallRating) || (card.overallRating ?? 0) < 1 || (card.overallRating ?? 0) > 999) return false
   if (!Array.isArray(card.positions) || !card.positions.length || card.positions.some(position => typeof position !== 'string' || !position.trim())) return false
   if (typeof card.nation !== 'string' || !card.nation.trim() || typeof card.sourceUrl !== 'string' || !isHttpUrl(card.sourceUrl)) return false
-  if (typeof card.verifiedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(card.verifiedAt) || Number.isNaN(new Date(card.verifiedAt + 'T00:00:00').getTime())) return false
+  if (typeof card.verifiedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(card.verifiedAt) || Number.isNaN(new Date(card.verifiedAt + 'T00:00:00').getTime()) || new Date(card.verifiedAt + 'T00:00:00').toISOString().slice(0, 10) !== card.verifiedAt) return false
   if (card.cardName !== undefined && typeof card.cardName !== 'string') return false
   if (card.club !== undefined && typeof card.club !== 'string') return false
   if (card.imageUrl !== undefined && typeof card.imageUrl !== 'string') return false
