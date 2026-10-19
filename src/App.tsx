@@ -98,6 +98,7 @@ export default function App() {
   const [siteBranding, setSiteBranding] = useState<SiteBranding>(loadBranding)
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
+  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance'>('cards')
 
   useEffect(() => {
     const root = document.documentElement
@@ -611,7 +612,20 @@ export default function App() {
         <div className="notice warning"><strong>Important:</strong> this version saves data to the current browser's local storage. It does not sync with other visitors or devices, and the admin page is not protected by a login. A public shared database requires server-side storage and authenticated admin access.</div>
         {notice && <div className="notice">{notice}</div>}
       </section>
-            <section className="admin-panel theme-editor">
+      <nav className="admin-tabs" aria-label="Admin sections">
+        {([
+          ['cards', '▣', 'Card manager', 'Add, edit and manage records'],
+          ['quality', '✓', 'Data quality', 'Collection health checks'],
+          ['imports', '⇅', 'Import / Export', 'Files, backups and data transfer'],
+          ['appearance', '◈', 'Branding', 'Logo, icon and background'],
+        ] as const).map(([id, icon, label, description]) => (
+          <button key={id} type="button" className={adminTab === id ? 'admin-tab active' : 'admin-tab'} onClick={() => setAdminTab(id)}>
+            <span className="admin-tab-icon">{icon}</span><span className="admin-tab-copy"><strong>{label}</strong><small>{description}</small></span><span className="admin-tab-arrow">›</span>
+          </button>
+        ))}
+      </nav>
+            {adminTab === 'appearance' && <>
+      <section className="admin-panel theme-editor">
         <div className="section-heading"><div><p className="eyebrow">SITE APPEARANCE</p><h2>UFL Arena theme</h2></div><span className="count-label">Fixed theme</span></div>
         <p className="muted-copy">The site uses one fixed UFL-inspired visual style: dark arena backgrounds, lime-green accents, high-contrast text and rounded panels. Theme colors and styling cannot be changed from the admin panel.</p>
         <div className="theme-live-preview" style={{ background: 'radial-gradient(ellipse at 20% 0%, #c5f46725, transparent 55%), #0b0d12', color: '#f3f5f8', borderRadius: 15 }}>
@@ -636,6 +650,8 @@ export default function App() {
         </section>
         <p className="field-help">Current limitation: because UFLMB is a static site without a shared settings backend, these theme choices affect this browser only. They do not change the theme for every visitor.</p>
       </section>
+      </>}
+      {adminTab === 'cards' && <>
       <section className="admin-panel">
         <div className="section-heading"><div><p className="eyebrow">{editingId ? 'EDIT RECORD' : 'NEW RECORD'}</p><h2>{editingId ? 'Edit card' : 'Add card'}</h2></div><span className="count-label">{allCards.length} local records</span></div>
         <form className="card-form" onSubmit={submitCard}>
@@ -655,6 +671,8 @@ export default function App() {
           <div className="form-actions full-field"><button className="button primary" type="submit">{editingId ? 'Save changes' : 'Add card'}</button><button className="button secondary" type="button" onClick={resetForm}>Clear form</button></div>
         </form>
       </section>
+      </>}
+      {adminTab === 'quality' && <>
       <section className="admin-panel">
         <p className="eyebrow">DATA QUALITY</p><h2>Collection health</h2>
         <p className="muted-copy">These checks help identify incomplete or potentially stale records. Missing optional fields are warnings, not proof that a card is incorrect. Verification older than 90 days is flagged for review.</p>
@@ -668,6 +686,8 @@ export default function App() {
           <div className={dataQuality.duplicates ? 'quality-tile quality-warning' : 'quality-tile'}><strong>{dataQuality.duplicates}</strong><span>Possible duplicates</span></div>
         </div>
       </section>
+      </>}
+      {adminTab === 'cards' && <>
       <section className="admin-panel">
         <div className="section-heading"><div><p className="eyebrow">RECORDS</p><h2>Existing cards</h2></div><input className="admin-search" value={adminSearch} onChange={e => setAdminSearch(e.target.value)} placeholder="Search…" aria-label="Search admin records" /></div>
         <div className="form-actions record-bulk-actions">
@@ -683,6 +703,8 @@ export default function App() {
           <button className="button danger" type="button" onClick={() => { if (window.confirm(`Are you sure you want to delete this record: ${card.playerName}?`)) { const next = allCards.filter(item => item.id !== card.id); setAllCards(next); setNotice('Record deleted.'); if (editingId === card.id) resetForm() } }}>Delete</button>
         </article>)}</div>}
       </section>
+      </>}
+      {adminTab === 'imports' && <>
       <section className="admin-panel tools-panel">
         <p className="eyebrow">GOOGLE DRIVE</p><h2>Import from Google Drive</h2>
         <p className="muted-copy">Sign in with Google and select Excel, CSV, JSON files, and card images. Data files are imported into this browser. Images are matched to existing cards by filename (for example, “Player Name.jpg”); unmatched images are placed in the current card form. Nothing is uploaded to Google Drive.</p>
@@ -709,6 +731,7 @@ export default function App() {
         <label className="full-field">Paste JSON to import<textarea rows={5} value={importText} onChange={e => setImportText(e.target.value)} placeholder="Paste the full contents of the exported JSON file…" /></label>
         <button className="button secondary" type="button" onClick={importCards}>Import JSON</button>
       </section>
+      </>}
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href="/UFLMB/">Back to home</a></footer>
     </main>
   )
