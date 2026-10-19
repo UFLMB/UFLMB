@@ -68,8 +68,10 @@ Open **Admin / data entry → Card manager → Load / reset 22 demo cards** to l
 ## Shared database groundwork
 
 - `supabase/schema.sql` defines shared card records, community reviews/ratings, public read access, and authenticated-only card maintenance policies.
+- `src/components/SharedDatabasePanel.tsx` provides Supabase sign-in, loading, and deliberate publishing of card edits from the existing editor. Demo records are excluded from publishing.
+- `src/components/CommunityReviews.tsx` adds ratings/reviews to card profiles. They become shared when the Supabase variables and SQL schema are configured.
 - A daily GitHub Actions workflow runs a source-dataset quality audit. It intentionally does not scrape or invent card data; a reliable supported source/API must be selected before true automated card updates can be enabled.
-- The SQL schema is groundwork only. Until a Supabase project is created, the SQL is run, public environment values are configured for the Pages build, and an admin account/authentication flow is connected, the live app still uses this browser's local storage. The shared database and community reviews are not active yet.
+- Setup instructions are in `supabase/SETUP.md`. Until a Supabase project is created, the SQL is run, and the two public build variables are configured, shared cards and community reviews remain disconnected; local browser storage continues to work.
 
 ## Important storage and security note
 
