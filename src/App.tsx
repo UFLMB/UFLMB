@@ -4,6 +4,7 @@ import type { PlayerCard } from './types/card'
 import { cards as starterCards } from './data/cards'
 import { demoCards } from './data/demoCards'
 import CommunityReviews from './components/CommunityReviews'
+import SharedDatabasePanel from './components/SharedDatabasePanel'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
 const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
@@ -848,6 +849,7 @@ export default function App() {
       </section>
       </>}
       {adminTab === 'imports' && <>
+      <SharedDatabasePanel cards={allCards} onLoad={remoteCards => setAllCards(current => [...remoteCards, ...current.filter(card => card.id.startsWith('uflmb-demo-'))])} onMessage={setNotice} />
       <section className="admin-panel tools-panel">
         <p className="eyebrow">GOOGLE DRIVE</p><h2>Import from Google Drive</h2>
         <p className="muted-copy">Sign in with Google and select Excel, CSV, JSON files, and card images. Data files are imported into this browser. Images are matched to existing cards by filename (for example, “Player Name.jpg”); unmatched images are placed in the current card form. Nothing is uploaded to Google Drive.</p>
