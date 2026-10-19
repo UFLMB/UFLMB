@@ -214,6 +214,18 @@ export default function App() {
     return { total: allCards.length, missingImage, missingClubOrType, missingStats, invalidSource, staleVerification, duplicates }
   }, [allCards])
 
+  const reviewCandidates = useMemo(() => allCards.map(card => {
+    const issues: string[] = []
+    if (!card.imageUrl?.trim()) issues.push('Missing image')
+    if (!card.stats || !Object.keys(card.stats).length) issues.push('Missing stats')
+    if (!card.club?.trim()) issues.push('Missing club')
+    if (!card.cardName?.trim()) issues.push('Missing card type')
+    if (!isHttpUrl(card.sourceUrl || '')) issues.push('Invalid source')
+    const verified = /^\\d{4}-\\d{2}-\\d{2}$/.test(card.verifiedAt || '') ? new Date(card.verifiedAt + 'T00:00:00') : null
+    if (!verified || Number.isNaN(verified.getTime()) || (Date.now() - verified.getTime()) > 90 * 86400000) issues.push('Source review due')
+    return { card, issues }
+  }).filter(item => item.issues.length > 0).sort((a, b) => b.issues.length - a.issues.length || a.card.playerName.localeCompare(b.card.playerName)).slice(0, 50), [allCards])
+
   const toggleSelected = (id: string) => setSelectedIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id])
   const selectVisible = () => setSelectedIds(current => {
     const visibleIds = adminCards.map(card => card.id)
@@ -707,6 +719,15 @@ export default function App() {
           <div className="quality-tile"><strong>{dataQuality.staleVerification}</strong><span>Needs source review</span></div>
           <div className="quality-tile"><strong>{dataQuality.invalidSource}</strong><span>Invalid source URL</span></div>
           <div className={dataQuality.duplicates ? 'quality-tile quality-warning' : 'quality-tile'}><strong>{dataQuality.duplicates}</strong><span>Possible duplicates</span></div>
+        </div>
+        <div className="quality-review">
+          <div className="section-heading"><div><p className="eyebrow">ACTIONABLE AUDIT</p><h3>Records to review</h3></div><span className="count-label">Showing {Math.min(reviewCandidates.length, 50)} of {reviewCandidates.length}</span></div>
+          <p className="muted-copy">Use these flags as a review queue. Missing optional details do not automatically mean a record is wrong. Review the source before changing factual data.</p>
+          {reviewCandidates.length === 0 ? <p className="muted-copy">No records currently need attention. Keep source links and verification dates current.</p> : <div className="record-list">{reviewCandidates.map(({ card, issues }) => <article className="record-row" key={card.id}>
+            {card.imageUrl ? <img className="record-thumb" src={card.imageUrl} alt="" loading="lazy" /> : <div className="record-thumb placeholder-thumb">U</div>}
+            <div className="record-info"><strong>{card.playerName} · OVR {card.overallRating}</strong><span>{card.positions.join('/')} · {card.nation}</span><small>{issues.join(' · ')}</small></div>
+            <button className="button secondary" type="button" onClick={() => { setAdminTab('cards'); startEdit(card); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>Review record</button>
+          </article>)}</div>}
         </div>
       </section>
       </>}
