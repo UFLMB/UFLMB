@@ -233,7 +233,7 @@ export default function App() {
 
   // When configured, shared records are loaded for every visitor; local demo fixtures stay browser-only.
   useEffect(() => {
-    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\\/$/, '')
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
     if (!endpoint || !anonKey) return
     let cancelled = false
