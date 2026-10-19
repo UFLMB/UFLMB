@@ -43,22 +43,26 @@ alter table public.cards enable row level security;
 alter table public.card_reviews enable row level security;
 alter table public.admin_users enable row level security;
 
--- RLS policies call this narrowly-scoped SECURITY DEFINER helper so the
--- allowlist can remain inaccessible to browser clients.
-create or replace function public.is_uflmb_admin()
+-- Keep the SECURITY DEFINER authorization helper in a non-exposed schema.
+-- The Data API should never expose this helper as a callable public RPC.
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
+grant usage on schema private to authenticated;
+
+create or replace function private.is_uflmb_admin()
 returns boolean
 language sql
 stable
 security definer
-set search_path = public
+set search_path = ''
 as $$
   select exists (
     select 1 from public.admin_users where user_id = auth.uid()
   );
 $$;
 
-revoke all on function public.is_uflmb_admin() from public, anon, authenticated;
-grant execute on function public.is_uflmb_admin() to authenticated;
+revoke all on function private.is_uflmb_admin() from public, anon, authenticated;
+grant execute on function private.is_uflmb_admin() to authenticated;
 
 -- Public read access for the card gallery and reviews.
 drop policy if exists "Public can read cards" on public.cards;
@@ -72,16 +76,16 @@ drop policy if exists "Authenticated users can update cards" on public.cards;
 drop policy if exists "Authenticated users can delete cards" on public.cards;
 drop policy if exists "UFLMB admins can add cards" on public.cards;
 create policy "UFLMB admins can add cards" on public.cards
-  for insert to authenticated with check (public.is_uflmb_admin());
+  for insert to authenticated with check (private.is_uflmb_admin());
 drop policy if exists "UFLMB admins can update cards" on public.cards;
 create policy "UFLMB admins can update cards" on public.cards
-  for update to authenticated using (public.is_uflmb_admin()) with check (public.is_uflmb_admin());
+  for update to authenticated using (private.is_uflmb_admin()) with check (private.is_uflmb_admin());
 drop policy if exists "UFLMB admins can delete cards" on public.cards;
 create policy "UFLMB admins can delete cards" on public.cards
-  for delete to authenticated using (public.is_uflmb_admin());
+  for delete to authenticated using (private.is_uflmb_admin());
 
 -- Do not expose or allow browser writes to the admin allowlist.
-revoke all on public.admin_users from anon, authenticated;
+revoke all on public.admin_users from anon, authenticated;\n\n-- Remove the helper from public if this schema is reapplied over an older setup.\ndrop function if exists public.is_uflmb_admin();
 
 -- Public reviews are still open for initial community testing. Apply anti-spam
 -- controls (captcha, rate limits, moderation) before promoting this widely.
