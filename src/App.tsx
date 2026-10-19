@@ -849,7 +849,7 @@ export default function App() {
       </section>
       </>}
       {adminTab === 'imports' && <>
-      <SharedDatabasePanel cards={allCards} onLoad={remoteCards => setAllCards(current => [...remoteCards, ...current.filter(card => card.id.startsWith('uflmb-demo-'))])} onMessage={setNotice} />
+      <SharedDatabasePanel cards={allCards} onLoad={remoteCards => setAllCards(current => [...remoteCards, ...current.filter(card => card.id.startsWith('uflmb-demo-') || !remoteCards.some(remote => remote.id === card.id))])} onMessage={setNotice} />
       <section className="admin-panel tools-panel">
         <p className="eyebrow">GOOGLE DRIVE</p><h2>Import from Google Drive</h2>
         <p className="muted-copy">Sign in with Google and select Excel, CSV, JSON files, and card images. Data files are imported into this browser. Images are matched to existing cards by filename (for example, “Player Name.jpg”); unmatched images are placed in the current card form. Nothing is uploaded to Google Drive.</p>
