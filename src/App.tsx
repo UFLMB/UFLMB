@@ -926,7 +926,6 @@ export default function App() {
           <a href="#squad-title" onClick={() => setMenuOpen(false)}><span aria-hidden="true">◈</span> Squad builder</a>
           <a href="#analytics-title" onClick={() => setMenuOpen(false)}><span aria-hidden="true">▥</span> Analytics</a>
           <a href="#database-title" onClick={() => setMenuOpen(false)}><span aria-hidden="true">▦</span> Card database</a>
-          <a href="/UFLMB/#admin" onClick={() => setMenuOpen(false)}><span aria-hidden="true">⚙</span> Card manager</a>
         </nav>
         <div className="top-actions"><span className="status-pill"><span className={import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY ? "status-dot" : "status-dot status-dot-off"} /> {import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY ? "Shared database" : "Local mode"}</span><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
       </header>
