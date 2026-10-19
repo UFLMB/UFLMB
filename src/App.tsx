@@ -40,7 +40,7 @@ const downloadJson = (cards: PlayerCard[]) => {
 }
 
 export default function App() {
-  const isAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin')
+  const isAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin') || window.location.hash === '#admin'
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<Category>('All cards')
@@ -222,7 +222,7 @@ export default function App() {
     <main className="app-shell">
       <header className="topbar">
         <a className="brand" href="/" aria-label="UFLMB home"><span className="brand-mark">U</span><span className="brand-word">UFL<span>MB</span></span></a>
-        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Community database</span><a className="admin-link" href={`${import.meta.env.BASE_URL}admin`}>Admin / adatbevitel ↗</a></div>
+        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Community database</span><a className="admin-link" href={`${import.meta.env.BASE_URL}#admin`}>Admin / adatbevitel ↗</a></div>
       </header>
       <section className="hero">
         <p className="eyebrow">COMMUNITY DATABASE PROJECT</p>
