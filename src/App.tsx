@@ -886,7 +886,7 @@ export default function App() {
         `${duplicateCount} likely duplicate(s) would be skipped.`,
         '',
         'Continue? Export a backup first if you are unsure.',
-      ].join('\\n')
+      ].join('\n')
       if (!window.confirm(prompt)) {
         setNotice('Import cancelled. No records were changed.')
         return
