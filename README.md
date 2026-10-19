@@ -8,6 +8,7 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 - Installable progressive web app (PWA) with an app manifest and custom icon
 - Offline app-shell caching for returning visitors; card data remains browser-local until a shared backend is configured
 - Improved keyboard focus visibility and reduced-motion support
+- Multiple background image URLs with automatic 30-second rotation, dark readability overlay, and backward-compatible migration of the previous single-background setting (saved in the current browser)
 - Search by player name, nation, club, card type and position
 - Search by player name, nation, club, card type, position, stats, perks, and source URL
 - Sort by OVR, name, or most recently verified
@@ -85,3 +86,7 @@ The GitHub Actions workflow in `.github/workflows/deploy.yml` builds the app and
 - **Responsive comparison and analytics layouts** for desktop and mobile.
 
 These are client-side features and use the same local dataset as the existing gallery. They do **not** turn local storage into a shared online database or add server-side authentication; that requires a separate backend/authentication package.
+
+## Background image rotation
+
+The branding section accepts multiple direct HTTP/HTTPS image URLs, one per line. They rotate every 30 seconds, with a strong dark gradient overlay applied to each image to keep text legible. The previous single-background setting is migrated automatically. Appearance settings remain local to the current browser because this static deployment has no shared settings backend.
