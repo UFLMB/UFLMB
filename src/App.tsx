@@ -11,7 +11,7 @@ const BRANDING_KEY = 'uflmb.site-branding.v1'
 type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[] }
 const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrls: [] }
 const parseBackgroundUrls = (value: string) => Array.from(new Set(
-  value.split(/[\\n,]+/).map(url => url.trim()).filter(url => {
+  value.split(/[\n,]+/).map(url => url.trim()).filter(url => {
     try {
       const parsed = new URL(url)
       return (parsed.protocol === 'https:' || parsed.protocol === 'http:') && Boolean(parsed.hostname)
@@ -26,7 +26,7 @@ const loadBranding = (): SiteBranding => {
       // Migrate the previous single-image setting without losing users' saved background.
       const legacy = typeof saved.backgroundImageUrl === 'string' ? saved.backgroundImageUrl : ''
       const savedImages = Array.isArray(saved.backgroundImageUrls)
-        ? saved.backgroundImageUrls.filter((url): url is string => typeof url === 'string').join('\\n')
+        ? saved.backgroundImageUrls.filter((url): url is string => typeof url === 'string').join('\n')
         : legacy
       return {
         ...defaultBranding,
@@ -139,6 +139,7 @@ export default function App() {
   const [driveBusy, setDriveBusy] = useState(false)
   const [siteTheme] = useState<SiteTheme>(loadTheme)
   const [siteBranding, setSiteBranding] = useState<SiteBranding>(loadBranding)
+  const [backgroundUrlsText, setBackgroundUrlsText] = useState(() => siteBranding.backgroundImageUrls.join('\n'))
   const [backgroundIndex, setBackgroundIndex] = useState(0)
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
@@ -715,14 +716,14 @@ export default function App() {
             <label>Brand icon / symbol<input maxLength={5} value={siteBranding.iconText} onChange={e => setSiteBranding(current => ({ ...current, iconText: e.target.value.slice(0, 5) }))} placeholder="U, ⚽, ★" /><small>Text, initials or emoji shown in the square brand mark</small></label>
             <label>Logo image URL<input type="url" value={siteBranding.logoUrl} onChange={e => setSiteBranding(current => ({ ...current, logoUrl: e.target.value }))} placeholder="https://example.com/logo.png" /><small>Direct URL to a PNG, SVG, WebP or JPG logo</small></label>
             <label>Browser tab icon (favicon) URL<input type="url" value={siteBranding.faviconUrl} onChange={e => setSiteBranding(current => ({ ...current, faviconUrl: e.target.value }))} placeholder="https://example.com/icon.png" /><small>Small icon shown on the browser tab</small></label>
-            <label className="branding-wide">Background image URLs (one per line)<textarea rows={5} value={siteBranding.backgroundImageUrls.join('\\n')} onChange={e => { const backgroundImageUrls = parseBackgroundUrls(e.target.value); setSiteBranding(current => ({ ...current, backgroundImageUrls })); setBackgroundIndex(0) }} placeholder={`https://example.com/arena-1.jpg\\nhttps://example.com/arena-2.jpg\\nhttps://example.com/arena-3.jpg`} /><small>Add multiple direct image URLs, one per line (or separated by commas). Valid HTTP/HTTPS links are saved; duplicates and invalid links are ignored. Backgrounds rotate automatically every 30 seconds. A strong dark gradient overlay is applied to every background to keep text readable.</small></label>
+            <label className="branding-wide">Background image URLs (one per line)<textarea rows={5} value={backgroundUrlsText} onChange={e => setBackgroundUrlsText(e.target.value)} onBlur={() => { const backgroundImageUrls = parseBackgroundUrls(backgroundUrlsText); setSiteBranding(current => ({ ...current, backgroundImageUrls })); setBackgroundUrlsText(backgroundImageUrls.join('\n')); setBackgroundIndex(0) }} placeholder={'https://example.com/arena-1.jpg\nhttps://example.com/arena-2.jpg\nhttps://example.com/arena-3.jpg'} /><small>Add multiple direct image URLs, one per line (or separated by commas). Click Apply backgrounds or leave this field to save the list. Valid HTTP/HTTPS links are saved; duplicates and invalid links are ignored. Backgrounds rotate automatically every 30 seconds. A strong dark gradient overlay is applied to every background to keep text readable.</small></label>
           </div>
           <div className="branding-preview">
             <div className="branding-preview-item"><strong>Brand mark / logo</strong>{siteBranding.logoUrl.trim() ? <img src={siteBranding.logoUrl.trim()} alt="Logo preview" onError={e => { e.currentTarget.style.display = 'none' }} /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}</div>
             {siteBranding.faviconUrl.trim() && <div className="branding-preview-item"><strong>Browser icon</strong><img className="favicon-preview" src={siteBranding.faviconUrl.trim()} alt="Favicon preview" /></div>}
-            {siteBranding.backgroundImageUrls.length > 0 && <div className="branding-background-preview" style={{ backgroundImage: `linear-gradient(rgba(5,8,14,.74), rgba(5,8,14,.82)), url("${siteBranding.backgroundImageUrls[backgroundIndex % siteBranding.backgroundImageUrls.length].replace(/["\\\\]/g, '')}")` }}><span>Background preview · {backgroundIndex % siteBranding.backgroundImageUrls.length + 1}/{siteBranding.backgroundImageUrls.length} · rotates every 30 seconds</span></div>}
+            {siteBranding.backgroundImageUrls.length > 0 && <div className="branding-background-preview" style={{ backgroundImage: \`linear-gradient(rgba(5,8,14,.74), rgba(5,8,14,.82)), url("\${siteBranding.backgroundImageUrls[backgroundIndex % siteBranding.backgroundImageUrls.length].replace(/["\\\\]/g, '')}")\` }}><span>Background preview · {backgroundIndex % siteBranding.backgroundImageUrls.length + 1}/{siteBranding.backgroundImageUrls.length} · rotates every 30 seconds</span></div>}
           </div>
-          <div className="form-actions"><button className="button secondary" type="button" onClick={() => setSiteBranding(defaultBranding)}>Reset branding</button></div>
+          <div className="form-actions"><button className="button primary" type="button" onClick={() => { const backgroundImageUrls = parseBackgroundUrls(backgroundUrlsText); setSiteBranding(current => ({ ...current, backgroundImageUrls })); setBackgroundIndex(0); setBackgroundUrlsText(backgroundImageUrls.join('\n')) }}>Apply backgrounds</button><button className="button secondary" type="button" onClick={() => { setSiteBranding(defaultBranding); setBackgroundUrlsText(''); setBackgroundIndex(0) }}>Reset branding</button></div>
         </section>
         <p className="field-help">Current limitation: because UFLMB is a static site without a shared settings backend, these theme choices affect this browser only. They do not change the theme for every visitor.</p>
       </section>
