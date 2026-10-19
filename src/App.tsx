@@ -138,6 +138,9 @@ export default function App() {
   const [sortBy, setSortBy] = useState<'ovr-desc' | 'ovr-asc' | 'name-asc' | 'verified-desc'>('ovr-desc')
   const [minOvr, setMinOvr] = useState('')
   const [maxOvr, setMaxOvr] = useState('')
+  const [statFilter, setStatFilter] = useState('Any stat')
+  const [minStat, setMinStat] = useState('')
+  const [maxStat, setMaxStat] = useState('')
   const [showBookmarked, setShowBookmarked] = useState(false)
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() => { try { const saved = JSON.parse(localStorage.getItem('uflmb.bookmarks.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string') : [] } catch { return [] } })
   const [selectedCard, setSelectedCard] = useState<PlayerCard | null>(null)
@@ -224,6 +227,7 @@ export default function App() {
   }, [allCards])
 
   const nations = useMemo(() => Array.from(new Set(allCards.map(card => card.nation).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [allCards])
+  const availableStats = useMemo(() => Array.from(new Set(allCards.flatMap(card => Object.keys(card.stats ?? {})))).sort((a,b) => a.localeCompare(b)), [allCards])
   const positions = useMemo(() => Array.from(new Set(allCards.flatMap(card => card.positions).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [allCards])
   const cardTypes = useMemo(() => Array.from(new Set(allCards.map(card => card.cardName).filter((value): value is string => Boolean(value?.trim())))).sort((a, b) => a.localeCompare(b)), [allCards])
 
@@ -236,11 +240,12 @@ export default function App() {
       (cardTypeFilter === 'All card types' || card.cardName === cardTypeFilter) &&
       (minOvr === '' || card.overallRating >= Number(minOvr)) &&
       (maxOvr === '' || card.overallRating <= Number(maxOvr)) &&
+      (statFilter === 'Any stat' || (typeof card.stats?.[statFilter] === 'number' && (minStat === '' || card.stats[statFilter] >= Number(minStat)) && (maxStat === '' || card.stats[statFilter] <= Number(maxStat)))) &&
       (!showBookmarked || bookmarkedIds.includes(card.id))
   }).sort((a, b) => sortBy === 'ovr-desc' ? b.overallRating - a.overallRating || a.playerName.localeCompare(b.playerName) :
     sortBy === 'ovr-asc' ? a.overallRating - b.overallRating || a.playerName.localeCompare(b.playerName) :
       sortBy === 'verified-desc' ? (b.verifiedAt || '').localeCompare(a.verifiedAt || '') || a.playerName.localeCompare(b.playerName) :
-        a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, positionFilter, cardTypeFilter, sortBy, minOvr, maxOvr, showBookmarked, bookmarkedIds])
+        a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, positionFilter, cardTypeFilter, sortBy, minOvr, maxOvr, statFilter, minStat, maxStat, showBookmarked, bookmarkedIds])
 
   const comparedCards = useMemo(() => compareIds.map(id => allCards.find(card => card.id === id)).filter((card): card is PlayerCard => Boolean(card)), [allCards, compareIds])
   const squadSlots = formations[formationId]
@@ -874,8 +879,11 @@ export default function App() {
           <label>Sort by <select value={sortBy} onChange={e => setSortBy(e.target.value as 'ovr-desc' | 'ovr-asc' | 'name-asc' | 'verified-desc')}><option value="ovr-desc">Highest OVR</option><option value="ovr-asc">Lowest OVR</option><option value="name-asc">Player name A–Z</option><option value="verified-desc">Recently verified</option></select></label>
           <label className="ovr-range">Min OVR <input aria-label="Minimum overall rating" type="number" min="1" max="999" value={minOvr} onChange={e => setMinOvr(e.target.value)} placeholder="Any" /></label>
           <label className="ovr-range">Max OVR <input aria-label="Maximum overall rating" type="number" min="1" max="999" value={maxOvr} onChange={e => setMaxOvr(e.target.value)} placeholder="Any" /></label>
+          <label>Attribute <select value={statFilter} onChange={e => setStatFilter(e.target.value)}><option>Any stat</option>{availableStats.map(stat => <option key={stat} value={stat}>{stat}</option>)}</select></label>
+          <label className="ovr-range">Min stat <input aria-label="Minimum selected attribute" type="number" min="0" max="999" disabled={statFilter === 'Any stat'} value={minStat} onChange={e => setMinStat(e.target.value)} placeholder="Any" /></label>
+          <label className="ovr-range">Max stat <input aria-label="Maximum selected attribute" type="number" min="0" max="999" disabled={statFilter === 'Any stat'} value={maxStat} onChange={e => setMaxStat(e.target.value)} placeholder="Any" /></label>
           <button className={showBookmarked ? 'category active' : 'category'} type="button" aria-pressed={showBookmarked} onClick={() => setShowBookmarked(value => !value)}>★ Saved cards ({bookmarkedIds.length})</button>
-          {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sortBy !== 'ovr-desc' || minOvr !== '' || maxOvr !== '' || showBookmarked) && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setShowBookmarked(false) }}>Reset all filters</button>}
+          {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sortBy !== 'ovr-desc' || minOvr !== '' || maxOvr !== '' || statFilter !== 'Any stat' || minStat !== '' || maxStat !== '' || showBookmarked) && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat(''); setShowBookmarked(false) }}>Reset all filters</button>}
         </div>
       </section>
       <section className="squad-section" aria-labelledby="squad-title">
