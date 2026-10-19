@@ -486,6 +486,10 @@ export default function App() {
       setNotice("Enter the player's name, nation, at least one position, and a verifiable source.")
       return
     }
+    if (convertDemoToReal && (draft.sourceUrl.includes('example.com/uflmb-demo-data-not-a-real-source') || draft.cardName.toLowerCase().includes('demo data'))) {
+      setNotice('Before converting this fixture, replace the placeholder source URL and demo card type. Verify every rating, stat and perk manually.')
+      return
+    }
     if (!Number.isInteger(rating) || rating < 1 || rating > 999) { setNotice('OVR must be a whole number between 1 and 999.'); return }
     let stats: Record<string, number> | undefined
     if (draft.stats.trim()) {
