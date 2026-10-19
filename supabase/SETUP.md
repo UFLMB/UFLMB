@@ -20,12 +20,9 @@ The application can use Supabase for shared card records and community ratings/r
 
 ## 2. Configure GitHub Pages
 
-In the UFLMB GitHub repository, open **Settings → Secrets and variables → Actions → Variables** and add:
+The current `.github/workflows/deploy.yml` already supplies the Supabase Project URL and public `sb_publishable_...` key to the build, so no GitHub Actions variables are required for the configured project. Both values are public client configuration by design; the service-role/secret key must never be committed or included in a frontend build.
 
-- `VITE_SUPABASE_URL` = the Supabase Project URL
-- `VITE_SUPABASE_ANON_KEY` = the public publishable/anon key
-
-These two values are designed to be public client configuration; the service-role key is not. Save the variables, then open **Actions → Deploy UFLMB to GitHub Pages → Run workflow**, or push a commit to trigger a build.
+After changing the project or rotating the publishable key, update those two values in the workflow and commit the change. A push to `main` triggers the GitHub Pages build and deployment.
 
 ## 3. Use the app
 
