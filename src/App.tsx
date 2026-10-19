@@ -21,20 +21,10 @@ const loadBranding = (): SiteBranding => {
 type SiteTheme = { preset: string; accent: string; background: string; panel: string; text: string; mode: 'gradient' | 'solid'; radius: number }
 const themePresets: Record<string, Omit<SiteTheme, 'preset'>> = {
   arena: { accent: '#c5f467', background: '#0b0d12', panel: '#11141b', text: '#f3f5f8', mode: 'gradient', radius: 15 },
-  ocean: { accent: '#59d8ff', background: '#07131d', panel: '#0d202d', text: '#eef8ff', mode: 'gradient', radius: 15 },
-  royal: { accent: '#b69cff', background: '#100d1a', panel: '#1b1628', text: '#f6f1ff', mode: 'gradient', radius: 15 },
-  fire: { accent: '#ff9a62', background: '#170d0b', panel: '#261713', text: '#fff4ef', mode: 'gradient', radius: 15 },
-  light: { accent: '#3166d5', background: '#f3f5f8', panel: '#ffffff', text: '#172033', mode: 'solid', radius: 12 },
-  forest: { accent: '#63e6a2', background: '#081610', panel: '#10241a', text: '#effff5', mode: 'gradient', radius: 15 },
 }
 const defaultTheme: SiteTheme = { preset: 'arena', ...themePresets.arena }
-const loadTheme = (): SiteTheme => {
-  try {
-    const value = JSON.parse(localStorage.getItem(THEME_KEY) || 'null')
-    if (value && typeof value === 'object') return { ...defaultTheme, ...value }
-  } catch { /* use defaults */ }
-  return defaultTheme
-}
+// UFL-inspired Arena theme is intentionally locked; ignore older saved custom themes.
+const loadTheme = (): SiteTheme => defaultTheme
 type DriveFile = { id: string; name: string; mimeType: string; size?: string }
 const categories = ['All cards', 'Goalkeepers', 'Defenders', 'Midfielders', 'Forwards'] as const
 type Category = typeof categories[number]
@@ -621,21 +611,14 @@ export default function App() {
         <div className="notice warning"><strong>Important:</strong> this version saves data to the current browser's local storage. It does not sync with other visitors or devices, and the admin page is not protected by a login. A public shared database requires server-side storage and authenticated admin access.</div>
         {notice && <div className="notice">{notice}</div>}
       </section>
-      <section className="admin-panel theme-editor">
-        <div className="section-heading"><div><p className="eyebrow">SITE APPEARANCE</p><h2>Theme & design studio</h2></div><span className="count-label">Live preview</span></div>
-        <p className="muted-copy">Change the site's accent, background, panel and text colors, background style and corner radius. The preview updates immediately and the settings are saved in this browser.</p>
-        <div className="theme-presets" aria-label="Theme presets">{Object.entries(themePresets).map(([key, value]) => <button type="button" key={key} className={siteTheme.preset === key ? 'theme-preset active' : 'theme-preset'} onClick={() => setSiteTheme({ preset: key, ...value })}><span style={{ background: value.background, borderColor: value.accent }}><i style={{ background: value.accent }} /><i style={{ background: value.panel }} /></span><strong>{({ arena: 'Arena', ocean: 'Ocean', royal: 'Royal', fire: 'Fire', light: 'Light', forest: 'Forest' } as Record<string, string>)[key]}</strong></button>)}</div>
-        <div className="theme-controls">
-          <label>Accent color<input type="color" value={siteTheme.accent} onChange={e => setSiteTheme(current => ({ ...current, preset: 'custom', accent: e.target.value }))} /><small>Buttons, highlights and active states</small></label>
-          <label>Page background<input type="color" value={siteTheme.background} onChange={e => setSiteTheme(current => ({ ...current, preset: 'custom', background: e.target.value }))} /><small>Main site canvas</small></label>
-          <label>Panel / card color<input type="color" value={siteTheme.panel} onChange={e => setSiteTheme(current => ({ ...current, preset: 'custom', panel: e.target.value }))} /><small>Cards, forms and panels</small></label>
-          <label>Text color<input type="color" value={siteTheme.text} onChange={e => setSiteTheme(current => ({ ...current, preset: 'custom', text: e.target.value }))} /><small>Main text color</small></label>
-          <label>Background style<select value={siteTheme.mode} onChange={e => setSiteTheme(current => ({ ...current, mode: e.target.value as SiteTheme['mode'], preset: 'custom' }))}><option value="gradient">Soft gradient</option><option value="solid">Solid color</option></select><small>Gradient or plain background</small></label>
-          <label>Corner roundness <output>{siteTheme.radius}px</output><input type="range" min="0" max="28" step="1" value={siteTheme.radius} onChange={e => setSiteTheme(current => ({ ...current, radius: Number(e.target.value), preset: 'custom' }))} /><small>Card and panel corners</small></label>
+            <section className="admin-panel theme-editor">
+        <div className="section-heading"><div><p className="eyebrow">SITE APPEARANCE</p><h2>UFL Arena theme</h2></div><span className="count-label">Fixed theme</span></div>
+        <p className="muted-copy">The site uses one fixed UFL-inspired visual style: dark arena backgrounds, lime-green accents, high-contrast text and rounded panels. Theme colors and styling cannot be changed from the admin panel.</p>
+        <div className="theme-live-preview" style={{ background: 'radial-gradient(ellipse at 20% 0%, #c5f46725, transparent 55%), #0b0d12', color: '#f3f5f8', borderRadius: 15 }}>
+          <div className="theme-preview-top"><span className="theme-preview-mark" style={{ background: '#c5f467', color: '#0b0d12' }}>U</span><strong>UFLMB <small>ARENA</small></strong><span className="theme-preview-pill" style={{ borderColor: '#c5f467', color: '#c5f467' }}>FIXED THEME</span></div>
+          <div className="theme-preview-card" style={{ background: '#11141b', borderRadius: 12 }}><span className="theme-preview-accent" style={{ color: '#c5f467' }}>UFL-INSPIRED DESIGN</span><h3>One identity. One arena.</h3><p style={{ opacity: .72 }}>Charcoal surfaces, lime highlights and clear, readable contrast.</p><button type="button" style={{ background: '#c5f467', color: '#0b0d12', borderRadius: 10 }}>Sample action</button></div>
         </div>
-        <div className="theme-live-preview" style={{ background: siteTheme.mode === 'gradient' ? `radial-gradient(ellipse at 20% 0%, ${siteTheme.accent}25, transparent 55%), ${siteTheme.background}` : siteTheme.background, color: siteTheme.text, borderRadius: siteTheme.radius }}><div className="theme-preview-top"><span className="theme-preview-mark" style={{ background: siteTheme.accent, color: siteTheme.background }}>U</span><strong>UFLMB <small>PREVIEW</small></strong><span className="theme-preview-pill" style={{ borderColor: siteTheme.accent, color: siteTheme.accent }}>LIVE THEME</span></div><div className="theme-preview-card" style={{ background: siteTheme.panel, borderRadius: Math.max(0, siteTheme.radius - 3) }}><span className="theme-preview-accent" style={{ color: siteTheme.accent }}>SITE DESIGN</span><h3>Build your own look.</h3><p style={{ opacity: .72 }}>This is how the selected colors and styling work together.</p><button type="button" style={{ background: siteTheme.accent, color: siteTheme.background, borderRadius: Math.max(0, siteTheme.radius - 5) }}>Sample action</button></div></div>
-        <div className="form-actions"><button className="button secondary" type="button" onClick={() => setSiteTheme(defaultTheme)}>Reset to default</button></div>
-        <section className="branding-editor">
+<section className="branding-editor">
           <div className="section-heading"><div><p className="eyebrow">BRAND IDENTITY</p><h2>Logo, icon & background image</h2></div></div>
           <p className="muted-copy">Paste direct image URLs (HTTPS recommended). Changes preview immediately and save in this browser.</p>
           <div className="theme-controls branding-controls">
