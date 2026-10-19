@@ -11,6 +11,9 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 - Multiple background image URLs with automatic 30-second rotation, dark readability overlay, and backward-compatible migration of the previous single-background setting (saved in the current browser)
 - Search by player name, nation, club, card type and position
 - Search by player name, nation, club, card type, position, stats, perks, and source URL
+- Full player profile modal with complete saved attributes, perk list, verification date and source link
+- Personal saved-card bookmarks and a saved-only browsing filter (stored in the current browser)
+- Minimum and maximum OVR range filters alongside position, nation, card type and text search
 - Sort by OVR, name, or most recently verified
 - Reset all active search and filter criteria in one action
 - Actionable data-quality review queue with direct record editing
