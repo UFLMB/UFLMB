@@ -8,3 +8,15 @@
 .browse-controls{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px;margin-top:16px}
 .browse-controls label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px}
 .browse-controls select{max-width:min(230px,60vw);padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:#11141b;color:#e5e8ee;font:inherit}
+
+.quality-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:18px}
+.quality-tile{display:flex;flex-direction:column;gap:7px;padding:15px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.025)}
+.quality-tile strong{font-family:'DM Mono',monospace;font-size:24px;color:var(--lime)}
+.quality-tile span{font-size:10px;color:var(--muted);line-height:1.5}
+.quality-warning{border-color:rgba(255,195,90,.35)}
+.quality-warning strong{color:#ffc35a}
+.record-bulk-actions{margin-bottom:10px}
+.record-select{display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:6px}
+.record-select input{width:16px;height:16px;accent-color:var(--lime);cursor:pointer}
+.record-row-selected{background:rgba(197,244,103,.035)}
+.record-row .button:disabled{opacity:.45;cursor:not-allowed;transform:none}
