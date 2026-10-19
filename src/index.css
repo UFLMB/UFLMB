@@ -118,3 +118,31 @@ body{background:var(--page-bg,#0b0d12);color:var(--text-color,#f3f5f8)}
     transition-duration:.01ms!important;
   }
 }
+
+
+/* Multiple rotating backgrounds and contrast-preserving overlays */
+.branding-controls textarea{
+  width:100%;
+  min-width:0;
+  min-height:125px;
+  resize:vertical;
+  padding:10px 11px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:var(--panel-bg,#11141b);
+  color:var(--text-color,#f3f5f8);
+  font:12px/1.65 'DM Mono',monospace;
+}
+.branding-controls textarea:focus-visible{
+  outline:2px solid var(--accent,#c5f467);
+  outline-offset:2px;
+}
+.branding-background-preview{
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:cover;
+  border-color:rgba(197,244,103,.24);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);
+  text-align:center;
+  text-shadow:0 2px 10px rgba(0,0,0,.95);
+}
