@@ -60,6 +60,14 @@ const emptyDraft = (): Draft => ({
 })
 const makeId = () => `card-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
 
+type FormationId = '4-3-3' | '4-4-2' | '3-5-2'
+type SquadSlot = { id: string; label: string; positions: string[] }
+const formations: Record<FormationId, SquadSlot[]> = {
+  '4-3-3': [{id:'gk',label:'GK',positions:['GK']},{id:'lb',label:'LB',positions:['LB','LWB']},{id:'lcb',label:'LCB',positions:['CB']},{id:'rcb',label:'RCB',positions:['CB']},{id:'rb',label:'RB',positions:['RB','RWB']},{id:'cdm',label:'CDM',positions:['CDM','CM']},{id:'lcm',label:'LCM',positions:['CM','CDM','CAM']},{id:'rcm',label:'RCM',positions:['CM','CDM','CAM']},{id:'lw',label:'LW',positions:['LW','LM','ST']},{id:'st',label:'ST',positions:['ST','CF']},{id:'rw',label:'RW',positions:['RW','RM','ST']}],
+  '4-4-2': [{id:'gk',label:'GK',positions:['GK']},{id:'lb',label:'LB',positions:['LB','LWB']},{id:'lcb',label:'LCB',positions:['CB']},{id:'rcb',label:'RCB',positions:['CB']},{id:'rb',label:'RB',positions:['RB','RWB']},{id:'lm',label:'LM',positions:['LM','LW']},{id:'lcm',label:'LCM',positions:['CM','CDM']},{id:'rcm',label:'RCM',positions:['CM','CDM']},{id:'rm',label:'RM',positions:['RM','RW']},{id:'lst',label:'ST',positions:['ST','CF']},{id:'rst',label:'ST',positions:['ST','CF']}],
+  '3-5-2': [{id:'gk',label:'GK',positions:['GK']},{id:'lcb',label:'LCB',positions:['CB']},{id:'cb',label:'CB',positions:['CB']},{id:'rcb',label:'RCB',positions:['CB']},{id:'lwb',label:'LWB',positions:['LWB','LB','LM']},{id:'cdm',label:'CDM',positions:['CDM','CM']},{id:'lcm',label:'LCM',positions:['CM','CDM','CAM']},{id:'rcm',label:'RCM',positions:['CM','CDM','CAM']},{id:'rwb',label:'RWB',positions:['RWB','RB','RM']},{id:'lst',label:'ST',positions:['ST','CF']},{id:'rst',label:'ST',positions:['ST','CF']}],
+}
+
 const isHttpUrl = (value: string) => {
   try { const url = new URL(value); return url.protocol === 'https:' || url.protocol === 'http:' } catch { return false }
 }
@@ -133,6 +141,8 @@ export default function App() {
   const [showBookmarked, setShowBookmarked] = useState(false)
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() => { try { const saved = JSON.parse(localStorage.getItem('uflmb.bookmarks.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string') : [] } catch { return [] } })
   const [selectedCard, setSelectedCard] = useState<PlayerCard | null>(null)
+  const [formationId, setFormationId] = useState<FormationId>(() => { try { const v = localStorage.getItem('uflmb.squad.formation'); return v === '4-4-2' || v === '3-5-2' ? v : '4-3-3' } catch { return '4-3-3' } })
+  const [squadAssignments, setSquadAssignments] = useState<Record<string,string>>(() => { try { const v: unknown = JSON.parse(localStorage.getItem('uflmb.squad.assignments') || '{}'); return v && typeof v === 'object' && !Array.isArray(v) ? v as Record<string,string> : {} } catch { return {} } })
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
@@ -153,6 +163,10 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('uflmb.bookmarks.v1', JSON.stringify(bookmarkedIds)) } catch { /* session-only fallback */ }
   }, [bookmarkedIds])
+
+  useEffect(() => {
+    try { localStorage.setItem('uflmb.squad.formation', formationId); localStorage.setItem('uflmb.squad.assignments', JSON.stringify(squadAssignments)) } catch { /* squad remains available for this session */ }
+  }, [formationId, squadAssignments])
 
   useEffect(() => {
     const root = document.documentElement
@@ -229,6 +243,10 @@ export default function App() {
         a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, positionFilter, cardTypeFilter, sortBy, minOvr, maxOvr, showBookmarked, bookmarkedIds])
 
   const comparedCards = useMemo(() => compareIds.map(id => allCards.find(card => card.id === id)).filter((card): card is PlayerCard => Boolean(card)), [allCards, compareIds])
+  const squadSlots = formations[formationId]
+  const squadPlayers = squadSlots.map(slot => ({ slot, card: allCards.find(card => card.id === squadAssignments[slot.id]) })).filter((entry): entry is {slot: SquadSlot; card: PlayerCard} => Boolean(entry.card))
+  const squadRating = squadPlayers.length ? Math.round(squadPlayers.reduce((total, entry) => total + entry.card.overallRating, 0) / squadPlayers.length) : 0
+  const squadPositionFits = squadPlayers.filter(({slot,card}) => card.positions.some(position => slot.positions.includes(position))).length
   const statLeaders = useMemo(() => {
     const statKeys = Array.from(new Set(allCards.flatMap(card => Object.keys(card.stats ?? {}))))
       .filter(key => allCards.some(card => typeof card.stats?.[key] === 'number'))
@@ -859,6 +877,12 @@ export default function App() {
           <button className={showBookmarked ? 'category active' : 'category'} type="button" aria-pressed={showBookmarked} onClick={() => setShowBookmarked(value => !value)}>★ Saved cards ({bookmarkedIds.length})</button>
           {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sortBy !== 'ovr-desc' || minOvr !== '' || maxOvr !== '' || showBookmarked) && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setShowBookmarked(false) }}>Reset all filters</button>}
         </div>
+      </section>
+      <section className="squad-section" aria-labelledby="squad-title">
+        <div className="section-heading"><div><p className="eyebrow">TACTICAL WORKSPACE</p><h2 id="squad-title">My squad builder</h2></div><span className="count-label">Saved in this browser</span></div>
+        <div className="squad-toolbar"><label>Formation <select value={formationId} onChange={e => setFormationId(e.target.value as FormationId)}><option value="4-3-3">4-3-3</option><option value="4-4-2">4-4-2</option><option value="3-5-2">3-5-2</option></select></label><div className="squad-summary"><span><strong>{squadPlayers.length}/11</strong> selected</span><span><strong>{squadRating || '—'}</strong> avg. OVR</span><span><strong>{squadPositionFits}/{squadPlayers.length || 11}</strong> position fits</span></div><button className="button secondary" type="button" onClick={() => setSquadAssignments({})}>Clear squad</button></div>
+        {allCards.length === 0 ? <div className="squad-empty"><strong>Your tactics start with verified cards.</strong><p>No player records are available yet. Add real, source-verified cards in the card manager, then assign them here. UFLMB will never fill the squad with invented players.</p><a className="button primary" href="/UFLMB/#admin">Open card manager</a></div> : <div className={`squad-pitch formation-${formationId.replace('-', '')}`}><div className="pitch-lines" aria-hidden="true" />{squadSlots.map(slot => { const assigned = allCards.find(card => card.id === squadAssignments[slot.id]); const occupiedElsewhere = new Set(Object.entries(squadAssignments).filter(([key]) => key !== slot.id).map(([,id]) => id)); return <div className="squad-slot" key={slot.id}><span className="squad-slot-label">{slot.label}</span><select aria-label={`Choose ${slot.label} player`} value={assigned?.id ?? ''} onChange={e => setSquadAssignments(current => ({...current,[slot.id]:e.target.value}))}><option value="">+ Add player</option>{allCards.filter(card => !occupiedElsewhere.has(card.id)).sort((a,b) => Number(b.positions.some(p => slot.positions.includes(p))) - Number(a.positions.some(p => slot.positions.includes(p))) || b.overallRating-a.overallRating || a.playerName.localeCompare(b.playerName)).map(card => <option key={card.id} value={card.id}>{card.playerName} · {card.overallRating} OVR · {card.positions.join('/')}</option>)}</select>{assigned && <div className={assigned.positions.some(p => slot.positions.includes(p)) ? 'squad-player-rating fit' : 'squad-player-rating'}><strong>{assigned.overallRating}</strong><small>{assigned.playerName}</small></div>}</div>})}</div>}
+        <p className="squad-footnote">Average OVR is calculated from assigned cards only. Position fit checks the recorded positions; no chemistry or gameplay performance is fabricated.</p>
       </section>
       <section className="analytics-section" aria-labelledby="analytics-title">
         <div className="section-heading"><div><p className="eyebrow">LIVE COLLECTION INSIGHTS</p><h2 id="analytics-title">Rankings & analytics</h2></div><span className="count-label">{allCards.length} verified records in this browser</span></div>
