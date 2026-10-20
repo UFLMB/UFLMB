@@ -131,7 +131,27 @@ const downloadCsv = (cards: PlayerCard[]) => {
 }
 
 export default function App() {
-  const isAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin') || window.location.hash === '#admin'
+  const requestedAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin') || window.location.hash === '#admin'
+  const [adminUnlocked, setAdminUnlocked] = useState(() => {
+    try { return sessionStorage.getItem('uflmb.admin-unlocked') === 'yes' } catch { return false }
+  })
+  const [gateActive, setGateActive] = useState(() => window.location.hash === '#diagnostic')
+  const [secretSelected, setSecretSelected] = useState(false)
+  const isAdmin = requestedAdmin && adminUnlocked
+  const showGate = gateActive || (requestedAdmin && !adminUnlocked)
+  const unlockAdmin = () => {
+    try { sessionStorage.setItem('uflmb.admin-unlocked', 'yes') } catch { /* current session still unlocks */ }
+    setAdminUnlocked(true)
+    setGateActive(false)
+    setSecretSelected(false)
+    window.location.hash = 'admin'
+  }
+  const openGate = () => {
+    setGateActive(true)
+    setSecretSelected(false)
+    window.location.hash = 'diagnostic'
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
@@ -973,6 +993,37 @@ export default function App() {
     } catch { setNotice('Invalid JSON. Check the file contents.') }
   }
 
+  if (showGate && !isAdmin) return (
+    <main className="app-shell gate-shell">
+      <header className="topbar">
+        <a className="brand" href="/UFLMB/" aria-label="UFLMB home"><span className="brand-mark">U</span><span className="brand-word">UFL<span>MB</span></span></a>
+        <span className="status-pill"><span className="status-dot" /> SYSTEM STATUS</span>
+      </header>
+      <section className="gate-error">
+        <div className="gate-error-code">503</div>
+        <p className="eyebrow">ARENA SERVICE CHECK</p>
+        <h1>Connection <span>interrupted.</span></h1>
+        <p className="hero-copy">The requested service is temporarily unavailable. Please check the system marker and try again.</p>
+        <div className="gate-diagnostic">
+          <div className="gate-diagnostic-top"><span><i /> Diagnostic channel</span><span>UF-01</span></div>
+          <p>One local marker is out of alignment. Move the U marker into the outlined receiver to reinitialize this session.</p>
+          <div className="gate-puzzle">
+            <button className={secretSelected ? "gate-token gate-token-selected" : "gate-token"} type="button" draggable onDragStart={event => { event.dataTransfer.setData('text/plain', 'uflmb-marker'); setSecretSelected(true) }} onClick={() => setSecretSelected(value => !value)} aria-pressed={secretSelected} aria-label="Select U marker to move">
+              <span>U</span><small>{secretSelected ? 'MARKER SELECTED' : 'U MARKER'}</small>
+            </button>
+            <span className="gate-puzzle-arrow" aria-hidden="true">→</span>
+            <button className={secretSelected ? "gate-receiver gate-receiver-ready" : "gate-receiver"} type="button" onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); if (event.dataTransfer.getData('text/plain') === 'uflmb-marker') unlockAdmin() }} onClick={() => { if (secretSelected) unlockAdmin(); else setSecretSelected(true) }} aria-label="Move marker into receiver">
+              <span>＋</span><small>{secretSelected ? 'PRESS TO ALIGN' : 'RECEIVER'}</small>
+            </button>
+          </div>
+          <div className="gate-progress"><span /> <span>LOCAL DIAGNOSTIC ONLY</span></div>
+        </div>
+        <a className="gate-home-link" href="/UFLMB/">Return to public database</a>
+      </section>
+      <footer className="footer"><span>UFLMB <span className="footer-muted">· Arena network</span></span><span className="footer-muted">Request ID: UF-01</span></footer>
+    </main>
+  )
+
   if (isAdmin) return (
     <main className="app-shell admin-shell">
       <header className="topbar">
@@ -1154,6 +1205,7 @@ export default function App() {
 
   return (
     <main className="app-shell">
+      <button className="quiet-access" type="button" onClick={openGate} aria-label="Open system status" title="System status"><span>?</span></button>
       <header className={menuOpen ? "topbar topbar-menu-open" : "topbar"}>
         <a className="brand" href="/UFLMB/" aria-label="UFLMB home" onClick={() => setMenuOpen(false)}>{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
         <nav className={menuOpen ? "site-nav site-nav-open" : "site-nav"} id="uflmb-main-navigation" aria-label="Main navigation">
