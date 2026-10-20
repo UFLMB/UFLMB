@@ -4,6 +4,7 @@ import type { PlayerCard } from './types/card'
 import { cards as starterCards } from './data/cards'
 import { demoCards } from './data/demoCards'
 import CommunityReviews from './components/CommunityReviews'
+import AuthAccess from './components/AuthAccess'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
 const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
@@ -125,6 +126,7 @@ export default function App() {
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isAdminSession, setIsAdminSession] = useState(false)
   const [category, setCategory] = useState<Category>('All cards')
   const [nationFilter, setNationFilter] = useState('All nations')
   const [positionFilter, setPositionFilter] = useState('All positions')
@@ -948,6 +950,28 @@ export default function App() {
     dataQuality, reviewCandidates, toggleSelected, selectVisible, deleteSelected, handleImage, handleBulkImages,
     handleJsonFile, clearAllLocalData, submitCard, startEdit, saveEverything, saveDriveSettings, openDrivePicker, importCards];
 
+  if (isAdminSession) {
+    return (
+      <main className="app-shell admin-workspace-shell">
+        <header className="topbar">
+          <a className="brand" href="/UFLMB/" aria-label="UFLMB home"><span className="brand-mark">U</span><span className="brand-word">UFL<span>MB</span></span></a>
+          <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Admin session</span><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} /></div>
+        </header>
+        <section className="admin-workspace">
+          <p className="eyebrow">SECURE WORKSPACE</p>
+          <h1>UFLMB <span>Admin</span></h1>
+          <p className="hero-copy">Your administrative workspace is ready. No admin modules have been added yet.</p>
+          <div className="admin-empty-state">
+            <span className="admin-empty-icon" aria-hidden="true">◈</span>
+            <h2>Workspace ready</h2>
+            <p>This is a clean starting point for future UFLMB administration tools. Your existing database records have not been changed.</p>
+          </div>
+        </section>
+        <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin workspace</span></span><span className="footer-muted">Protected by Supabase authentication and the admin allowlist.</span></footer>
+      </main>
+    )
+  }
+
   return (
     <main className="app-shell">
       <header className={menuOpen ? "topbar topbar-menu-open" : "topbar"}>
@@ -957,7 +981,7 @@ export default function App() {
           <a href="#analytics-title" onClick={() => setMenuOpen(false)}><span aria-hidden="true">▥</span> Analytics</a>
           <a href="#database-title" onClick={() => setMenuOpen(false)}><span aria-hidden="true">▦</span> Card database</a>
         </nav>
-        <div className="top-actions"><span className="status-pill"><span className={import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY ? "status-dot" : "status-dot status-dot-off"} /> {import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY ? "Shared database" : "Local mode"}</span><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
+        <div className="top-actions"><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} /><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
       </header>
       <section className="hero">
         <p className="eyebrow">COMMUNITY DATABASE PROJECT</p>
