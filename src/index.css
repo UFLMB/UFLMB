@@ -1617,3 +1617,11 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .auth-close,.auth-text-action{transition:none!important;transform:none!important}
   .auth-close:hover,.auth-text-action:active{transform:none!important}
 }
+
+/* Keep the full UFLMB wordmark in one consistent theme accent. */
+.topbar .brand-word,
+.topbar .brand-word span,
+.admin-shell .brand-word,
+.admin-shell .brand-word span {
+  color: var(--accent, var(--lime, #c5f467));
+}
