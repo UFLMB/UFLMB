@@ -168,7 +168,7 @@ export default function App() {
   const [backgroundIndex, setBackgroundIndex] = useState(0)
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
-  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance'>('cards')
+  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud'>('cards')
 
   const autoSaveSnapshot = useRef({ allCards, bookmarkedIds, formationId, squadAssignments, siteTheme, siteBranding, googleClientId, googleApiKey })
   autoSaveSnapshot.current = { allCards, bookmarkedIds, formationId, squadAssignments, siteTheme, siteBranding, googleClientId, googleApiKey }
@@ -983,7 +983,7 @@ export default function App() {
         <p className="eyebrow">CONTENT MANAGEMENT</p>
         <h1>Card <span>manager.</span></h1>
         <p className="hero-copy">Manually add, edit, save, and export cards, images, stats, and verification sources.</p>
-        <div className="notice warning"><strong>Important:</strong> this version saves data to the current browser's local storage. It does not sync with other visitors or devices, and the admin page is not protected by a login. A public shared database requires server-side storage and authenticated admin access.</div>
+        <div className="notice"><strong>Local editor:</strong> changes are stored in this browser. To sync verified card records across devices, open <strong>Cloud sync</strong> and sign in with the trusted Supabase admin account. Cloud writes require authenticated admin permissions.</div>
         {notice && <div className="notice">{notice}</div>}
         <div className="notice">{autoSaveStatus}</div>
         <div className="form-actions save-everything-actions">
@@ -997,6 +997,7 @@ export default function App() {
           ['quality', '✓', 'Data quality', 'Collection health checks'],
           ['imports', '⇅', 'Import / Export', 'Files, backups and data transfer'],
           ['appearance', '◈', 'Branding', 'Logo, icon and background'],
+          ['cloud', '☁', 'Cloud sync', 'Admin sign-in and shared records'],
         ] as const).map(([id, icon, label, description]) => (
           <button key={id} type="button" className={adminTab === id ? 'admin-tab active' : 'admin-tab'} onClick={() => setAdminTab(id)}>
             <span className="admin-tab-icon">{icon}</span><span className="admin-tab-copy"><strong>{label}</strong><small>{description}</small></span><span className="admin-tab-arrow">›</span>
@@ -1094,8 +1095,14 @@ export default function App() {
         </article>)}</div>}
       </section>
       </>}
-      {adminTab === 'imports' && <>
+      {adminTab === 'cloud' && <>
       <SharedDatabasePanel cards={allCards} onLoad={remoteCards => setAllCards(current => [...remoteCards, ...current.filter(card => card.id.startsWith('uflmb-demo-') || !remoteCards.some(remote => remote.id === card.id))])} onMessage={setNotice} />
+      <section className="admin-panel tools-panel cloud-help-panel">
+        <p className="eyebrow">SYNC SAFETY</p><h2>How cloud sync works</h2>
+        <ul className="cloud-safety-list"><li>Sign in with the Supabase Auth account that was added to the trusted admin list.</li><li>Load the shared records before editing so the app has a current cloud snapshot.</li><li>Card additions and edits auto-save after a short delay; automatic saving does not delete remote records.</li><li>Remote deletions are only applied through the separate, confirmed publish action.</li></ul>
+      </section>
+      </>}
+      {adminTab === 'imports' && <>
       <section className="admin-panel tools-panel">
         <p className="eyebrow">GOOGLE DRIVE</p><h2>Import from Google Drive</h2>
         <p className="muted-copy">Sign in with Google and select Excel, CSV, JSON files, and card images. Data files are imported into this browser. Images are matched to existing cards by filename (for example, “Player Name.jpg”); unmatched images are placed in the current card form. Nothing is uploaded to Google Drive.</p>
