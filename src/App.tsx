@@ -964,7 +964,6 @@ export default function App() {
         <h1>Card <span>manager.</span></h1>
         <p className="hero-copy">Manually add, edit, save, and export cards, images, stats, and verification sources.</p>
         {notice && <div className="notice">{notice}</div>}
-        <div className={autoSaveStatus.startsWith("Auto-save failed") ? "autosave-status is-error" : "autosave-status"} role="status" aria-live="polite"><span className="autosave-status-dot" aria-hidden="true" />{autoSaveStatus}</div>
         <div className="form-actions save-everything-actions">
           <button className="button primary" type="button" onClick={saveEverything}>Save everything + download backup</button>
           <span className="field-help">Saves cards, bookmarks, squads and appearance settings in this browser, then downloads a portable JSON backup. Google Drive credentials stay in this browser and are not included in the backup.</span>
