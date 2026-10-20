@@ -982,6 +982,7 @@ export default function App() {
           </button>
         ))}
       </nav>
+      <div className="admin-content">
             {adminTab === 'appearance' && <>
       <section className="admin-panel theme-editor">
         <div className="section-heading"><div><p className="eyebrow">SITE APPEARANCE</p><h2>UFL Arena theme</h2></div><span className="count-label">Fixed theme</span></div>
@@ -1127,6 +1128,7 @@ export default function App() {
         <button className="button secondary" type="button" onClick={importCards}>Import JSON</button>
       </section>
       </>}
+      </div>
       </div>
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href="/UFLMB/">Back to home</a></footer>
     </main>
