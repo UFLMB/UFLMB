@@ -1207,3 +1207,16 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .gate-error-foot{margin:22px 0 0;color:#80868b;font:11px Consolas,'Courier New',monospace}
 .gate-error-footer{width:min(560px,100%);display:flex;justify-content:space-between;gap:10px;margin:34px auto 0;padding-top:12px;border-top:1px solid #dadce0;color:#80868b;font:10px Consolas,'Courier New',monospace}
 @media(max-width:480px){.gate-page{padding:28px 22px 16px}.gate-error-meta>div{gap:10px}.gate-error-meta strong{font-size:10px}.gate-error-footer{font-size:9px}}
+
+
+/* Causal Echo Lattice — restrained diagnostic instrumentation */
+.gate-lattice-wrap{width:184px;margin:26px 0 0 auto;padding:9px;border:1px solid #e8eaed;background:#f8f9fa;opacity:.9}
+.gate-lattice-readout,.gate-lattice-footer{display:flex;justify-content:space-between;gap:8px;color:#80868b;font:9px/1.5 Consolas,'Courier New',monospace;letter-spacing:.06em}
+.gate-lattice-readout{padding:0 1px 8px}
+.gate-lattice-readout strong{color:#5f6368;font-weight:600}
+.gate-lattice-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}
+.lattice-cell{appearance:none;display:block;width:100%;aspect-ratio:1;border:1px solid #dadce0;border-radius:1px;background:#f1f3f4;padding:0;cursor:crosshair;transition:background .08s,border-color .08s}
+.lattice-cell:hover{border-color:#9aa0a6}
+.lattice-cell-on{background:#5f6368;border-color:#5f6368}
+.gate-lattice-footer{padding-top:8px}
+@media(max-width:480px){.gate-lattice-wrap{width:174px}}
