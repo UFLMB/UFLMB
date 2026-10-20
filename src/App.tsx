@@ -1095,7 +1095,7 @@ export default function App() {
         </article>)}</div>}
       </section>
       </>}
-      {adminTab === 'cloud' && <>
+      <div style={{ display: adminTab === 'cloud' ? 'contents' : 'none' }}>
       <SharedDatabasePanel
         cards={allCards}
         appState={{ bookmarkedIds, formationId, squadAssignments, siteBranding }}
@@ -1116,11 +1116,11 @@ export default function App() {
         }}
         onMessage={setNotice}
       />
-      <section className="admin-panel tools-panel cloud-help-panel">
+      </div>
+      {adminTab === 'cloud' && <section className="admin-panel tools-panel cloud-help-panel">
         <p className="eyebrow">SYNC SAFETY</p><h2>How cloud sync works</h2>
         <ul className="cloud-safety-list"><li>Sign in with the Supabase Auth account that was added to the trusted admin list.</li><li>Load the shared records before editing so the app has a current cloud snapshot.</li><li>Card additions and edits auto-save after a short delay; automatic saving does not delete remote records.</li><li>Remote deletions are only applied through the separate, confirmed publish action.</li></ul>
-      </section>
-      </>}
+      </section>}
       {adminTab === 'imports' && <>
       <section className="admin-panel tools-panel">
         <p className="eyebrow">GOOGLE DRIVE</p><h2>Import from Google Drive</h2>
