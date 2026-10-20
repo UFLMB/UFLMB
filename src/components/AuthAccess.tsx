@@ -151,7 +151,7 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
   return (
     <>
       <button className="button primary auth-trigger" type="button" onClick={() => isAdmin ? void signOut() : (setOpen(true), setMessage(''))}>
-        {isAdmin ? 'Logout' : 'Sign In/Up'}
+        {isAdmin ? <><svg className="auth-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" /></svg><span>Logout</span></> : <><svg className="auth-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6" /></svg><span>Sign In/Up</span></>}
       </button>
       {open && !isAdmin && <div className="auth-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
         <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
@@ -171,7 +171,6 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
           </form>
           {message && <p className="auth-message" role="status">{message}</p>}
           {sessionEmail && <button className="button secondary auth-signout" type="button" onClick={() => void signOut()}>Sign out</button>}
-          <p className="auth-footnote">Your password is handled by Supabase Auth. UFLMB never embeds an admin password in its source code.</p>
         </section>
       </div>}
     </>
