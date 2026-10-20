@@ -367,7 +367,8 @@ export default function App() {
   const events = useMemo(() => Array.from(new Set(allCards.map(card => card.event).filter((value): value is string => Boolean(value?.trim())))).sort((a, b) => a.localeCompare(b)), [allCards])
 
   const visibleCards = useMemo(() => allCards.filter(card => {
-    const text = [card.playerName, card.nation, card.club, card.cardName, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)])].filter(Boolean).join(' ').toLowerCase()
+    // Search both the normalized fields and every original CSV field so less-common metadata remains discoverable.
+    const text = [card.playerName, card.nation, card.club, card.cardName, card.event, card.positionCategory, card.foot, card.sourceImagePath, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)]), ...Object.entries(card.sourceData ?? {}).flatMap(([key, value]) => [key, value])].filter(Boolean).join(' ').toLowerCase()
     return text.includes(query.toLowerCase()) &&
       (category === 'All cards' || positionGroup(card.positions) === category) &&
       (nationFilter === 'All nations' || card.nation === nationFilter) &&
