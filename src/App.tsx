@@ -157,7 +157,6 @@ export default function App() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [convertDemoToReal, setConvertDemoToReal] = useState(false)
   const [notice, setNotice] = useState('')
-  const [autoSaveStatus, setAutoSaveStatus] = useState('Auto-save enabled · every 60s')
   const [importText, setImportText] = useState('')
   const [adminSearch, setAdminSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -953,12 +952,6 @@ export default function App() {
       }
     } catch { setNotice('Invalid JSON. Check the file contents.') }
   }
-
-  // Admin UI was removed for a clean rebuild; keep these local data handlers available for selective reuse.
-  void [notice, autoSaveStatus, setAutoSaveStatus, setAdminSearch, setGoogleClientId, setGoogleApiKey, driveBusy,
-    setSiteBranding, backgroundUrlsText, setBackgroundUrlsText, adminTab, setAdminTab, loadDemoSquads,
-    dataQuality, reviewCandidates, toggleSelected, selectVisible, deleteSelected, handleImage, handleBulkImages,
-    handleJsonFile, clearAllLocalData, submitCard, startEdit, saveEverything, saveDriveSettings, openDrivePicker, importCards];
 
     if (isAdminSession) return (
     <main className="app-shell admin-shell">
