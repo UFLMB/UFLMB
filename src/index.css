@@ -1262,3 +1262,24 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .admin-workspace h1{letter-spacing:-2px}
 }
 @media(prefers-reduced-motion:reduce){.auth-backdrop{animation:none}}
+
+
+/* Polished access control: subtle lime sweep, crisp icon, and motion-safe feedback. */
+.auth-trigger{display:inline-flex;align-items:center;justify-content:center;gap:8px;position:relative;isolation:isolate;overflow:hidden;border:1px solid rgba(197,244,103,.38);background:linear-gradient(115deg,rgba(197,244,103,.13),rgba(197,244,103,.04));color:var(--lime,#c5f467);box-shadow:0 0 0 rgba(197,244,103,0);transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease,background .22s ease}
+.auth-trigger::before{content:"";position:absolute;inset:0;z-index:-1;transform:translateX(-120%);background:linear-gradient(105deg,transparent 25%,rgba(255,255,255,.12) 50%,transparent 75%);transition:transform .55s ease}
+.auth-trigger:hover{transform:translateY(-2px);border-color:rgba(197,244,103,.8);box-shadow:0 7px 26px rgba(197,244,103,.12);background:linear-gradient(115deg,rgba(197,244,103,.2),rgba(197,244,103,.07))}
+.auth-trigger:hover::before{transform:translateX(120%)}
+.auth-trigger:active{transform:translateY(0) scale(.98)}
+.auth-trigger-icon{width:16px;height:16px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:transform .22s ease}
+.auth-trigger:hover .auth-trigger-icon{transform:scale(1.08)}
+.auth-modal{animation:auth-modal-enter .28s cubic-bezier(.2,.75,.25,1) both}
+.auth-modal .eyebrow{display:flex;align-items:center;gap:8px;color:var(--lime,#c5f467);letter-spacing:.16em}
+.auth-modal .eyebrow::before{content:"";width:18px;height:1px;background:currentColor;box-shadow:0 0 10px rgba(197,244,103,.55)}
+.auth-mode-switch button{transition:color .2s ease,background .2s ease,transform .2s ease}
+.auth-mode-switch button:hover{color:#f3f5f8}
+.auth-mode-switch button:active{transform:scale(.98)}
+.auth-submit{transition:transform .2s ease,box-shadow .2s ease,filter .2s ease}
+.auth-submit:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 26px rgba(197,244,103,.13);filter:brightness(1.05)}
+.auth-submit:disabled{opacity:.65;cursor:wait}
+@keyframes auth-modal-enter{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.auth-trigger,.auth-trigger::before,.auth-trigger-icon,.auth-modal,.auth-mode-switch button,.auth-submit{transition:none;animation:none}}
