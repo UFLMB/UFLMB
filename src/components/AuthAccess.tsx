@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { FormEvent } from 'react'
 
 type AuthSession = {
   access_token: string
@@ -108,7 +109,7 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
     onAdminChange(false)
   }
 
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setBusy(true)
     setMessage('')
