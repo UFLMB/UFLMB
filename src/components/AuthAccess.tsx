@@ -77,7 +77,6 @@ async function restoreSession(): Promise<AuthSession | null> {
     const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''))
     const accessToken = fragment.get('access_token')
     const refreshToken = fragment.get('refresh_token')
-    const flowType = fragment.get('type')
     if (accessToken && refreshToken) {
       const response = await fetch(`${url}/auth/v1/user`, {
         headers: { apikey: key, Authorization: `Bearer ${accessToken}` },
@@ -117,8 +116,6 @@ async function restoreSession(): Promise<AuthSession | null> {
       session = { ...session, user: await response.json() as AuthUser }
       saveSession(session)
     }
-    // Keep the flow marker available to the component via the URL only; it is removed above.
-    void flowType
     return session
   } catch {
     sessionStorage.removeItem(SESSION_KEY)
