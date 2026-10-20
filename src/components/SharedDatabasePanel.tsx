@@ -23,6 +23,10 @@ type DbCard = {
   id: string; player_name: string; overall_rating: number; positions: string[]; nation: string
   card_name?: string | null; club?: string | null; stats?: Record<string, number> | null
   perks?: string[] | null; image_url?: string | null; source_url: string; verified_at: string
+  event?: string | null; position_category?: string | null; date_of_birth?: string | null
+  height_cm?: number | null; weight_kg?: number | null; foot?: string | null
+  weak_foot?: number | null; skill_moves?: number | null; source_image_path?: string | null
+  source_data?: Record<string, string> | null; source_status?: 'verified' | 'imported-unverified' | null
 }
 
 const fromDb = (row: DbCard): PlayerCard => ({
@@ -30,12 +34,28 @@ const fromDb = (row: DbCard): PlayerCard => ({
   nation: row.nation, ...(row.card_name ? { cardName: row.card_name } : {}),
   ...(row.club ? { club: row.club } : {}), ...(row.stats && Object.keys(row.stats).length ? { stats: row.stats } : {}),
   ...(row.perks?.length ? { perks: row.perks } : {}), ...(row.image_url ? { imageUrl: row.image_url } : {}),
+  ...(row.event ? { event: row.event } : {}),
+  ...(row.position_category ? { positionCategory: row.position_category } : {}),
+  ...(row.date_of_birth ? { dateOfBirth: row.date_of_birth } : {}),
+  ...(row.height_cm != null ? { heightCm: Number(row.height_cm) } : {}),
+  ...(row.weight_kg != null ? { weightKg: Number(row.weight_kg) } : {}),
+  ...(row.foot ? { foot: row.foot } : {}),
+  ...(row.weak_foot != null ? { weakFoot: Number(row.weak_foot) } : {}),
+  ...(row.skill_moves != null ? { skillMoves: Number(row.skill_moves) } : {}),
+  ...(row.source_image_path ? { sourceImagePath: row.source_image_path } : {}),
+  ...(row.source_data ? { sourceData: row.source_data } : {}),
+  sourceStatus: row.source_status || 'imported-unverified',
   sourceUrl: row.source_url, verifiedAt: row.verified_at,
 })
 const toDb = (card: PlayerCard) => ({
   id: card.id, player_name: card.playerName, overall_rating: card.overallRating, positions: card.positions,
   nation: card.nation, card_name: card.cardName ?? null, club: card.club ?? null, stats: card.stats ?? {},
   perks: card.perks ?? [], image_url: card.imageUrl ?? null, source_url: card.sourceUrl,
+  event: card.event ?? null, position_category: card.positionCategory ?? null,
+  date_of_birth: card.dateOfBirth ?? null, height_cm: card.heightCm ?? null, weight_kg: card.weightKg ?? null,
+  foot: card.foot ?? null, weak_foot: card.weakFoot ?? null, skill_moves: card.skillMoves ?? null,
+  source_image_path: card.sourceImagePath ?? null, source_data: card.sourceData ?? {},
+  source_status: card.sourceStatus ?? 'imported-unverified',
   verified_at: card.verifiedAt, is_demo: card.id.startsWith('uflmb-demo-'), updated_at: new Date().toISOString(),
 })
 
