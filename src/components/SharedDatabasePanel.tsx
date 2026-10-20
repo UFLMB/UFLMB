@@ -5,9 +5,18 @@ const baseUrl = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 const enabled = Boolean(baseUrl && anonKey)
 
+type CloudAppState = {
+  bookmarkedIds: string[]
+  formationId: '4-3-3' | '4-4-2' | '3-5-2'
+  squadAssignments: Record<string, string>
+  siteBranding: { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[] }
+}
+
 type Props = {
   cards: PlayerCard[]
+  appState: CloudAppState
   onLoad: (cards: PlayerCard[]) => void
+  onLoadAppState: (state: Partial<CloudAppState>) => void
   onMessage: (message: string) => void
 }
 
@@ -38,7 +47,7 @@ const responseMessage = async (response: Response) => {
   } catch { return `Request failed (HTTP ${response.status}).` }
 }
 
-export default function SharedDatabasePanel({ cards, onLoad, onMessage }: Props) {
+export default function SharedDatabasePanel({ cards, appState, onLoad, onLoadAppState, onMessage }: Props) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [token, setToken] = useState(() => { try { return localStorage.getItem('uflmb.supabase.accessToken') || '' } catch { return '' } })
@@ -88,8 +97,14 @@ export default function SharedDatabasePanel({ cards, onLoad, onMessage }: Props)
       })
       if (!response.ok) throw new Error(await responseMessage(response))
       const rows = await response.json() as DbCard[]
+      const stateResponse = await fetch(`${baseUrl}/rest/v1/app_state?id=eq.primary&select=payload`, {
+        headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
+      })
+      if (!stateResponse.ok) throw new Error(await responseMessage(stateResponse))
+      const stateRows = await stateResponse.json() as Array<{ payload?: Partial<CloudAppState> }>
       const parsed = rows.filter(row => !row.id.startsWith('uflmb-demo-')).map(fromDb)
       const ids = parsed.map(card => card.id)
+      if (stateRows[0]?.payload && typeof stateRows[0].payload === 'object') onLoadAppState(stateRows[0].payload)
       loadedIdsRef.current = ids
       setLoadedIds(ids)
       onLoad(parsed)
@@ -145,6 +160,36 @@ export default function SharedDatabasePanel({ cards, onLoad, onMessage }: Props)
     }, 1200)
     return () => { cancelled = true; window.clearTimeout(timer) }
   }, [cards, token])
+
+  useEffect(() => {
+    if (!enabled || !token || loadedIdsRef.current === null) return
+    let cancelled = false
+    const timer = window.setTimeout(async () => {
+      setCloudSaving(true)
+      try {
+        const response = await fetch(`${baseUrl}/rest/v1/app_state?on_conflict=id`, {
+          method: 'POST',
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Prefer: 'resolution=merge-duplicates,return=minimal',
+          },
+          body: JSON.stringify({ id: 'primary', payload: appState, updated_at: new Date().toISOString() }),
+        })
+        if (!response.ok) throw new Error(await responseMessage(response))
+        if (!cancelled) setCloudSaveStatus('Saved')
+      } catch (error) {
+        if (!cancelled) {
+          const message = error instanceof Error ? error.message : 'Unknown cloud save error.'
+          setCloudSaveStatus(`Cloud save failed: ${message}`)
+        }
+      } finally {
+        if (!cancelled) setCloudSaving(false)
+      }
+    }, 1200)
+    return () => { cancelled = true; window.clearTimeout(timer) }
+  }, [appState, token])
 
   const publish = async () => {
     if (!enabled) { onMessage('Shared database is not configured. Follow supabase/SETUP.md first.'); return }
