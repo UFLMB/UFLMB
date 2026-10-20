@@ -886,3 +886,43 @@ img,svg,video,canvas{max-width:100%}
   .section-heading h2,.admin-panel h2{font-size:20px}
   .quality-grid{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* Compact autosave indicator: status, not a full-width notice card. */
+.autosave-status{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  width:fit-content;
+  max-width:100%;
+  margin:14px auto 0;
+  padding:8px 12px;
+  border:1px solid rgba(197,244,103,.16);
+  border-radius:999px;
+  background:rgba(197,244,103,.045);
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.45;
+  text-align:center;
+  overflow-wrap:anywhere;
+}
+.autosave-status-dot{
+  display:inline-block;
+  width:6px;
+  height:6px;
+  flex:0 0 6px;
+  border-radius:50%;
+  background:var(--accent,#c5f467);
+  box-shadow:0 0 10px color-mix(in srgb,var(--accent,#c5f467) 35%,transparent);
+}
+.autosave-status.is-error{
+  border-color:rgba(255,155,155,.25);
+  background:rgba(255,90,90,.06);
+  color:#ffb3b3;
+  border-radius:10px;
+}
+.autosave-status.is-error .autosave-status-dot{background:#ff8585;box-shadow:none}
+@media(max-width:600px){
+  .autosave-status{font-size:9px;padding:7px 10px;margin-top:12px}
+}
