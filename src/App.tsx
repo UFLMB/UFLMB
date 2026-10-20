@@ -942,10 +942,6 @@ export default function App() {
         <h1>Card <span>manager.</span></h1>
         <p className="hero-copy">Manually add, edit, save, and export cards, images, stats, and verification sources.</p>
         {notice && <div className="notice">{notice}</div>}
-        <div className="form-actions save-everything-actions">
-          <button className="button primary" type="button" onClick={saveEverything}>Save everything + download backup</button>
-          <span className="field-help">Saves cards, bookmarks, squads and appearance settings in this browser, then downloads a portable JSON backup. Google Drive credentials stay in this browser and are not included in the backup.</span>
-        </div>
       </section>
       <nav className="admin-tabs" aria-label="Admin sections">
         {([
@@ -1103,6 +1099,9 @@ export default function App() {
         <button className="button secondary" type="button" onClick={importCards}>Import JSON</button>
       </section>
       </>}
+      <div className="admin-backup-action">
+        <button className="button secondary" type="button" onClick={saveEverything} title="Save all browser data and download a JSON backup" aria-label="Save everything and download backup"><span aria-hidden="true">⇩</span> Save &amp; backup</button>
+      </div>
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href="/UFLMB/">Back to home</a></footer>
     </main>
   )
