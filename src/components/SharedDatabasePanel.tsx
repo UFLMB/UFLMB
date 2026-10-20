@@ -9,7 +9,6 @@ type CloudAppState = {
   bookmarkedIds: string[]
   formationId: '4-3-3' | '4-4-2' | '3-5-2'
   squadAssignments: Record<string, string>
-  siteBranding: { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[] }
 }
 
 type Props = {
