@@ -130,15 +130,43 @@ const downloadCsv = (cards: PlayerCard[]) => {
   URL.revokeObjectURL(url)
 }
 
-// Deliberately long diagnostic challenge. This is an obstacle, not an authentication boundary.
-const DIAGNOSTIC_SEQUENCE = (() => {
-  let state = 0x6d2b79f5
-  return Array.from({ length: 2048 }, () => {
-    state = Math.imul(state ^ (state >>> 15), state | 1)
-    state ^= state + Math.imul(state ^ (state >>> 7), state | 61)
-    return ((state ^ (state >>> 14)) >>> 0) % 25
+// Causal Echo Lattice: a stateful cellular-automaton puzzle, not a memorized click sequence.
+const LATTICE_SIZE = 6
+const makeInitialLattice = () => {
+  let seed = 0x4e554c4c
+  return Array.from({ length: LATTICE_SIZE * LATTICE_SIZE }, () => {
+    seed = (Math.imul(seed ^ (seed >>> 16), 0x45d9f3b) + 0x27100001) | 0
+    seed ^= seed >>> 13
+    return (seed >>> 0) % 2
   })
-})()
+}
+const initialLattice = makeInitialLattice()
+const latticeTarget = Array.from({ length: LATTICE_SIZE * LATTICE_SIZE }, () => 0)
+const applyLatticePulse = (board: number[], index: number, pulse: number) => {
+  const next = [...board]
+  const x = index % LATTICE_SIZE
+  const y = Math.floor(index / LATTICE_SIZE)
+  const flip = (cx: number, cy: number) => {
+    if (cx >= 0 && cx < LATTICE_SIZE && cy >= 0 && cy < LATTICE_SIZE) {
+      const at = cy * LATTICE_SIZE + cx
+      next[at] = next[at] ^ 1
+    }
+  }
+  // Every pulse flips its node and its four direct echoes. The phase adds a
+  // second-order echo that rotates through diagonals, making move order matter.
+  flip(x, y)
+  flip(x - 1, y); flip(x + 1, y); flip(x, y - 1); flip(x, y + 1)
+  const diagonal = pulse % 4
+  if (diagonal === 0) flip(x - 1, y - 1)
+  else if (diagonal === 1) flip(x + 1, y - 1)
+  else if (diagonal === 2) flip(x + 1, y + 1)
+  else flip(x - 1, y + 1)
+  if ((pulse + 1) % 5 === 0) {
+    // Each fifth pulse echoes across the board's rotational counterpart.
+    flip(LATTICE_SIZE - 1 - x, LATTICE_SIZE - 1 - y)
+  }
+  return next
+}
 
 export default function App() {
   const requestedAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin') || window.location.hash === '#admin'
@@ -146,15 +174,16 @@ export default function App() {
     try { return sessionStorage.getItem('uflmb.admin-unlocked') === 'yes' } catch { return false }
   })
   const [gateActive, setGateActive] = useState(() => window.location.hash === '#diagnostic')
-  const [diagnosticSequence, setDiagnosticSequence] = useState<number[]>([])
-  const diagnosticKey = DIAGNOSTIC_SEQUENCE
+  const [lattice, setLattice] = useState<number[]>(() => [...initialLattice])
+  const [latticePulses, setLatticePulses] = useState(0)
   const isAdmin = requestedAdmin && adminUnlocked
   const showGate = gateActive || (requestedAdmin && !adminUnlocked)
   const unlockAdmin = () => {
     try { sessionStorage.setItem('uflmb.admin-unlocked', 'yes') } catch { /* current session still unlocks */ }
     setAdminUnlocked(true)
     setGateActive(false)
-    setDiagnosticSequence([])
+    setLattice([...initialLattice])
+    setLatticePulses(0)
     window.location.hash = 'admin'
   }
   const openGate = () => {
@@ -1016,25 +1045,29 @@ export default function App() {
           <div><span>REFERENCE</span><strong>7F3A-91C2-AD04</strong></div>
           <div><span>STATUS</span><strong>REQUEST_REJECTED</strong></div>
         </div>
-        <div className="gate-diagnostic-grid" aria-label="System diagnostics">
-          {Array.from({ length: 25 }, (_, index) => (
-            <button
-              key={index}
-              type="button"
-              className={diagnosticSequence.includes(index) ? 'diagnostic-cell diagnostic-cell-active' : 'diagnostic-cell'}
-              aria-label={`Diagnostic node ${index + 1}`}
-              onClick={() => {
-                const next = [...diagnosticSequence, index]
-                const expected = diagnosticKey[next.length - 1]
-                if (index !== expected) {
-                  setDiagnosticSequence([])
-                  return
-                }
-                if (next.length === diagnosticKey.length) unlockAdmin()
-                else setDiagnosticSequence(next)
-              }}
-            />
-          ))}
+        <div className="gate-lattice-wrap" aria-label="Diagnostic signal lattice">
+          <div className="gate-lattice-readout"><span>FIELD STATE</span><strong>{lattice.reduce((sum, cell) => sum + cell, 0).toString().padStart(2, '0')} / 36</strong></div>
+          <div className="gate-lattice-grid" role="group" aria-label="Causal Echo Lattice">
+            {lattice.map((cell, index) => (
+              <button
+                key={index}
+                type="button"
+                className={cell ? 'lattice-cell lattice-cell-on' : 'lattice-cell'}
+                aria-label={`Signal node ${index + 1}: ${cell ? 'active' : 'inactive'}`}
+                onClick={() => {
+                  const next = applyLatticePulse(lattice, index, latticePulses)
+                  const nextPulse = latticePulses + 1
+                  if (next.every((value, cellIndex) => value === latticeTarget[cellIndex])) {
+                    unlockAdmin()
+                    return
+                  }
+                  setLattice(next)
+                  setLatticePulses(nextPulse)
+                }}
+              />
+            ))}
+          </div>
+          <div className="gate-lattice-footer"><span>PHASE {String(latticePulses % 4).padStart(2, '0')}</span><span>PULSE {String(latticePulses).padStart(4, '0')}</span></div>
         </div>
         <p className="gate-error-foot">Request could not be completed.</p>
       </section>
