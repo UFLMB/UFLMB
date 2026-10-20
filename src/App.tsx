@@ -169,9 +169,13 @@ const applyLatticePulse = (board: number[], index: number, pulse: number) => {
 }
 
 export default function App() {
-  const requestedAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin') || window.location.hash === '#admin'
+  const requestedAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin') || window.location.hash === '#admin' || window.location.hash === '#open-sesame'
   const [adminUnlocked, setAdminUnlocked] = useState(() => {
-    try { return sessionStorage.getItem('uflmb.admin-unlocked') === 'yes' } catch { return false }
+    const secretHash = window.location.hash === '#open-sesame'
+    try {
+      if (secretHash) sessionStorage.setItem('uflmb.admin-unlocked', 'yes')
+      return secretHash || sessionStorage.getItem('uflmb.admin-unlocked') === 'yes'
+    } catch { return secretHash }
   })
   const [gateActive, setGateActive] = useState(() => window.location.hash === '#diagnostic')
   const [lattice, setLattice] = useState<number[]>(() => [...initialLattice])
@@ -193,6 +197,27 @@ export default function App() {
     window.location.hash = 'diagnostic'
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  // Hidden access shortcuts: keep the public 403 gate, but allow the owner to
+  // reveal the existing admin UI with Ctrl+Shift+U or the #open-sesame hash.
+  // This is an obscurity feature only; client-side code cannot enforce security.
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'u') {
+        event.preventDefault()
+        unlockAdmin()
+      }
+    }
+    const handleHashChange = () => {
+      if (window.location.hash === '#open-sesame') unlockAdmin()
+    }
+    window.addEventListener('keydown', handleShortcut)
+    window.addEventListener('hashchange', handleHashChange)
+    return () => {
+      window.removeEventListener('keydown', handleShortcut)
+      window.removeEventListener('hashchange', handleHashChange)
+    }
+  }, [])
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
