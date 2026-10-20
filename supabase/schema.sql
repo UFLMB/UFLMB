@@ -139,6 +139,7 @@ create table if not exists public.site_settings (
   updated_at timestamptz not null default now()
 );
 alter table public.site_settings enable row level security;
+revoke all on public.site_settings from anon, authenticated;
 grant select on public.site_settings to anon, authenticated;
 grant insert, update on public.site_settings to authenticated;
 drop policy if exists "Public can read shared branding" on public.site_settings;
