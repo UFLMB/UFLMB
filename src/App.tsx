@@ -123,13 +123,24 @@ const downloadJson = (cards: PlayerCard[]) => {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 const downloadCsv = (cards: PlayerCard[]) => {
-  const columns = ['Player Name', 'OVR', 'Position(s)', 'Nation', 'Card Type', 'Club', 'Image URL', 'Perks', 'Verified At', 'Source URL', 'PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY']
+  // Preserve every original imported CSV column while also including normalized fields
+  // used by the app. This makes CSV round-trips useful for audits and future migrations.
+  const normalizedColumns = ['Player Name', 'OVR', 'Position(s)', 'Nation', 'Card Type', 'Club', 'Image URL', 'Perks', 'Verified At', 'Source URL', 'PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY']
+  const sourceColumns = cards.flatMap(card => Object.keys(card.sourceData ?? {}))
+  const columns = Array.from(new Set([...sourceColumns, ...normalizedColumns]))
   const quote = (value: unknown) => '"' + String(value ?? '').replace(/"/g, '""') + '"'
-  const rows = cards.map(card => [
-    card.playerName, card.overallRating, card.positions.join('/'), card.nation, card.cardName, card.club,
-    card.imageUrl, card.perks?.join('; '), card.verifiedAt, card.sourceUrl,
-    card.stats?.PAC, card.stats?.SHO, card.stats?.PAS, card.stats?.DRI, card.stats?.DEF, card.stats?.PHY,
-  ].map(quote).join(','))
+  const rows = cards.map(card => {
+    const values: Record<string, unknown> = {
+      ...(card.sourceData ?? {}),
+      'Player Name': card.playerName, 'OVR': card.overallRating,
+      'Position(s)': card.positions.join('/'), 'Nation': card.nation,
+      'Card Type': card.cardName, 'Club': card.club, 'Image URL': card.imageUrl,
+      'Perks': card.perks?.join('; '), 'Verified At': card.verifiedAt, 'Source URL': card.sourceUrl,
+      'PAC': card.stats?.PAC, 'SHO': card.stats?.SHO, 'PAS': card.stats?.PAS,
+      'DRI': card.stats?.DRI, 'DEF': card.stats?.DEF, 'PHY': card.stats?.PHY,
+    }
+    return columns.map(column => quote(values[column])).join(',')
+  })
   const blob = new Blob(['\uFEFF' + [columns.map(quote).join(','), ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
