@@ -1283,3 +1283,58 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .auth-submit:disabled{opacity:.65;cursor:wait}
 @keyframes auth-modal-enter{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.auth-trigger,.auth-trigger::before,.auth-trigger-icon,.auth-modal,.auth-mode-switch button,.auth-submit{transition:none;animation:none}}
+
+
+/* Contrast fix: beat the shared .button.primary rule so the access control is visible at rest. */
+.button.primary.auth-trigger{
+  color:#10140b;
+  background:linear-gradient(135deg,#d9ff88 0%,#c5f467 55%,#a9dc4f 100%);
+  border:1px solid #e1ffad;
+  box-shadow:0 3px 14px rgba(197,244,103,.16),inset 0 1px 0 rgba(255,255,255,.45);
+  font-weight:800;
+}
+.button.primary.auth-trigger .auth-trigger-icon{color:#10140b}
+.button.primary.auth-trigger::before{z-index:0;pointer-events:none}
+.button.primary.auth-trigger>*{position:relative;z-index:1}
+.button.primary.auth-trigger:hover{
+  color:#0b0f06;
+  background:linear-gradient(135deg,#e6ffb7 0%,#d4ff78 52%,#b7eb5b 100%);
+  border-color:#efffd2;
+  box-shadow:0 7px 24px rgba(197,244,103,.27),inset 0 1px 0 rgba(255,255,255,.6);
+}
+
+/* More deliberate modal composition with layered glow and gentle staggered entrance. */
+.auth-backdrop{background:radial-gradient(ellipse at 50% 42%,rgba(197,244,103,.09),transparent 38%),rgba(3,5,8,.82)}
+.auth-modal{
+  width:min(460px,100%);
+  padding:clamp(25px,5vw,38px);
+  border-color:rgba(197,244,103,.27);
+  background:linear-gradient(160deg,rgba(255,255,255,.035),transparent 32%),radial-gradient(ellipse at 50% 0,rgba(197,244,103,.12),transparent 55%),#11141b;
+  box-shadow:0 34px 100px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.025),0 0 48px rgba(197,244,103,.045);
+}
+.auth-modal::after{content:"";position:absolute;top:0;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(197,244,103,.65),transparent);pointer-events:none}
+.auth-modal .eyebrow{font-size:10px;margin:0 0 12px;animation:auth-content-rise .42s .04s both}
+.auth-modal h2{margin:0;font-size:clamp(27px,5vw,33px);line-height:1.12;letter-spacing:-1.2px;animation:auth-content-rise .42s .09s both}
+.auth-copy{margin:12px 0 24px;max-width:340px;font-size:12px;animation:auth-content-rise .42s .14s both}
+.auth-mode-switch{margin-bottom:22px;box-shadow:inset 0 1px 4px rgba(0,0,0,.2);animation:auth-content-rise .42s .18s both}
+.auth-mode-switch button{letter-spacing:.01em}
+.auth-mode-switch button.active{background:linear-gradient(135deg,rgba(197,244,103,.18),rgba(197,244,103,.07));color:#d8ff91;box-shadow:inset 0 0 0 1px rgba(197,244,103,.24),0 2px 8px rgba(0,0,0,.12)}
+.auth-form{gap:17px;animation:auth-content-rise .42s .22s both}
+.auth-form label{gap:8px;font-size:11px;letter-spacing:.015em}
+.auth-form input{padding:13px 14px;border-radius:11px;background:rgba(5,8,12,.78);border-color:rgba(255,255,255,.13);transition:border-color .2s ease,box-shadow .2s ease,background .2s ease}
+.auth-form input:hover{border-color:rgba(255,255,255,.22)}
+.auth-form input:focus{background:#090d12;border-color:rgba(197,244,103,.72);box-shadow:0 0 0 3px rgba(197,244,103,.09),0 0 20px rgba(197,244,103,.04)}
+.auth-submit{margin-top:5px;border-radius:11px;letter-spacing:.02em}
+.auth-message,.auth-session-note{animation:auth-content-rise .28s ease-out both}
+.auth-close{display:grid;place-items:center;transition:transform .2s ease,border-color .2s ease,background .2s ease}
+.auth-close:hover{transform:rotate(90deg);border-color:rgba(197,244,103,.35)}
+@keyframes auth-content-rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){
+ .button.primary.auth-trigger{padding:9px 11px;font-size:10px}
+ .auth-modal{padding:27px 21px 23px}
+ .auth-copy{margin-bottom:20px}
+}
+@media(prefers-reduced-motion:reduce){
+ .auth-modal .eyebrow,.auth-modal h2,.auth-copy,.auth-mode-switch,.auth-form,.auth-message,.auth-session-note{animation:none}
+ .auth-close{transition:none}
+}
