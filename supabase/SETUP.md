@@ -1,5 +1,7 @@
 # UFLMB shared backend setup
 
+> **Current status (2026-10-20):** The admin login page and admin workspace have been removed from the frontend for a redesign. The Supabase schema, access-control policies, and existing database records are intentionally preserved; no cloud data was deleted. The steps below describe the backend setup intended for the replacement admin workflow.
+
 The application uses Supabase as its primary cloud store for shared card records and the non-sensitive app-state snapshot (bookmarks, squad assignments, and branding), plus community ratings/reviews. Browser local storage remains a fallback cache. Google Picker credentials and the admin session token remain local and are never uploaded.
 
 ## 1. Create and configure Supabase
