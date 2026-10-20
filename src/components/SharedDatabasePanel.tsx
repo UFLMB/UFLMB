@@ -48,6 +48,7 @@ const responseMessage = async (response: Response) => {
 }
 
 export default function SharedDatabasePanel({ cards, appState, onLoad, onLoadAppState, onMessage }: Props) {
+  const appStateJson = JSON.stringify(appState)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [token, setToken] = useState(() => { try { return localStorage.getItem('uflmb.supabase.accessToken') || '' } catch { return '' } })
@@ -175,7 +176,7 @@ export default function SharedDatabasePanel({ cards, appState, onLoad, onLoadApp
             'Content-Type': 'application/json',
             Prefer: 'resolution=merge-duplicates,return=minimal',
           },
-          body: JSON.stringify({ id: 'primary', payload: appState, updated_at: new Date().toISOString() }),
+          body: JSON.stringify({ id: 'primary', payload: JSON.parse(appStateJson), updated_at: new Date().toISOString() }),
         })
         if (!response.ok) throw new Error(await responseMessage(response))
         if (!cancelled) setCloudSaveStatus('Saved')
@@ -189,7 +190,7 @@ export default function SharedDatabasePanel({ cards, appState, onLoad, onLoadApp
       }
     }, 1200)
     return () => { cancelled = true; window.clearTimeout(timer) }
-  }, [appState, token])
+  }, [appStateJson, token])
 
   const publish = async () => {
     if (!enabled) { onMessage('Shared database is not configured. Follow supabase/SETUP.md first.'); return }
