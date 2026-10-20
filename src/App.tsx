@@ -108,6 +108,15 @@ const positionGroup = (positions: string[]) => {
   if (positions.some(p => ['CDM', 'CM', 'CAM', 'LM', 'RM'].includes(p))) return 'Midfielders'
   return 'Forwards'
 }
+const downloadJson = (cards: PlayerCard[]) => {
+  const blob = new Blob([JSON.stringify(cards, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'uflmb-cards-backup.json'
+  link.click()
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
 const downloadCsv = (cards: PlayerCard[]) => {
   const columns = ['Player Name', 'OVR', 'Position(s)', 'Nation', 'Card Type', 'Club', 'Image URL', 'Perks', 'Verified At', 'Source URL', 'PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY']
   const quote = (value: unknown) => '"' + String(value ?? '').replace(/"/g, '""') + '"'
