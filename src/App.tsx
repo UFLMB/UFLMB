@@ -136,19 +136,20 @@ export default function App() {
     try { return sessionStorage.getItem('uflmb.admin-unlocked') === 'yes' } catch { return false }
   })
   const [gateActive, setGateActive] = useState(() => window.location.hash === '#diagnostic')
-  const [secretSelected, setSecretSelected] = useState(false)
+  const [diagnosticSequence, setDiagnosticSequence] = useState<number[]>([])
+  const diagnosticKey = [7, 1, 18, 4, 22, 10, 3, 15, 0, 19, 12, 6]
   const isAdmin = requestedAdmin && adminUnlocked
   const showGate = gateActive || (requestedAdmin && !adminUnlocked)
   const unlockAdmin = () => {
     try { sessionStorage.setItem('uflmb.admin-unlocked', 'yes') } catch { /* current session still unlocks */ }
     setAdminUnlocked(true)
     setGateActive(false)
-    setSecretSelected(false)
+    setDiagnosticSequence([])
     window.location.hash = 'admin'
   }
   const openGate = () => {
     setGateActive(true)
-    setSecretSelected(false)
+    setDiagnosticSequence([])
     window.location.hash = 'diagnostic'
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -994,33 +995,40 @@ export default function App() {
   }
 
   if (showGate && !isAdmin) return (
-    <main className="app-shell gate-shell">
-      <header className="topbar">
-        <a className="brand" href="/UFLMB/" aria-label="UFLMB home"><span className="brand-mark">U</span><span className="brand-word">UFL<span>MB</span></span></a>
-        <span className="status-pill"><span className="status-dot" /> SYSTEM STATUS</span>
-      </header>
+    <main className="gate-page" aria-label="Access denied">
       <section className="gate-error">
-        <div className="gate-error-code">503</div>
-        <p className="eyebrow">ARENA SERVICE CHECK</p>
-        <h1>Connection <span>interrupted.</span></h1>
-        <p className="hero-copy">The requested service is temporarily unavailable. Please check the system marker and try again.</p>
-        <div className="gate-diagnostic">
-          <div className="gate-diagnostic-top"><span><i /> Diagnostic channel</span><span>UF-01</span></div>
-          <p>One local marker is out of alignment. Move the U marker into the outlined receiver to reinitialize this session.</p>
-          <div className="gate-puzzle">
-            <button className={secretSelected ? "gate-token gate-token-selected" : "gate-token"} type="button" draggable onDragStart={event => { event.dataTransfer.setData('text/plain', 'uflmb-marker'); setSecretSelected(true) }} onClick={() => setSecretSelected(value => !value)} aria-pressed={secretSelected} aria-label="Select U marker to move">
-              <span>U</span><small>{secretSelected ? 'MARKER SELECTED' : 'U MARKER'}</small>
-            </button>
-            <span className="gate-puzzle-arrow" aria-hidden="true">→</span>
-            <button className={secretSelected ? "gate-receiver gate-receiver-ready" : "gate-receiver"} type="button" onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); if (event.dataTransfer.getData('text/plain') === 'uflmb-marker') unlockAdmin() }} onClick={() => { if (secretSelected) unlockAdmin(); else setSecretSelected(true) }} aria-label="Move marker into receiver">
-              <span>＋</span><small>{secretSelected ? 'PRESS TO ALIGN' : 'RECEIVER'}</small>
-            </button>
-          </div>
-          <div className="gate-progress"><span /> <span>LOCAL DIAGNOSTIC ONLY</span></div>
+        <div className="gate-error-heading"><span className="gate-error-symbol" aria-hidden="true">!</span><span>HTTP STATUS <b>403</b></span></div>
+        <h1>403 <span>Forbidden</span></h1>
+        <p className="gate-error-message">Access denied</p>
+        <p className="gate-error-detail">The server understood the request but refuses to authorize it.</p>
+        <div className="gate-error-meta">
+          <div><span>ERROR</span><strong>ACCESS_DENIED</strong></div>
+          <div><span>REFERENCE</span><strong>7F3A-91C2-AD04</strong></div>
+          <div><span>STATUS</span><strong>REQUEST_REJECTED</strong></div>
         </div>
-        <a className="gate-home-link" href="/UFLMB/">Return to public database</a>
+        <div className="gate-diagnostic-grid" aria-label="System diagnostics">
+          {Array.from({ length: 25 }, (_, index) => (
+            <button
+              key={index}
+              type="button"
+              className={diagnosticSequence.includes(index) ? 'diagnostic-cell diagnostic-cell-active' : 'diagnostic-cell'}
+              aria-label={`Diagnostic node ${index + 1}`}
+              onClick={() => {
+                const next = [...diagnosticSequence, index]
+                const expected = diagnosticKey[next.length - 1]
+                if (index !== expected) {
+                  setDiagnosticSequence([])
+                  return
+                }
+                if (next.length === diagnosticKey.length) unlockAdmin()
+                else setDiagnosticSequence(next)
+              }}
+            />
+          ))}
+        </div>
+        <p className="gate-error-foot">Request could not be completed.</p>
       </section>
-      <footer className="footer"><span>UFLMB <span className="footer-muted">· Arena network</span></span><span className="footer-muted">Request ID: UF-01</span></footer>
+      <footer className="gate-error-footer"><span>HTTP/1.1</span><span>403 Forbidden</span><span>edge-gateway</span></footer>
     </main>
   )
 
