@@ -1136,9 +1136,6 @@ export default function App() {
 
   return (
     <main className="app-shell">
-
-  return (
-    <main className="app-shell">
       <header className={menuOpen ? "topbar topbar-menu-open" : "topbar"}>
         <a className="brand" href="/UFLMB/" aria-label="UFLMB home" onClick={() => setMenuOpen(false)}>{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
         <nav className={menuOpen ? "site-nav site-nav-open" : "site-nav"} id="uflmb-main-navigation" aria-label="Main navigation">
