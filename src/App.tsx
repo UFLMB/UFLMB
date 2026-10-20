@@ -133,110 +133,6 @@ const downloadCsv = (cards: PlayerCard[]) => {
 }
 
 export default function App() {
-  const [routeHash, setRouteHash] = useState(() => window.location.hash)
-  const requestedAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin') || routeHash === '#admin' || routeHash === '#admin-login'
-  const [adminUnlocked, setAdminUnlocked] = useState(false)
-  const [adminAuthChecking, setAdminAuthChecking] = useState(false)
-  const [adminEmail, setAdminEmail] = useState('')
-  const [adminPassword, setAdminPassword] = useState('')
-  const [adminLoginBusy, setAdminLoginBusy] = useState(false)
-  const [adminLoginError, setAdminLoginError] = useState('')
-  const isAdmin = (routeHash === '#admin' || window.location.pathname.replace(/\/$/, '').endsWith('/admin')) && adminUnlocked
-
-  const verifyAdminToken = async (accessToken: string): Promise<boolean> => {
-    if (!SUPABASE_URL || !SUPABASE_KEY || !accessToken) return false
-    const userResponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${accessToken}` },
-    })
-    if (!userResponse.ok) return false
-    const user = await userResponse.json() as { id?: string }
-    if (!user.id) return false
-    const allowlistResponse = await fetch(`${SUPABASE_URL}/rest/v1/admin_users?select=user_id&user_id=eq.${encodeURIComponent(user.id)}`, {
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${accessToken}` },
-    })
-    if (!allowlistResponse.ok) return false
-    const rows = await allowlistResponse.json() as Array<{ user_id: string }>
-    return rows.some(row => row.user_id === user.id)
-  }
-
-  useEffect(() => {
-    const updateRoute = () => setRouteHash(window.location.hash)
-    window.addEventListener('hashchange', updateRoute)
-    return () => window.removeEventListener('hashchange', updateRoute)
-  }, [])
-
-  useEffect(() => {
-    if (!requestedAdmin) {
-      setAdminUnlocked(false)
-      setAdminAuthChecking(false)
-      return
-    }
-    let cancelled = false
-    let token = ''
-    try { token = localStorage.getItem('uflmb.supabase.accessToken') || '' } catch { /* sign-in will be required */ }
-    if (!token) {
-      setAdminUnlocked(false)
-      setAdminAuthChecking(false)
-      return
-    }
-    setAdminAuthChecking(true)
-    void verifyAdminToken(token).then(valid => {
-      if (cancelled) return
-      setAdminUnlocked(valid)
-      if (!valid) {
-        try { localStorage.removeItem('uflmb.supabase.accessToken') } catch { /* ignore storage errors */ }
-        setAdminLoginError('A munkamenet lejárt vagy a fiók nem rendelkezik adminjoggal. Jelentkezz be újra.')
-      }
-    }).catch(() => {
-      if (!cancelled) {
-        setAdminUnlocked(false)
-        setAdminLoginError('A hitelesítési szolgáltatás most nem érhető el. Próbáld újra.')
-      }
-    }).finally(() => { if (!cancelled) setAdminAuthChecking(false) })
-    return () => { cancelled = true }
-  }, [requestedAdmin])
-
-  const signInAdmin = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setAdminLoginError('')
-    if (!SUPABASE_URL || !SUPABASE_KEY) {
-      setAdminLoginError('A belépési szolgáltatás nincs konfigurálva.')
-      return
-    }
-    if (!adminEmail.trim() || !adminPassword) {
-      setAdminLoginError('Add meg az admin e-mail-címet és jelszót.')
-      return
-    }
-    setAdminLoginBusy(true)
-    try {
-      const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-        method: 'POST',
-        headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: adminEmail.trim(), password: adminPassword }),
-      })
-      const data = await response.json() as { access_token?: string; msg?: string; message?: string }
-      if (!response.ok || !data.access_token) throw new Error('Hibás belépési adatok vagy nem engedélyezett adminfiók.')
-      const allowed = await verifyAdminToken(data.access_token)
-      if (!allowed) throw new Error('Hibás belépési adatok vagy nem engedélyezett adminfiók.')
-      try { localStorage.setItem('uflmb.supabase.accessToken', data.access_token) } catch { /* token remains valid for this view */ }
-      setAdminPassword('')
-      setAdminUnlocked(true)
-      window.location.hash = 'admin'
-      setRouteHash('#admin')
-    } catch (error) {
-      setAdminLoginError(error instanceof Error ? error.message : 'A belépés nem sikerült.')
-    } finally {
-      setAdminLoginBusy(false)
-    }
-  }
-
-  const signOutAdmin = () => {
-    try { localStorage.removeItem('uflmb.supabase.accessToken') } catch { /* ignore storage errors */ }
-    setAdminUnlocked(false)
-    setAdminPassword('')
-    setRouteHash('')
-    window.location.hash = ''
-  }
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
@@ -334,27 +230,6 @@ export default function App() {
     if (siteBranding.faviconUrl.trim()) favicon.href = siteBranding.faviconUrl.trim()
     else favicon.removeAttribute('href')
   }, [siteBranding])
-
-  useEffect(() => {
-    if (!isAdmin) return
-    const interval = window.setInterval(() => {
-      const saved = autoSaveSnapshot.current
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved.allCards))
-        localStorage.setItem('uflmb.bookmarks.v1', JSON.stringify(saved.bookmarkedIds))
-        localStorage.setItem('uflmb.squad.formation', saved.formationId)
-        localStorage.setItem('uflmb.squad.assignments', JSON.stringify(saved.squadAssignments))
-        localStorage.setItem(THEME_KEY, JSON.stringify(saved.siteTheme))
-        localStorage.setItem(BRANDING_KEY, JSON.stringify(saved.siteBranding))
-        localStorage.setItem(DRIVE_CLIENT_KEY, saved.googleClientId.trim())
-        localStorage.setItem(DRIVE_API_KEY, saved.googleApiKey.trim())
-        setAutoSaveStatus('Saved at ' + new Date().toLocaleTimeString())
-      } catch {
-        setAutoSaveStatus('Auto-save failed: browser storage may be full. Use the manual save / backup button.')
-      }
-    }, 60_000)
-    return () => window.clearInterval(interval)
-  }, [isAdmin])
 
   useEffect(() => {
     try { saveCards(allCards) } catch {
@@ -1078,208 +953,6 @@ export default function App() {
     } catch { setNotice('Invalid JSON. Check the file contents.') }
   }
 
-  if (requestedAdmin && !isAdmin) return (
-    <main className="app-shell admin-shell">
-      <header className="topbar">
-        <a className="brand" href="/UFLMB/" aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
-        <a className="back-link" href="/UFLMB/">← Public database</a>
-      </header>
-      <section className="admin-panel shared-database-panel" style={{ maxWidth: 480, margin: '10vh auto 3rem' }}>
-        <p className="eyebrow">RESTRICTED ACCESS</p>
-        <h1>Admin <span>sign in.</span></h1>
-        <p className="muted-copy">UFLMB content management. Sign in with the registered administrator account to continue.</p>
-        {adminAuthChecking ? <p className="field-help" role="status">Checking secure session…</p> : <>
-          <form className="card-form shared-login-form" onSubmit={signInAdmin}>
-            <label>Admin email<input type="email" value={adminEmail} onChange={event => setAdminEmail(event.target.value)} autoComplete="username" required /></label>
-            <label>Password<input type="password" value={adminPassword} onChange={event => setAdminPassword(event.target.value)} autoComplete="current-password" required /></label>
-            {adminLoginError && <p className="notice warning" role="alert">{adminLoginError}</p>}
-            <button className="button primary" type="submit" disabled={adminLoginBusy}>{adminLoginBusy ? 'Verifying…' : 'Sign in securely'}</button>
-          </form>
-          <p className="field-help">Only accounts explicitly authorized in the UFLMB admin allowlist can enter. A valid account without admin permission is not enough.</p>
-        </>}
-      </section>
-    </main>
-  )
-
-  if (isAdmin) return (
-    <main className="app-shell admin-shell">
-      <header className="topbar">
-        <a className="brand" href="/UFLMB/" aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
-        <div className="form-actions"><a className="back-link" href="/UFLMB/">← Public database</a><button className="button secondary" type="button" onClick={signOutAdmin}>Sign out</button></div>
-      </header>
-      <section className="admin-intro">
-        <p className="eyebrow">CONTENT MANAGEMENT</p>
-        <h1>Card <span>manager.</span></h1>
-        <p className="hero-copy">Manually add, edit, save, and export cards, images, stats, and verification sources.</p>
-        {notice && <div className="notice">{notice}</div>}
-        <div className={autoSaveStatus.startsWith("Auto-save failed") ? "autosave-status is-error" : "autosave-status"} role="status" aria-live="polite"><span className="autosave-status-dot" aria-hidden="true" />{autoSaveStatus}</div>
-        <div className="form-actions save-everything-actions">
-          <button className="button primary" type="button" onClick={saveEverything}>Save everything + download backup</button>
-          <span className="field-help">Saves cards, bookmarks, squads and appearance settings in this browser, then downloads a portable JSON backup. Google Drive credentials stay in this browser and are not included in the backup.</span>
-        </div>
-      </section>
-      <nav className="admin-tabs" aria-label="Admin sections">
-        {([
-          ['cards', '▣', 'Card manager', 'Add, edit and manage records'],
-          ['quality', '✓', 'Data quality', 'Collection health checks'],
-          ['imports', '⇅', 'Import / Export', 'Files, backups and data transfer'],
-          ['appearance', '◈', 'Branding', 'Logo, icon and background'],
-          ['cloud', '☁', 'Cloud sync', 'Admin sign-in and shared records'],
-        ] as const).map(([id, icon, label, description]) => (
-          <button key={id} type="button" className={adminTab === id ? 'admin-tab active' : 'admin-tab'} onClick={() => setAdminTab(id)}>
-            <span className="admin-tab-icon">{icon}</span><span className="admin-tab-copy"><strong>{label}</strong><small>{description}</small></span><span className="admin-tab-arrow">›</span>
-          </button>
-        ))}
-      </nav>
-            {adminTab === 'appearance' && <>
-      <section className="admin-panel theme-editor">
-        <div className="section-heading"><div><p className="eyebrow">SITE APPEARANCE</p><h2>UFL Arena theme</h2></div><span className="count-label">Fixed theme</span></div>
-        <p className="muted-copy">The site uses one fixed UFL-inspired visual style: dark arena backgrounds, lime-green accents, high-contrast text and rounded panels. Theme colors and styling cannot be changed from the admin panel.</p>
-        <div className="theme-live-preview" style={{ background: 'radial-gradient(ellipse at 20% 0%, #c5f46725, transparent 55%), #0b0d12', color: '#f3f5f8', borderRadius: 15 }}>
-          <div className="theme-preview-top"><span className="theme-preview-mark" style={{ background: '#c5f467', color: '#0b0d12' }}>U</span><strong>UFLMB <small>ARENA</small></strong><span className="theme-preview-pill" style={{ borderColor: '#c5f467', color: '#c5f467' }}>FIXED THEME</span></div>
-          <div className="theme-preview-card" style={{ background: '#11141b', borderRadius: 12 }}><span className="theme-preview-accent" style={{ color: '#c5f467' }}>UFL-INSPIRED DESIGN</span><h3>One identity. One arena.</h3><p style={{ opacity: .72 }}>Charcoal surfaces, lime highlights and clear, readable contrast.</p><button type="button" style={{ background: '#c5f467', color: '#0b0d12', borderRadius: 10 }}>Sample action</button></div>
-        </div>
-<section className="branding-editor">
-          <div className="section-heading"><div><p className="eyebrow">BRAND IDENTITY</p><h2>Logo, icon & background image</h2></div></div>
-          <p className="muted-copy">Paste direct image URLs (HTTPS recommended). Changes preview immediately and save in this browser.</p>
-          <div className="theme-controls branding-controls">
-            <label>Brand icon / symbol<input maxLength={5} value={siteBranding.iconText} onChange={e => setSiteBranding(current => ({ ...current, iconText: e.target.value.slice(0, 5) }))} placeholder="U, ⚽, ★" /><small>Text, initials or emoji shown in the square brand mark</small></label>
-            <label>Logo image URL<input type="url" value={siteBranding.logoUrl} onChange={e => setSiteBranding(current => ({ ...current, logoUrl: e.target.value }))} placeholder="https://example.com/logo.png" /><small>Direct URL to a PNG, SVG, WebP or JPG logo</small></label>
-            <label>Browser tab icon (favicon) URL<input type="url" value={siteBranding.faviconUrl} onChange={e => setSiteBranding(current => ({ ...current, faviconUrl: e.target.value }))} placeholder="https://example.com/icon.png" /><small>Small icon shown on the browser tab</small></label>
-            <label className="branding-wide">Background image URLs (one per line)<textarea rows={5} value={backgroundUrlsText} onChange={e => setBackgroundUrlsText(e.target.value)} onBlur={() => { const backgroundImageUrls = parseBackgroundUrls(backgroundUrlsText); setSiteBranding(current => ({ ...current, backgroundImageUrls })); setBackgroundUrlsText(backgroundImageUrls.join('\n')); setBackgroundIndex(0) }} placeholder={'https://example.com/arena-1.jpg\nhttps://example.com/arena-2.jpg\nhttps://example.com/arena-3.jpg'} /><small>Add multiple direct image URLs, one per line (or separated by commas). Click Apply backgrounds or leave this field to save the list. Valid HTTP/HTTPS links are saved; duplicates and invalid links are ignored. Backgrounds rotate automatically every 30 seconds. A strong dark gradient overlay is applied to every background to keep text readable.</small></label>
-          </div>
-          <div className="branding-preview">
-            <div className="branding-preview-item"><strong>Brand mark / logo</strong>{siteBranding.logoUrl.trim() ? <img src={siteBranding.logoUrl.trim()} alt="Logo preview" onError={e => { e.currentTarget.style.display = 'none' }} /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}</div>
-            {siteBranding.faviconUrl.trim() && <div className="branding-preview-item"><strong>Browser icon</strong><img className="favicon-preview" src={siteBranding.faviconUrl.trim()} alt="Favicon preview" /></div>}
-            {siteBranding.backgroundImageUrls.length > 0 && <div className="branding-background-preview" style={{ backgroundImage: `linear-gradient(rgba(5,8,14,.74), rgba(5,8,14,.82)), url("${siteBranding.backgroundImageUrls[backgroundIndex % siteBranding.backgroundImageUrls.length].replace(/["\\]/g, '')}")` }}><span>Background preview · {backgroundIndex % siteBranding.backgroundImageUrls.length + 1}/{siteBranding.backgroundImageUrls.length} · rotates every 30 seconds</span></div>}
-          </div>
-          <div className="form-actions"><button className="button primary" type="button" onClick={() => { const backgroundImageUrls = parseBackgroundUrls(backgroundUrlsText); setSiteBranding(current => ({ ...current, backgroundImageUrls })); setBackgroundIndex(0); setBackgroundUrlsText(backgroundImageUrls.join('\n')) }}>Apply backgrounds</button><button className="button secondary" type="button" onClick={() => { setSiteBranding(defaultBranding); setBackgroundUrlsText(''); setBackgroundIndex(0) }}>Reset branding</button></div>
-        </section>
-        <p className="field-help">Current limitation: because UFLMB is a static site without a shared settings backend, these theme choices affect this browser only. They do not change the theme for every visitor.</p>
-      </section>
-      </>}
-      {adminTab === 'cards' && <>
-      <section className="admin-panel">
-        <div className="section-heading"><div><p className="eyebrow">{editingId ? 'EDIT RECORD' : 'NEW RECORD'}</p><h2>{editingId ? 'Edit card' : 'Add card'}</h2></div><span className="count-label">{allCards.length} local records</span></div>
-        <div className="demo-data-tools"><div><strong>Test environment</strong><p>Load two fictional 11-player squads (22 cards total). Every record is labelled DEMO and can later be overwritten in this editor.</p></div><button className="button secondary" type="button" onClick={loadDemoSquads}>Load / reset 22 demo cards</button></div>
-        <form className="card-form" onSubmit={submitCard}>
-          {editingId?.startsWith('uflmb-demo-') && <label className="full-field demo-convert-option"><input type="checkbox" checked={convertDemoToReal} onChange={event => setConvertDemoToReal(event.target.checked)} /> Convert this test fixture into a regular record when saving. Its ID will change and it can then be published to the shared database. Only enable this after replacing synthetic values and adding a reliable source.</label>}
-          <label>Player name *<input value={draft.playerName} onChange={e => updateDraft('playerName', e.target.value)} required placeholder="e.g. Player Name" /></label>
-          <label>OVR *<input type="number" min="1" max="999" step="1" value={draft.overallRating} onChange={e => updateDraft('overallRating', e.target.value)} required placeholder="e.g. 95" /></label>
-          <label>Position(s) *<input value={draft.positions} onChange={e => updateDraft('positions', e.target.value)} required placeholder="e.g. ST, LW" /></label>
-          <label>Nation *<input value={draft.nation} onChange={e => updateDraft('nation', e.target.value)} required placeholder="e.g. France" /></label>
-          <label>Card type / edition<input value={draft.cardName} onChange={e => updateDraft('cardName', e.target.value)} placeholder="e.g. Icon, event name" /></label>
-          <label>Club<input value={draft.club} onChange={e => updateDraft('club', e.target.value)} placeholder="Optional" /></label>
-          <label className="full-field">Stats (JSON)<textarea rows={4} value={draft.stats} onChange={e => updateDraft('stats', e.target.value)} placeholder={'{"PAC": 90, "SHO": 85, "PAS": 88}'} /></label>
-          <label className="full-field">Perks / attributes<input value={draft.perks} onChange={e => updateDraft('perks', e.target.value)} placeholder="Comma-separated values" /></label>
-          <label className="full-field">Upload card image<input type="file" accept="image/*" onChange={handleImage} /><span className="field-help">Maximum 8 MB; the image is optimized in your browser and saved to local storage.</span></label>
-          <label className="full-field">Or image URL<input value={draft.imageUrl.startsWith('data:') ? '' : draft.imageUrl} onChange={e => updateDraft('imageUrl', e.target.value)} placeholder="https://…" /></label>
-          {draft.imageUrl && <div className="image-preview"><img src={draft.imageUrl} alt="Card preview" /><button type="button" className="button secondary" onClick={() => updateDraft('imageUrl', '')}>Remove image</button></div>}
-          <label className="full-field">Verifiable source URL *<input type="url" value={draft.sourceUrl} onChange={e => updateDraft('sourceUrl', e.target.value)} required placeholder="https://…" /></label>
-          <label>Verification date<input type="date" value={draft.verifiedAt} onChange={e => updateDraft('verifiedAt', e.target.value)} /></label>
-          <div className="form-actions full-field"><button className="button primary" type="submit">{editingId ? 'Save changes' : 'Add card'}</button><button className="button secondary" type="button" onClick={resetForm}>Clear form</button></div>
-        </form>
-      </section>
-      </>}
-      {adminTab === 'quality' && <>
-      <section className="admin-panel">
-        <p className="eyebrow">DATA QUALITY</p><h2>Collection health</h2>
-        <p className="muted-copy">These checks help identify incomplete or potentially stale records. Missing optional fields are warnings, not proof that a card is incorrect. Verification older than 90 days is flagged for review.</p>
-        <div className="quality-grid">
-          <div className="quality-tile"><strong>{dataQuality.total}</strong><span>Total cards</span></div>
-          <div className="quality-tile"><strong>{dataQuality.missingImage}</strong><span>Missing image</span></div>
-          <div className="quality-tile"><strong>{dataQuality.missingStats}</strong><span>Missing stats</span></div>
-          <div className="quality-tile"><strong>{dataQuality.missingClubOrType}</strong><span>Missing club or type</span></div>
-          <div className="quality-tile"><strong>{dataQuality.staleVerification}</strong><span>Needs source review</span></div>
-          <div className="quality-tile"><strong>{dataQuality.invalidSource}</strong><span>Invalid source URL</span></div>
-          <div className={dataQuality.duplicates ? 'quality-tile quality-warning' : 'quality-tile'}><strong>{dataQuality.duplicates}</strong><span>Possible duplicates</span></div>
-        </div>
-        <div className="quality-review">
-          <div className="section-heading"><div><p className="eyebrow">ACTIONABLE AUDIT</p><h3>Records to review</h3></div><span className="count-label">Showing {Math.min(reviewCandidates.length, 50)} of {reviewCandidates.length}</span></div>
-          <p className="muted-copy">Use these flags as a review queue. Missing optional details do not automatically mean a record is wrong. Review the source before changing factual data.</p>
-          {reviewCandidates.length === 0 ? <p className="muted-copy">No records currently need attention. Keep source links and verification dates current.</p> : <div className="record-list">{reviewCandidates.map(({ card, issues }) => <article className="record-row" key={card.id}>
-            {card.imageUrl ? <img className="record-thumb" src={card.imageUrl} alt="" loading="lazy" /> : <div className="record-thumb placeholder-thumb">U</div>}
-            <div className="record-info"><strong>{card.playerName} · OVR {card.overallRating}</strong><span>{card.positions.join('/')} · {card.nation}</span><small>{issues.join(' · ')}</small></div>
-            <button className="button secondary" type="button" onClick={() => { setAdminTab('cards'); startEdit(card); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>Review record</button>
-          </article>)}</div>}
-        </div>
-      </section>
-      </>}
-      {adminTab === 'cards' && <>
-      <section className="admin-panel">
-        <div className="section-heading"><div><p className="eyebrow">RECORDS</p><h2>Existing cards</h2></div><input className="admin-search" value={adminSearch} onChange={e => setAdminSearch(e.target.value)} placeholder="Search…" aria-label="Search admin records" /></div>
-        <div className="form-actions record-bulk-actions">
-          <button className="button secondary" type="button" onClick={selectVisible}>{adminCards.length > 0 && adminCards.every(card => selectedIds.includes(card.id)) ? 'Deselect visible' : 'Select visible'}</button>
-          <span className="muted-copy">{selectedIds.length} selected</span>
-          <button className="button danger" type="button" disabled={!selectedIds.length} onClick={deleteSelected}>Delete selected</button>
-        </div>
-        {adminCards.length === 0 ? <p className="muted-copy">No cards have been added yet.</p> : <div className="record-list">{adminCards.map(card => <article className={selectedIds.includes(card.id) ? 'record-row record-row-selected' : 'record-row'} key={card.id}>
-          <label className="record-select" aria-label={`Select ${card.playerName}`}><input type="checkbox" checked={selectedIds.includes(card.id)} onChange={() => toggleSelected(card.id)} /></label>
-          {card.imageUrl ? <img className="record-thumb" src={card.imageUrl} alt="" /> : <div className="record-thumb placeholder-thumb">U</div>}
-          <div className="record-info"><strong>{card.playerName}</strong><span>OVR {card.overallRating} · {card.positions.join('/')} · {card.nation}</span><small>{card.cardName || 'No card type specified'} · verified: {card.verifiedAt}</small></div>
-          <button className="button secondary" type="button" onClick={() => startEdit(card)}>Edit</button>
-          <button className="button danger" type="button" onClick={() => { if (window.confirm(`Are you sure you want to delete this record: ${card.playerName}?`)) { const next = allCards.filter(item => item.id !== card.id); setAllCards(next); setNotice('Record deleted.'); if (editingId === card.id) resetForm() } }}>Delete</button>
-        </article>)}</div>}
-      </section>
-      </>}
-      <div style={{ display: adminTab === 'cloud' ? 'contents' : 'none' }}>
-      <SharedDatabasePanel
-        cards={allCards}
-        appState={{ bookmarkedIds, formationId, squadAssignments, siteBranding }}
-        onLoad={remoteCards => setAllCards(current => [...remoteCards, ...current.filter(card => card.id.startsWith('uflmb-demo-') || !remoteCards.some(remote => remote.id === card.id))])}
-        onLoadAppState={saved => {
-          if (Array.isArray(saved.bookmarkedIds)) setBookmarkedIds(saved.bookmarkedIds.filter((id): id is string => typeof id === 'string'))
-          if (saved.formationId === '4-3-3' || saved.formationId === '4-4-2' || saved.formationId === '3-5-2') setFormationId(saved.formationId)
-          if (saved.squadAssignments && typeof saved.squadAssignments === 'object' && !Array.isArray(saved.squadAssignments)) setSquadAssignments(Object.fromEntries(Object.entries(saved.squadAssignments).filter((entry): entry is [string, string] => typeof entry[1] === 'string')))
-          if (saved.siteBranding && typeof saved.siteBranding === 'object') {
-            const value = saved.siteBranding as Partial<SiteBranding>
-            setSiteBranding({
-              iconText: typeof value.iconText === 'string' ? value.iconText : defaultBranding.iconText,
-              logoUrl: typeof value.logoUrl === 'string' ? value.logoUrl : '',
-              faviconUrl: typeof value.faviconUrl === 'string' ? value.faviconUrl : '',
-              backgroundImageUrls: Array.isArray(value.backgroundImageUrls) ? parseBackgroundUrls(value.backgroundImageUrls.filter((url): url is string => typeof url === 'string').join('\\n')) : [],
-            })
-          }
-        }}
-        onMessage={setNotice}
-      />
-      </div>
-      {adminTab === 'cloud' && <section className="admin-panel tools-panel cloud-help-panel">
-        <p className="eyebrow">SYNC SAFETY</p><h2>How cloud sync works</h2>
-        <ul className="cloud-safety-list"><li>Sign in with the Supabase Auth account that was added to the trusted admin list.</li><li>Load the shared records before editing so the app has a current cloud snapshot.</li><li>Card additions and edits auto-save after a short delay; automatic saving does not delete remote records.</li><li>Remote deletions are only applied through the separate, confirmed publish action.</li></ul>
-      </section>}
-      {adminTab === 'imports' && <>
-      <section className="admin-panel tools-panel">
-        <p className="eyebrow">GOOGLE DRIVE</p><h2>Import from Google Drive</h2>
-        <p className="muted-copy">Sign in with Google and select Excel, CSV, JSON files, and card images. Data files are imported into this browser. Images are matched to existing cards by filename (for example, “Player Name.jpg”); unmatched images are placed in the current card form. Nothing is uploaded to Google Drive.</p>
-        <label className="full-field">Google OAuth Client ID<input value={googleClientId} onChange={e => setGoogleClientId(e.target.value)} placeholder="xxxx.apps.googleusercontent.com" autoComplete="off" /></label>
-        <label className="full-field">Google Picker API key<input value={googleApiKey} onChange={e => setGoogleApiKey(e.target.value)} placeholder="Google API key" autoComplete="off" /></label>
-        <div className="form-actions"><button className="button secondary" type="button" onClick={saveDriveSettings}>Save Google settings</button><button className="button primary" type="button" disabled={driveBusy} onClick={openDrivePicker}>{driveBusy ? 'Connecting to Google Drive…' : 'Sign in & choose Drive files'}</button></div>
-        <span className="field-help">Setup required in Google Cloud Console: enable Google Drive API and Google Picker API, configure an OAuth web client with this site's origin (https://uflplayer2026.github.io), and restrict the API key to the Picker API. This app requests read-only Drive access.</span>
-      </section>
-      <section className="admin-panel tools-panel">
-        <p className="eyebrow">SPREADSHEET IMPORT</p><h2>Import from Excel</h2>
-        <p className="muted-copy">Import .xlsx, .xls, or .csv files. The first worksheet is read. Required columns: Player Name, OVR, Position(s), Nation, and Source URL. Optional columns: Card Type, Club, Image URL, Perks, Verified At, and individual stat columns such as PAC, SHO, PAS, DRI, DEF, and PHY. Existing matching cards are skipped rather than overwritten.</p>
-        <label className="full-field">Choose spreadsheet file<input type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" onChange={importExcel} /><span className="field-help">Only valid rows are imported. Invalid rows and duplicate player/OVR/position/nation combinations are skipped and counted.</span></label>
-      </section>
-      <section className="admin-panel tools-panel">
-        <p className="eyebrow">LOCAL FILE IMPORT</p><h2>Import images & backups</h2>
-        <p className="muted-copy">No Google account required. Select multiple image files to match them to existing cards by filename, or import a JSON backup. For example, “Kylian Mbappe.jpg” matches a card named “Kylian Mbappe”. Images are optimized before saving in this browser.</p>
-        <label className="full-field">Import multiple card images<input type="file" accept="image/*" multiple onChange={handleBulkImages} /><span className="field-help">Up to 8 MB per source image. Filenames must match player names; unmatched images are skipped. Local browser storage has limited capacity.</span></label>
-        <label className="full-field">Import JSON backup file<input type="file" accept=".json,application/json" onChange={handleJsonFile} /><span className="field-help">Adds valid new records without replacing existing cards. Use JSON backup for full record fields.</span></label>
-      </section>
-      <section className="admin-panel tools-panel">
-        <p className="eyebrow">BACKUP & DATA TRANSFER</p><h2>Export / import</h2>
-        <p className="muted-copy">Export JSON backups regularly. During import, records with matching IDs are replaced by the versions in the imported file.</p>
-        <div className="form-actions"><button className="button primary" type="button" onClick={() => downloadJson(allCards)}>Download JSON backup</button><button className="button secondary" type="button" onClick={() => downloadCsv(allCards)}>Export CSV / Excel-compatible</button><button className="button danger" type="button" onClick={clearAllLocalData}>Clear local database</button><button className="button secondary" type="button" onClick={() => setImportText('')}>Clear import field</button></div>
-        <label className="full-field">Paste JSON to import<textarea rows={5} value={importText} onChange={e => setImportText(e.target.value)} placeholder="Paste the full contents of the exported JSON file…" /></label>
-        <button className="button secondary" type="button" onClick={importCards}>Import JSON</button>
-      </section>
-      </>}
-      <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href="/UFLMB/">Back to home</a></footer>
-    </main>
-  )
-
   return (
     <main className="app-shell">
       <header className={menuOpen ? "topbar topbar-menu-open" : "topbar"}>
@@ -1311,11 +984,11 @@ export default function App() {
           {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sortBy !== 'ovr-desc' || minOvr !== '' || maxOvr !== '' || statFilter !== 'Any stat' || minStat !== '' || maxStat !== '' || showBookmarked) && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat(''); setShowBookmarked(false) }}>Reset all filters</button>}
         </div>
       </section>
-      {allCards.some(card => card.id.startsWith('uflmb-demo-')) && <div className="demo-warning" role="status"><strong>TEST DATA LOADED</strong><span>These 22 demo cards are fictional. All OVRs, stats, perks, clubs and nations are synthetic; do not treat them as verified UFL Mobile data. Edit or delete them in Card manager before using real records.</span><a href="/UFLMB/#admin-login">Open Card manager ↗</a></div>}
+      {allCards.some(card => card.id.startsWith('uflmb-demo-')) && <div className="demo-warning" role="status"><strong>TEST DATA LOADED</strong><span>These 22 demo cards are fictional. All OVRs, stats, perks, clubs and nations are synthetic; do not treat them as verified UFL Mobile data. They are not verified UFL Mobile data.</span></div>}
       <section className="squad-section" aria-labelledby="squad-title">
         <div className="section-heading"><div><p className="eyebrow">TACTICAL WORKSPACE</p><h2 id="squad-title">My squad builder</h2></div><span className="count-label">Saved in this browser</span></div>
         <div className="squad-toolbar"><div className="squad-team-switch" role="group" aria-label="Choose squad"><button className={activeSquad === 'A' ? 'button primary' : 'button secondary'} type="button" onClick={() => setActiveSquad('A')}>Demo Team A</button><button className={activeSquad === 'B' ? 'button primary' : 'button secondary'} type="button" onClick={() => setActiveSquad('B')}>Demo Team B</button></div><label>Formation <select value={formationId} onChange={e => setFormationId(e.target.value as FormationId)}><option value="4-3-3">4-3-3</option><option value="4-4-2">4-4-2</option><option value="3-5-2">3-5-2</option></select></label><div className="squad-summary"><span><strong>{squadPlayers.length}/11</strong> selected</span><span><strong>{squadRating || '—'}</strong> avg. OVR</span><span><strong>{squadPositionFits}/{squadPlayers.length || 11}</strong> position fits</span></div><button className="button secondary" type="button" onClick={autoFillSquad}>Auto-fill best XI</button><button className="button secondary" type="button" onClick={exportSquad}>Export squad</button><label className="button secondary squad-import-button">Import squad<input type="file" accept="application/json,.json" onChange={importSquad} /></label><button className="button secondary" type="button" onClick={() => setSquadAssignments(current => Object.fromEntries(Object.entries(current).filter(([key]) => !key.startsWith(activeSquadKey))))}>Clear this squad</button></div>
-        {allCards.length === 0 ? <div className="squad-empty"><strong>Your tactics start with verified cards.</strong><p>No player records are available yet. Add real, source-verified cards in the card manager, then assign them here. UFLMB will never fill the squad with invented players.</p><a className="button primary" href="/UFLMB/#admin">Open card manager</a></div> : <div className={`squad-pitch formation-${formationId.replace('-', '')}`}><div className="pitch-lines" aria-hidden="true" />{squadSlots.map(slot => { const assigned = allCards.find(card => card.id === squadAssignments[`${activeSquadKey}${slot.id}`]); const occupiedElsewhere = new Set(Object.entries(squadAssignments).filter(([key]) => key.startsWith(activeSquadKey) && key !== `${activeSquadKey}${slot.id}`).map(([,id]) => id)); return <div className={`squad-slot squad-slot-${slot.id}`} key={slot.id}><span className="squad-slot-label">{slot.label}</span><select aria-label={`Choose ${slot.label} player`} value={assigned?.id ?? ''} onChange={e => setSquadAssignments(current => ({...current,[`${activeSquadKey}${slot.id}`]:e.target.value}))}><option value="">+ Add player</option>{allCards.filter(card => !occupiedElsewhere.has(card.id)).sort((a,b) => Number(b.positions.some(p => slot.positions.includes(p))) - Number(a.positions.some(p => slot.positions.includes(p))) || b.overallRating-a.overallRating || a.playerName.localeCompare(b.playerName)).map(card => <option key={card.id} value={card.id}>{card.playerName} · {card.overallRating} OVR · {card.positions.join('/')}</option>)}</select>{assigned && <div className={assigned.positions.some(p => slot.positions.includes(p)) ? 'squad-player-rating fit' : 'squad-player-rating'}><strong>{assigned.overallRating}</strong><small>{assigned.playerName}</small></div>}</div>})}</div>}
+        {allCards.length === 0 ? <div className="squad-empty"><strong>Your tactics start with verified cards.</strong><p>No player records are available yet. Add real, source-verified cards in the card manager, then assign them here. UFLMB will never fill the squad with invented players.</p></div> : <div className={`squad-pitch formation-${formationId.replace('-', '')}`}><div className="pitch-lines" aria-hidden="true" />{squadSlots.map(slot => { const assigned = allCards.find(card => card.id === squadAssignments[`${activeSquadKey}${slot.id}`]); const occupiedElsewhere = new Set(Object.entries(squadAssignments).filter(([key]) => key.startsWith(activeSquadKey) && key !== `${activeSquadKey}${slot.id}`).map(([,id]) => id)); return <div className={`squad-slot squad-slot-${slot.id}`} key={slot.id}><span className="squad-slot-label">{slot.label}</span><select aria-label={`Choose ${slot.label} player`} value={assigned?.id ?? ''} onChange={e => setSquadAssignments(current => ({...current,[`${activeSquadKey}${slot.id}`]:e.target.value}))}><option value="">+ Add player</option>{allCards.filter(card => !occupiedElsewhere.has(card.id)).sort((a,b) => Number(b.positions.some(p => slot.positions.includes(p))) - Number(a.positions.some(p => slot.positions.includes(p))) || b.overallRating-a.overallRating || a.playerName.localeCompare(b.playerName)).map(card => <option key={card.id} value={card.id}>{card.playerName} · {card.overallRating} OVR · {card.positions.join('/')}</option>)}</select>{assigned && <div className={assigned.positions.some(p => slot.positions.includes(p)) ? 'squad-player-rating fit' : 'squad-player-rating'}><strong>{assigned.overallRating}</strong><small>{assigned.playerName}</small></div>}</div>})}</div>}
         <p className="squad-footnote">Average OVR is calculated from assigned cards only. Position fit checks the recorded positions; no chemistry or gameplay performance is fabricated.</p>
       </section>
       <section className="analytics-section" aria-labelledby="analytics-title">
@@ -1328,7 +1001,7 @@ export default function App() {
       </section>
       <section className="database-section" aria-labelledby="database-title">
         <div className="section-heading"><div><p className="eyebrow">THE COLLECTION</p><h2 id="database-title">Card database</h2></div><div className="collection-actions"><span className="count-label">{visibleCards.length} shown / {allCards.length} total</span><button className="button secondary" type="button" onClick={exportVisibleCsv}>Export filtered CSV</button></div></div>
-        {visibleCards.length === 0 ? <div className="empty-state"><div className="empty-emblem" aria-hidden="true">U<span>+</span></div><h3>{query.trim() ? 'No matching cards found' : 'The database starts here'}</h3><p>{query.trim() ? `No verified card matches “${query.trim()}”. Try another search or category.` : 'No card records have been entered yet. Open the admin area to add verified cards, images, stats and sources.'}</p><a className="button primary" href="/UFLMB/#admin">Open card manager</a><span className="empty-tag">VERIFIED DATA ONLY</span></div> :
+        {visibleCards.length === 0 ? <div className="empty-state"><div className="empty-emblem" aria-hidden="true">U<span>+</span></div><h3>{query.trim() ? 'No matching cards found' : 'The database starts here'}</h3><p>{query.trim() ? `No verified card matches “${query.trim()}”. Try another search or category.` : 'No card records have been entered yet.'}</p><span className="empty-tag">VERIFIED DATA ONLY</span></div> :
           <div className="card-grid">{visibleCards.map(card => <article className="player-card" key={card.id}>
             <div className="player-image">{card.imageUrl ? <img src={card.imageUrl} alt={`${card.playerName} card`} loading="lazy" /> : <div className="no-image">UFL<span>MB</span></div>}<span className="ovr-badge">{card.overallRating}</span><span className="position-badge">{card.positions.join(' / ')}</span><button className={bookmarkedIds.includes(card.id) ? 'bookmark-toggle saved' : 'bookmark-toggle'} type="button" aria-label={bookmarkedIds.includes(card.id) ? `Remove ${card.playerName} from saved cards` : `Save ${card.playerName}`} aria-pressed={bookmarkedIds.includes(card.id)} onClick={() => toggleBookmark(card.id)}>{bookmarkedIds.includes(card.id) ? '★' : '☆'}</button><label className={compareIds.includes(card.id) ? 'compare-toggle selected' : 'compare-toggle'}><input type="checkbox" checked={compareIds.includes(card.id)} onChange={() => toggleCompare(card.id)} aria-label={`Compare ${card.playerName}`} /> Compare</label></div>
             <div className="player-card-body"><h3>{card.playerName}</h3><p>{card.nation}{card.club ? ` · ${card.club}` : ''}</p>{card.cardName && <span className="card-type">{card.cardName}</span>}{card.stats && <div className="stats-grid">{Object.entries(card.stats).slice(0, 6).map(([key, value]) => <span key={key}><b>{value}</b><small>{key}</small></span>)}</div>}{card.perks?.length ? <div className="perk-row">{card.perks.map(perk => <span key={perk}>{perk}</span>)}</div> : null}<div className="card-actions"><button className="button secondary" type="button" onClick={() => setSelectedCard(card)}>Full player profile ↗</button>{card.id.startsWith('uflmb-demo-') ? <span className="source-link">Demo record — no verified source</span> : <a className="source-link" href={card.sourceUrl} target="_blank" rel="noreferrer">Verified source ↗</a>}</div><small className="verified-date">Checked {card.verifiedAt}</small></div>
@@ -1339,7 +1012,7 @@ export default function App() {
         {showCompare && <div className="comparison-table-wrap"><table className="comparison-table"><thead><tr><th>Attribute</th>{comparedCards.map(card => <th key={card.id}>{card.playerName}</th>)}</tr></thead><tbody>{[['OVR','overallRating'],['Position','positions'],['Nation','nation'],['Club','club'],['Card type','cardName'],...Array.from(new Set(comparedCards.flatMap(card => Object.keys(card.stats ?? {}))).values()).sort().map(key => [key, `stat:${key}`])].map(([label,key]) => <tr key={key}><th>{label}</th>{comparedCards.map(card => { const value = key === 'overallRating' ? card.overallRating : key === 'positions' ? card.positions.join(' / ') : key.startsWith('stat:') ? card.stats?.[key.slice(5)] ?? '—' : card[key as 'nation' | 'club' | 'cardName'] ?? '—'; return <td key={card.id}>{value}</td> })}</tr>)}</tbody></table></div>}
       </section>}
       {selectedCard && <div className="profile-backdrop" role="presentation" onClick={() => setSelectedCard(null)}><section className="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title" onClick={event => event.stopPropagation()}><button className="profile-close" type="button" onClick={() => setSelectedCard(null)} aria-label="Close player profile">×</button><div className="profile-heading">{selectedCard.imageUrl ? <img src={selectedCard.imageUrl} alt={`${selectedCard.playerName} card`} /> : <div className="profile-placeholder">UFL<span>MB</span></div>}<div><p className="eyebrow">PLAYER PROFILE</p><h2 id="profile-title">{selectedCard.playerName}</h2><p className="muted-copy">{selectedCard.nation}{selectedCard.club ? ` · ${selectedCard.club}` : ''}</p><div className="profile-meta"><strong>OVR {selectedCard.overallRating}</strong><span>{selectedCard.positions.join(' / ')}</span>{selectedCard.cardName && <span>{selectedCard.cardName}</span>}</div></div></div><div className="profile-section"><h3>Attributes</h3>{selectedCard.stats && Object.keys(selectedCard.stats).length ? <div className="profile-stats">{Object.entries(selectedCard.stats).sort(([a],[b]) => a.localeCompare(b)).map(([key,value]) => <div key={key}><span>{key}</span><strong>{value}</strong><i><b style={{width:`${Math.max(0,Math.min(100,Number(value)))}%`}} /></i></div>)}</div> : <p className="muted-copy">No verified attribute data has been entered for this card yet.</p>}</div>{selectedCard.perks?.length ? <div className="profile-section"><h3>Perks</h3><div className="perk-row">{selectedCard.perks.map(perk => <span key={perk}>{perk}</span>)}</div></div> : null}<CommunityReviews cardId={selectedCard.id} /><div className="profile-footer"><span className="verified-date">Verified {selectedCard.verifiedAt}</span>{selectedCard.id.startsWith('uflmb-demo-') ? <span className="field-help">Demo fixture — no verified source</span> : <a className="button primary" href={selectedCard.sourceUrl} target="_blank" rel="noreferrer">Open verified source ↗</a>}<button className="button secondary" type="button" onClick={() => toggleBookmark(selectedCard.id)}>{bookmarkedIds.includes(selectedCard.id) ? '★ Saved' : '☆ Save card'}</button></div></section></div>}
-      <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><a className="footer-muted" href="/UFLMB/#admin-login" aria-label="Administrator sign in" title="Administrator sign in">Independent community project; not affiliated with or endorsed by the game’s publisher.</a></footer>
+      <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><span className="footer-muted">Independent community project; not affiliated with or endorsed by the game’s publisher.</span></footer>
     </main>
   )
 }
