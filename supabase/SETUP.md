@@ -16,11 +16,11 @@ The application uses Supabase as its primary cloud store for shared card records
    on conflict (user_id) do nothing;
    ```
 
-   Only user IDs explicitly listed in `public.admin_users` can create, edit, or delete shared cards. An authenticated account alone is not enough. Do not add untrusted users to this table.
+   Only user IDs explicitly listed in `public.admin_users` can access the hidden admin area or create, edit, or delete shared cards. The app verifies the authenticated user against this allowlist on the server; an authenticated account alone is not enough. The browser can read only its own allowlist row and cannot modify the allowlist. Do not add untrusted users to this table.
 
 ## 2. Configure GitHub Pages
 
-The current `.github/workflows/deploy.yml` already supplies the Supabase Project URL and public `sb_publishable_...` key to the build, so no GitHub Actions variables are required for the configured project. Both values are public client configuration by design; the service-role/secret key must never be committed or included in a frontend build.
+The current `.github/workflows/deploy.yml` already supplies the Supabase Project URL and public `sb_publishable_...` key to the build, so no GitHub Actions variables are required for the configured project. The public key is intended for browser use; all admin authorization is enforced by Supabase Auth and row-level security. Both values are public client configuration by design; the service-role/secret key must never be committed or included in a frontend build.
 
 After changing the project or rotating the publishable key, update those two values in the workflow and commit the change. A push to `main` triggers the GitHub Pages build and deployment.
 
