@@ -1810,3 +1810,25 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .stats-grid b { font-size: 11px; }
   .card-actions .button { font-size: 9px; }
 }
+
+
+/* Collapsible card filter panel */
+.filter-disclosure { width: min(760px, 100%); margin: 12px auto 0; border: 1px solid var(--line); border-radius: 12px; background: rgba(17,20,27,.82); text-align: left; overflow: hidden; }
+.filter-disclosure > summary { display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 10px 13px; list-style: none; cursor: pointer; user-select: none; }
+.filter-disclosure > summary::-webkit-details-marker { display: none; }
+.filter-disclosure-title { color: var(--text-color, #f3f5f8); font-size: 12px; font-weight: 750; }
+.filter-disclosure-hint { color: var(--muted); font-size: 10px; margin-left: auto; }
+.filter-disclosure-chevron { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid var(--line); border-radius: 7px; color: var(--lime); font-size: 17px; line-height: 1; transition: transform .18s ease; }
+.filter-disclosure[open] > summary { border-bottom: 1px solid var(--line); }
+.filter-disclosure[open] .filter-disclosure-chevron { transform: rotate(180deg); }
+.filter-disclosure .browse-controls { margin: 0; padding: 12px; }
+@media (max-width: 768px) {
+  .filter-disclosure { margin-top: 10px; border-radius: 10px; }
+  .filter-disclosure > summary { min-height: 43px; padding: 8px 10px; gap: 7px; }
+  .filter-disclosure-title { font-size: 11px; }
+  .filter-disclosure-hint { font-size: 9px; }
+  .filter-disclosure .browse-controls { padding: 10px; }
+}
+@media (max-width: 380px) {
+  .filter-disclosure-hint { display: none; }
+}
