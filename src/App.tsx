@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import type { PlayerCard } from './types/card'
 import { cards as starterCards } from './data/cards'
-import { demoCards } from './data/demoCards'
 import CommunityReviews from './components/CommunityReviews'
 import AuthAccess from './components/AuthAccess'
 import SharedDatabasePanel from './components/SharedDatabasePanel'
@@ -155,7 +154,6 @@ export default function App() {
   const [activeSquad, setActiveSquad] = useState<'A' | 'B'>('A')
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [convertDemoToReal, setConvertDemoToReal] = useState(false)
   const [notice, setNotice] = useState('')
   const [importText, setImportText] = useState('')
   const [adminSearch, setAdminSearch] = useState('')
@@ -298,20 +296,6 @@ export default function App() {
       .sort((a, b) => a.localeCompare(b))
     return statKeys.map(key => ({ key, cards: allCards.filter(card => typeof card.stats?.[key] === 'number').sort((a, b) => (b.stats?.[key] ?? -Infinity) - (a.stats?.[key] ?? -Infinity)).slice(0, 5) })).filter(item => item.cards.length)
   }, [allCards])
-
-  const loadDemoSquads = () => {
-    const realRecords = allCards.filter(card => !card.id.startsWith('uflmb-demo-'))
-    const nextAssignments: Record<string,string> = {}
-    formations['4-3-3'].forEach((slot, index) => {
-      nextAssignments[`A:${slot.id}`] = demoCards[index].id
-      nextAssignments[`B:${slot.id}`] = demoCards[index + 11].id
-    })
-    setAllCards([...demoCards, ...realRecords])
-    setFormationId('4-3-3')
-    setSquadAssignments(nextAssignments)
-    setActiveSquad('A')
-    setNotice('Loaded 22 fictional test cards into Demo Team A and Demo Team B. Their OVR/stats are synthetic, clearly marked DEMO, and can be edited or deleted in Card manager. They are not real UFL data.')
-  }
 
   const toggleBookmark = (id: string) => setBookmarkedIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id])
 
@@ -576,7 +560,7 @@ export default function App() {
     setNotice('Local card collection cleared. This cannot be undone without a backup.')
   }
 
-  const resetForm = () => { setDraft(emptyDraft()); setEditingId(null); setConvertDemoToReal(false) }
+  const resetForm = () => { setDraft(emptyDraft()); setEditingId(null) }
 
   const submitCard = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -584,10 +568,6 @@ export default function App() {
     const positions = draft.positions.split(/[;,]/).map(p => p.trim().toUpperCase()).filter(Boolean)
     if (!draft.playerName.trim() || !draft.nation.trim() || !positions.length || !draft.sourceUrl.trim()) {
       setNotice("Enter the player's name, nation, at least one position, and a verifiable source.")
-      return
-    }
-    if (convertDemoToReal && (draft.sourceUrl.includes('example.com/uflmb-demo-data-not-a-real-source') || draft.cardName.toLowerCase().includes('demo data'))) {
-      setNotice('Before converting this fixture, replace the placeholder source URL and demo card type. Verify every rating, stat and perk manually.')
       return
     }
     if (!Number.isInteger(rating) || rating < 1 || rating > 999) { setNotice('OVR must be a whole number between 1 and 999.'); return }
@@ -602,7 +582,7 @@ export default function App() {
       } catch { setNotice('Invalid JSON format for stats. Example: {"PAC":90,"SHO":85}'); return }
     }
     const record: PlayerCard = {
-      id: editingId && !(convertDemoToReal && editingId.startsWith('uflmb-demo-')) ? editingId : makeId(),
+      id: editingId ? editingId : makeId(),
       playerName: draft.playerName.trim(),
       overallRating: rating,
       positions,
@@ -620,8 +600,7 @@ export default function App() {
       saveCards(next)
       setAllCards(next)
       resetForm()
-      setNotice(editingId ? (convertDemoToReal ? 'Demo fixture converted to a regular card record. Add a reliable source and verify every field before publishing.' : 'Card updated.') : 'Card added.')
-      setConvertDemoToReal(false)
+      setNotice(editingId ? 'Card updated.' : 'Card added.')
     } catch {
       setNotice('Saving failed; browser storage may be full. Use a smaller image or an image URL.')
     }
@@ -969,7 +948,6 @@ export default function App() {
           <span className="field-help">Saves cards, bookmarks, squads and appearance settings in this browser, then downloads a portable JSON backup. Google Drive credentials stay in this browser and are not included in the backup.</span>
         </div>
       </section>
-      <div className="admin-layout">
       <nav className="admin-tabs" aria-label="Admin sections">
         {([
           ['cards', '▣', 'Card manager', 'Add, edit and manage records'],
@@ -983,7 +961,6 @@ export default function App() {
           </button>
         ))}
       </nav>
-      <div className="admin-content">
             {adminTab === 'appearance' && <>
       <section className="admin-panel theme-editor">
         <div className="section-heading"><div><p className="eyebrow">SITE APPEARANCE</p><h2>UFL Arena theme</h2></div><span className="count-label">Fixed theme</span></div>
@@ -1014,9 +991,7 @@ export default function App() {
       {adminTab === 'cards' && <>
       <section className="admin-panel">
         <div className="section-heading"><div><p className="eyebrow">{editingId ? 'EDIT RECORD' : 'NEW RECORD'}</p><h2>{editingId ? 'Edit card' : 'Add card'}</h2></div><span className="count-label">{allCards.length} local records</span></div>
-        <div className="demo-data-tools"><div><strong>Test environment</strong><p>Load two fictional 11-player squads (22 cards total). Every record is labelled DEMO and can later be overwritten in this editor.</p></div><button className="button secondary" type="button" onClick={loadDemoSquads}>Load / reset 22 demo cards</button></div>
         <form className="card-form" onSubmit={submitCard}>
-          {editingId?.startsWith('uflmb-demo-') && <label className="full-field demo-convert-option"><input type="checkbox" checked={convertDemoToReal} onChange={event => setConvertDemoToReal(event.target.checked)} /> Convert this test fixture into a regular record when saving. Its ID will change and it can then be published to the shared database. Only enable this after replacing synthetic values and adding a reliable source.</label>}
           <label>Player name *<input value={draft.playerName} onChange={e => updateDraft('playerName', e.target.value)} required placeholder="e.g. Player Name" /></label>
           <label>OVR *<input type="number" min="1" max="999" step="1" value={draft.overallRating} onChange={e => updateDraft('overallRating', e.target.value)} required placeholder="e.g. 95" /></label>
           <label>Position(s) *<input value={draft.positions} onChange={e => updateDraft('positions', e.target.value)} required placeholder="e.g. ST, LW" /></label>
@@ -1129,8 +1104,6 @@ export default function App() {
         <button className="button secondary" type="button" onClick={importCards}>Import JSON</button>
       </section>
       </>}
-      </div>
-      </div>
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href="/UFLMB/">Back to home</a></footer>
     </main>
   )
