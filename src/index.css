@@ -158,9 +158,11 @@ body.has-background-images::after{
   pointer-events:none;
   background-image:var(--site-background-image);
   background-size:cover;
-  background-position:center center;
+  background-position:center 42%;
   background-repeat:no-repeat;
-  filter:contrast(1.09) saturate(1.07);
+  image-rendering:auto;
+  transform:translateZ(0);
+  filter:contrast(1.14) saturate(1.08);
 }
 body.has-background-images::before{
   content:"";
