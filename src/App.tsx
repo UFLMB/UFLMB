@@ -4,11 +4,8 @@ import type { PlayerCard } from './types/card'
 import { cards as starterCards } from './data/cards'
 import { demoCards } from './data/demoCards'
 import CommunityReviews from './components/CommunityReviews'
-import SharedDatabasePanel from './components/SharedDatabasePanel'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
-const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
 const DRIVE_API_KEY = 'uflmb.google.apiKey'
 const THEME_KEY = 'uflmb.site-theme.v1'
@@ -109,14 +106,6 @@ const positionGroup = (positions: string[]) => {
   if (positions.some(p => ['CDM', 'CM', 'CAM', 'LM', 'RM'].includes(p))) return 'Midfielders'
   return 'Forwards'
 }
-const downloadJson = (cards: PlayerCard[]) => {
-  const blob = new Blob([JSON.stringify(cards, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url; a.download = 'uflmb-cards-backup.json'; a.click()
-  URL.revokeObjectURL(url)
-}
-
 const downloadCsv = (cards: PlayerCard[]) => {
   const columns = ['Player Name', 'OVR', 'Position(s)', 'Nation', 'Card Type', 'Club', 'Image URL', 'Perks', 'Verified At', 'Source URL', 'PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY']
   const quote = (value: unknown) => '"' + String(value ?? '').replace(/"/g, '""') + '"'
@@ -170,6 +159,13 @@ export default function App() {
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud'>('cards')
+
+  // Admin UI has been removed for a clean rebuild. Keep the existing local data handlers temporarily
+  // so their behavior can be selectively reused when the replacement workflow is designed.
+  void [notice, autoSaveStatus, setAutoSaveStatus, setAdminSearch, setGoogleClientId, setGoogleApiKey, driveBusy,
+    setSiteBranding, backgroundUrlsText, setBackgroundUrlsText, adminTab, setAdminTab, loadDemoSquads,
+    dataQuality, reviewCandidates, toggleSelected, selectVisible, deleteSelected, handleImage, handleBulkImages,
+    handleJsonFile, clearAllLocalData, submitCard, startEdit, saveEverything, saveDriveSettings, openDrivePicker, importCards];
 
   const autoSaveSnapshot = useRef({ allCards, bookmarkedIds, formationId, squadAssignments, siteTheme, siteBranding, googleClientId, googleApiKey })
   autoSaveSnapshot.current = { allCards, bookmarkedIds, formationId, squadAssignments, siteTheme, siteBranding, googleClientId, googleApiKey }
