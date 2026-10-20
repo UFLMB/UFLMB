@@ -961,7 +961,7 @@ export default function App() {
         <div className="section-heading"><div><p className="eyebrow">SITE APPEARANCE</p><h2>UFL Arena theme</h2></div><span className="count-label">Fixed theme</span></div>
         <p className="muted-copy">The site uses one fixed UFL-inspired visual style: dark arena backgrounds, lime-green accents, high-contrast text and rounded panels. Theme colors and styling cannot be changed from the admin panel.</p>
         <div className="theme-live-preview" style={{ background: 'radial-gradient(ellipse at 20% 0%, #c5f46725, transparent 55%), #0b0d12', color: '#f3f5f8', borderRadius: 15 }}>
-          <div className="theme-preview-top"><span className="theme-preview-mark" style={{ background: '#c5f467', color: '#0b0d12' }}>U</span><strong>UFLMB <small>ARENA</small></strong><span className="theme-preview-pill" style={{ borderColor: '#c5f467', color: '#c5f467' }}>FIXED THEME</span></div>
+          <div className="theme-preview-top"><span className="theme-preview-mark" style={{ background: '#c5f467', color: '#0b0d12' }}>U</span><strong>UFLMB <small>ARENA</small></strong></div>
           <div className="theme-preview-card" style={{ background: '#11141b', borderRadius: 12 }}><span className="theme-preview-accent" style={{ color: '#c5f467' }}>UFL-INSPIRED DESIGN</span><h3>One identity. One arena.</h3><p style={{ opacity: .72 }}>Charcoal surfaces, lime highlights and clear, readable contrast.</p><button type="button" style={{ background: '#c5f467', color: '#0b0d12', borderRadius: 10 }}>Sample action</button></div>
         </div>
 <section className="branding-editor">
