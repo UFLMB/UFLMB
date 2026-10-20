@@ -608,7 +608,6 @@ export default function App() {
 
   const startEdit = (card: PlayerCard) => {
     setEditingId(card.id)
-    setConvertDemoToReal(false)
     setDraft({
       playerName: card.playerName, overallRating: String(card.overallRating), positions: card.positions.join(', '),
       nation: card.nation, cardName: card.cardName ?? '', club: card.club ?? '', perks: card.perks?.join(', ') ?? '',
