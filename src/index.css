@@ -1563,3 +1563,57 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     transform:none!important;
   }
 }
+
+
+/* Authentication finishing touches: use the active UFLMB theme accent without overpowering the UI. */
+.auth-close{
+  color:var(--muted);
+  transition:transform .22s cubic-bezier(.2,.75,.25,1),opacity .18s ease,color .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease;
+}
+.auth-close:hover{
+  color:var(--lime);
+  opacity:1;
+  transform:scale(1.08);
+  border-color:color-mix(in srgb,var(--lime) 48%,transparent);
+  background:color-mix(in srgb,var(--lime) 9%,transparent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--lime) 7%,transparent),0 0 18px color-mix(in srgb,var(--lime) 9%,transparent);
+}
+.auth-close:focus-visible,.auth-text-action:focus-visible{
+  outline:2px solid var(--lime);
+  outline-offset:3px;
+}
+.auth-text-action{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px;
+  margin-top:12px;
+  padding:7px 2px;
+  border:0;
+  background:transparent;
+  color:var(--lime);
+  font-size:12px;
+  font-weight:700;
+  transition:opacity .2s ease,transform .2s ease;
+}
+.auth-text-action:hover{opacity:.82}
+.auth-text-action:active{transform:scale(.98)}
+.auth-message-success{
+  border-color:color-mix(in srgb,var(--lime) 24%,transparent);
+  background:color-mix(in srgb,var(--lime) 7%,transparent);
+  color:#e1f5c1;
+}
+.auth-message-error{
+  border-color:rgba(255,111,125,.3);
+  background:rgba(255,80,100,.07);
+  color:#ffb6be;
+}
+.auth-message-info{color:#dbe7c7}
+@media (max-width:768px){
+  .auth-close{width:44px;height:44px;min-width:44px}
+  .auth-text-action{min-height:44px}
+}
+@media (prefers-reduced-motion:reduce){
+  .auth-close,.auth-text-action{transition:none!important;transform:none!important}
+  .auth-close:hover,.auth-text-action:active{transform:none!important}
+}
