@@ -165,6 +165,8 @@ export default function App() {
   const [siteBranding, setSiteBranding] = useState<SiteBranding>(loadBranding)
   const [backgroundUrlsText, setBackgroundUrlsText] = useState(() => siteBranding.backgroundImageUrls.join('\n'))
   const [backgroundIndex, setBackgroundIndex] = useState(0)
+  const [sharedBrandingLoaded, setSharedBrandingLoaded] = useState(false)
+  const [sharedBrandingStatus, setSharedBrandingStatus] = useState('Loading shared appearance…')
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud'>('cards')
@@ -228,6 +230,93 @@ export default function App() {
     if (siteBranding.faviconUrl.trim()) favicon.href = siteBranding.faviconUrl.trim()
     else favicon.removeAttribute('href')
   }, [siteBranding])
+
+  // Shared branding is public-readable but only trusted admins can publish it.
+  useEffect(() => {
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    if (!endpoint || !anonKey) {
+      setSharedBrandingStatus('Shared appearance is not configured; using this browser’s saved settings.')
+      setSharedBrandingLoaded(true)
+      return
+    }
+    let cancelled = false
+    void fetch(`${endpoint}/rest/v1/site_settings?id=eq.branding&select=payload,updated_at`, {
+      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
+    }).then(async response => {
+      if (!response.ok) throw new Error('Shared appearance could not be loaded.')
+      return await response.json() as Array<{ payload?: { branding?: Partial<SiteBranding> } }>
+    }).then(rows => {
+      if (cancelled) return
+      const saved = rows[0]?.payload?.branding
+      if (saved && typeof saved === 'object') {
+        const urls = Array.isArray(saved.backgroundImageUrls)
+          ? saved.backgroundImageUrls.filter((url): url is string => typeof url === 'string').join('\n')
+          : ''
+        setSiteBranding({
+          iconText: typeof saved.iconText === 'string' ? saved.iconText.slice(0, 5) : defaultBranding.iconText,
+          logoUrl: typeof saved.logoUrl === 'string' ? saved.logoUrl : '',
+          faviconUrl: typeof saved.faviconUrl === 'string' ? saved.faviconUrl : '',
+          backgroundImageUrls: parseBackgroundUrls(urls),
+        })
+        setBackgroundUrlsText(parseBackgroundUrls(urls).join('\n'))
+        setSharedBrandingStatus('Shared appearance loaded.')
+      } else {
+        setSharedBrandingStatus('No shared appearance has been published yet.')
+      }
+      setSharedBrandingLoaded(true)
+    }).catch(() => {
+      if (cancelled) return
+      setSharedBrandingStatus('Could not load shared appearance; using this browser’s saved settings.')
+      setSharedBrandingLoaded(true)
+    })
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    if (!sharedBrandingLoaded || !isAdminSession) return
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    let token = ''
+    try {
+      const raw = sessionStorage.getItem('uflmb.auth.session.v1')
+      token = raw ? (JSON.parse(raw) as { access_token?: string }).access_token || '' : ''
+    } catch { /* require a valid admin session */ }
+    if (!endpoint || !anonKey || !token) {
+      setSharedBrandingStatus('Sign in with the admin account to publish shared appearance changes.')
+      return
+    }
+    let cancelled = false
+    const timer = window.setTimeout(async () => {
+      setSharedBrandingStatus('Publishing appearance for all visitors…')
+      try {
+        const response = await fetch(`${endpoint}/rest/v1/site_settings?on_conflict=id`, {
+          method: 'POST',
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Prefer: 'resolution=merge-duplicates,return=minimal',
+          },
+          body: JSON.stringify({
+            id: 'branding',
+            payload: { theme: siteTheme, branding: siteBranding },
+            updated_at: new Date().toISOString(),
+          }),
+        })
+        if (!response.ok) {
+          const detail = await response.text().catch(() => '')
+          throw new Error(detail || `Request failed (HTTP ${response.status}).`)
+        }
+        if (!cancelled) setSharedBrandingStatus(`Shared appearance saved · ${new Date().toLocaleTimeString()}`)
+      } catch (error) {
+        if (!cancelled) setSharedBrandingStatus(error instanceof Error
+          ? `Shared appearance save failed: ${error.message}`
+          : 'Shared appearance could not be saved.')
+      }
+    }, 800)
+    return () => { cancelled = true; window.clearTimeout(timer) }
+  }, [siteBranding, siteTheme, isAdminSession, sharedBrandingLoaded])
 
   useEffect(() => {
     try { saveCards(allCards) } catch {
@@ -966,7 +1055,7 @@ export default function App() {
         </div>
 <section className="branding-editor">
           <div className="section-heading"><div><p className="eyebrow">BRAND IDENTITY</p><h2>Logo, icon & background image</h2></div></div>
-          <p className="muted-copy">Paste direct image URLs (HTTPS recommended). Changes preview immediately and save in this browser.</p>
+          <p className="muted-copy">Paste direct image URLs (HTTPS recommended). Changes preview immediately and sync to every visitor after the cloud save.</p>
           <div className="theme-controls branding-controls">
             <label>Brand icon / symbol<input maxLength={5} value={siteBranding.iconText} onChange={e => setSiteBranding(current => ({ ...current, iconText: e.target.value.slice(0, 5) }))} placeholder="U, ⚽, ★" /><small>Text, initials or emoji shown in the square brand mark</small></label>
             <label>Logo image URL<input type="url" value={siteBranding.logoUrl} onChange={e => setSiteBranding(current => ({ ...current, logoUrl: e.target.value }))} placeholder="https://example.com/logo.png" /><small>Direct URL to a PNG, SVG, WebP or JPG logo</small></label>
@@ -980,7 +1069,7 @@ export default function App() {
           </div>
           <div className="form-actions"><button className="button primary" type="button" onClick={() => { const backgroundImageUrls = parseBackgroundUrls(backgroundUrlsText); setSiteBranding(current => ({ ...current, backgroundImageUrls })); setBackgroundIndex(0); setBackgroundUrlsText(backgroundImageUrls.join('\n')) }}>Apply backgrounds</button><button className="button secondary" type="button" onClick={() => { setSiteBranding(defaultBranding); setBackgroundUrlsText(''); setBackgroundIndex(0) }}>Reset branding</button></div>
         </section>
-        <p className="field-help">Current limitation: because UFLMB is a static site without a shared settings backend, these theme choices affect this browser only. They do not change the theme for every visitor.</p>
+        <p className="field-help" role="status" aria-live="polite">{sharedBrandingStatus}</p>
       </section>
       </>}
       {adminTab === 'cards' && <>
