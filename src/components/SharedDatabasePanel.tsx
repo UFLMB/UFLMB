@@ -77,7 +77,7 @@ export default function SharedDatabasePanel({ cards, appState, onLoad, onLoadApp
   })
   const [busy, setBusy] = useState(false)
   const [cloudSaving, setCloudSaving] = useState(false)
-  const [cloudSaveStatus, setCloudSaveStatus] = useState('Sign in and load shared records to enable cloud auto-save.')
+  const [cloudSaveStatus, setCloudSaveStatus] = useState('Sign in, then load cloud data to sync.')
   const [loadedIds, setLoadedIds] = useState<string[] | null>(null)
   // Ref avoids a second autosave loop when the successfully-synced ID snapshot is updated.
   const loadedIdsRef = useRef<string[] | null>(null)
@@ -103,11 +103,11 @@ export default function SharedDatabasePanel({ cards, appState, onLoad, onLoadApp
       loadedIdsRef.current = ids
       setLoadedIds(ids)
       onLoad(parsed)
-      setCloudSaveStatus(`Connected. Loaded ${parsed.length} shared card(s); cloud auto-save is enabled.`)
+      setCloudSaveStatus(`Loaded ${parsed.length} cards · sync on`)
       } catch (error) {
       loadedIdsRef.current = null
       setLoadedIds(null)
-      setCloudSaveStatus('Could not enable cloud auto-save. Check the connection and admin permissions.')
+      setCloudSaveStatus('Sync unavailable · check connection')
       onMessage(error instanceof Error ? error.message : 'Could not load shared records.')
     } finally { setBusy(false) }
   }
@@ -118,13 +118,13 @@ export default function SharedDatabasePanel({ cards, appState, onLoad, onLoadApp
     if (!enabled || !token || loadedIdsRef.current === null) return
     const realCards = cards.filter(card => !card.id.startsWith('uflmb-demo-'))
     if (!realCards.length) {
-      setCloudSaveStatus('Connected. No non-demo cards to save; remote records are not deleted automatically.')
+      setCloudSaveStatus('No cards to sync')
       return
     }
     let cancelled = false
     const timer = window.setTimeout(async () => {
       setCloudSaving(true)
-      setCloudSaveStatus('Saving card changes to Supabase…')
+      setCloudSaveStatus('Saving…')
       try {
         const response = await fetch(`${baseUrl}/rest/v1/cards?on_conflict=id`, {
           method: 'POST',
@@ -143,11 +143,11 @@ export default function SharedDatabasePanel({ cards, appState, onLoad, onLoadApp
         const syncedIds = Array.from(new Set([...(loadedIdsRef.current || []), ...realCards.map(card => card.id)]))
         loadedIdsRef.current = syncedIds
         setLoadedIds(syncedIds)
-        setCloudSaveStatus(`Cloud auto-save successful · ${new Date().toLocaleTimeString()} · ${realCards.length} card(s) synced`)
+        setCloudSaveStatus(`Synced · ${realCards.length} cards · ${new Date().toLocaleTimeString()}`)
       } catch (error) {
         if (cancelled) return
         const message = error instanceof Error ? error.message : 'Unknown cloud save error.'
-        setCloudSaveStatus(`Cloud auto-save failed: ${message}`)
+        setCloudSaveStatus(`Sync failed · ${message}`)
       } finally {
         if (!cancelled) setCloudSaving(false)
       }
@@ -172,7 +172,7 @@ export default function SharedDatabasePanel({ cards, appState, onLoad, onLoadApp
           body: JSON.stringify({ id: 'primary', payload: JSON.parse(appStateJson), updated_at: new Date().toISOString() }),
         })
         if (!response.ok) throw new Error(await responseMessage(response))
-        if (!cancelled) setCloudSaveStatus('Saved')
+        if (!cancelled) setCloudSaveStatus('Synced')
       } catch (error) {
         if (!cancelled) {
           const message = error instanceof Error ? error.message : 'Unknown cloud save error.'
@@ -212,7 +212,7 @@ export default function SharedDatabasePanel({ cards, appState, onLoad, onLoadApp
       const ids = realCards.map(card => card.id)
       loadedIdsRef.current = ids
       setLoadedIds(ids)
-      setCloudSaveStatus(`Publish complete · ${new Date().toLocaleTimeString()} · ${ids.length} card(s) synced`)
+      setCloudSaveStatus(`Published · ${ids.length} cards`)
       onMessage(`Published ${realCards.length} non-demo card(s) to the shared database; removed ${removedIds.length} remote record(s). Demo fixtures were not uploaded.`)
     } catch (error) { onMessage(error instanceof Error ? error.message : 'Publishing failed.') }
     finally { setBusy(false) }
