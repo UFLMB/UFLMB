@@ -85,8 +85,7 @@ export default function SharedDatabasePanel({ cards, appState, onLoad, onLoadApp
       setLoadedIds(ids)
       onLoad(parsed)
       setCloudSaveStatus(`Connected. Loaded ${parsed.length} shared card(s); cloud auto-save is enabled.`)
-      onMessage(`Loaded ${parsed.length} shared card record(s). Cloud auto-save is enabled after each change; remote deletions still require the explicit publish action.`)
-    } catch (error) {
+      } catch (error) {
       loadedIdsRef.current = null
       setLoadedIds(null)
       setCloudSaveStatus('Could not enable cloud auto-save. Check the connection and admin permissions.')
