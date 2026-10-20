@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
+import type { ChangeEvent } from 'react'
 import type { PlayerCard } from './types/card'
 import { cards as starterCards } from './data/cards'
 import { demoCards } from './data/demoCards'
@@ -160,8 +160,7 @@ export default function App() {
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud'>('cards')
 
-  // Admin UI has been removed for a clean rebuild. Keep the existing local data handlers temporarily
-  // so their behavior can be selectively reused when the replacement workflow is designed.
+  // Admin UI was removed for a clean rebuild; keep these local data handlers available for selective reuse.
   void [notice, autoSaveStatus, setAutoSaveStatus, setAdminSearch, setGoogleClientId, setGoogleApiKey, driveBusy,
     setSiteBranding, backgroundUrlsText, setBackgroundUrlsText, adminTab, setAdminTab, loadDemoSquads,
     dataQuality, reviewCandidates, toggleSelected, selectVisible, deleteSelected, handleImage, handleBulkImages,
