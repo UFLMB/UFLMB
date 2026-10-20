@@ -1135,3 +1135,46 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 @media(prefers-reduced-motion:reduce){
   .admin-tab:before{transition:none}
 }
+
+/* Hidden admin access gate */
+.quiet-access{position:fixed;right:17px;bottom:17px;z-index:40;display:grid;place-items:center;width:34px;height:34px;border:1px solid rgba(197,244,103,.14);border-radius:50%;background:rgba(15,18,24,.72);color:rgba(197,244,103,.68);box-shadow:0 8px 25px rgba(0,0,0,.22);backdrop-filter:blur(12px);cursor:pointer;opacity:.55;transition:opacity .18s ease,transform .18s ease,border-color .18s ease}
+.quiet-access span{font:500 13px 'DM Mono',monospace}
+.quiet-access:hover,.quiet-access:focus-visible{opacity:1;transform:translateY(-2px);border-color:rgba(197,244,103,.55)}
+.gate-shell{min-height:100vh;display:flex;flex-direction:column}
+.gate-shell .topbar{flex-shrink:0}
+.gate-error{width:min(660px,100%);margin:auto;padding:clamp(42px,8vh,88px) 0 60px;text-align:center}
+.gate-error-code{margin-bottom:16px;color:rgba(197,244,103,.22);font:800 clamp(72px,16vw,132px)/.9 'DM Mono',monospace;letter-spacing:-.09em}
+.gate-error h1{font-size:clamp(35px,6vw,56px);letter-spacing:-2.4px}
+.gate-error .hero-copy{max-width:490px;margin:18px auto 26px}
+.gate-diagnostic{max-width:490px;margin:0 auto;padding:17px;border:1px solid rgba(255,255,255,.085);border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012));text-align:left;box-shadow:0 18px 44px rgba(0,0,0,.18)}
+.gate-diagnostic-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line);color:#cbd1db;font:10px 'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase}
+.gate-diagnostic-top>span:first-child{display:flex;align-items:center;gap:8px}
+.gate-diagnostic-top i{width:7px;height:7px;border-radius:50%;background:#ffb65c;box-shadow:0 0 10px rgba(255,182,92,.35)}
+.gate-diagnostic-top>span:last-child{color:var(--muted)}
+.gate-diagnostic>p{color:var(--muted);font-size:12px;line-height:1.75;margin:14px 0 18px}
+.gate-puzzle{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);align-items:center;gap:12px}
+.gate-token,.gate-receiver{display:flex;min-width:0;min-height:105px;align-items:center;justify-content:center;flex-direction:column;gap:8px;border-radius:12px;cursor:pointer;transition:border-color .18s ease,background .18s ease,transform .18s ease}
+.gate-token{border:1px solid rgba(197,244,103,.28);background:rgba(197,244,103,.07);color:var(--accent,#c5f467)}
+.gate-token>span{display:grid;place-items:center;width:43px;height:43px;border-radius:12px;background:var(--accent,#c5f467);color:#14190c;font-size:25px;font-weight:800;box-shadow:0 5px 20px rgba(197,244,103,.12)}
+.gate-token small,.gate-receiver small{font:9px 'DM Mono',monospace;letter-spacing:.08em;text-align:center}
+.gate-token small{color:#b7c69c}
+.gate-token:hover,.gate-token-selected{border-color:var(--accent,#c5f467);background:rgba(197,244,103,.13);transform:translateY(-1px)}
+.gate-puzzle-arrow{color:#737d8b;text-align:center;font-size:20px}
+.gate-receiver{border:1px dashed rgba(255,255,255,.2);background:rgba(0,0,0,.12);color:#87909d}
+.gate-receiver>span{display:grid;place-items:center;width:43px;height:43px;border:1px dashed rgba(255,255,255,.24);border-radius:12px;font-size:25px}
+.gate-receiver-ready{border-color:rgba(197,244,103,.55);color:var(--accent,#c5f467);background:rgba(197,244,103,.055)}
+.gate-receiver-ready>span{border-color:var(--accent,#c5f467);border-style:solid}
+.gate-receiver-ready:hover{transform:translateY(-1px)}
+.gate-progress{display:flex;align-items:center;gap:8px;margin-top:16px;color:#687181;font:9px 'DM Mono',monospace;letter-spacing:.06em}
+.gate-progress>span:first-child{width:6px;height:6px;border-radius:50%;background:#ffb65c}
+.gate-home-link{display:inline-block;margin-top:22px;color:#7f8998;font-size:11px;text-decoration:none}
+.gate-home-link:hover{color:var(--text-color,#f3f5f8)}
+@media(max-width:600px){
+ .quiet-access{right:11px;bottom:11px;width:31px;height:31px}
+ .gate-error{padding:40px 0 34px}
+ .gate-error-code{font-size:clamp(72px,22vw,108px)}
+ .gate-error h1{font-size:clamp(32px,9vw,44px);letter-spacing:-1.6px}
+ .gate-diagnostic{padding:13px}
+ .gate-puzzle{gap:8px}
+ .gate-token,.gate-receiver{min-height:96px}
+}
