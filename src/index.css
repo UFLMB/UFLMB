@@ -1340,11 +1340,11 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Focused refinements: fade-only close control, sliding mode indicator, no eyebrow rule. */
+/* Focused refinements: fade-only close control, contained sliding mode indicator, no eyebrow rule. */
 .auth-modal .eyebrow::before{display:none}
 .auth-close{transition:opacity .18s ease}
 .auth-close:hover{opacity:.68;transform:none;border-color:var(--line);background:rgba(255,255,255,.035)}
-.auth-mode-switch{position:relative;isolation:isolate}
+.auth-mode-switch{position:relative;isolation:isolate;overflow:hidden}
 .auth-mode-switch::before{
   content:"";
   position:absolute;
@@ -1352,15 +1352,14 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   top:4px;
   bottom:4px;
   left:4px;
-  width:calc(50% - 2.5px);
+  right:calc(50% + 2.5px);
   border:1px solid rgba(197,244,103,.24);
   border-radius:8px;
   background:linear-gradient(135deg,rgba(197,244,103,.18),rgba(197,244,103,.07));
   box-shadow:0 2px 8px rgba(0,0,0,.12);
-  transform:translateX(0);
-  transition:transform .32s cubic-bezier(.22,.8,.25,1);
+  transition:left .32s cubic-bezier(.22,.8,.25,1),right .32s cubic-bezier(.22,.8,.25,1);
 }
-.auth-mode-switch.mode-signup::before{transform:translateX(calc(100% + 5px))}
+.auth-mode-switch.mode-signup::before{left:calc(50% + 2.5px);right:4px}
 .auth-mode-switch button{position:relative;z-index:1;transition:color .22s ease}
 .auth-mode-switch button.active{background:transparent;box-shadow:none;color:#d8ff91}
 .auth-mode-switch button:not(.active){color:var(--muted)}
