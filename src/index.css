@@ -1220,3 +1220,45 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .lattice-cell-on{background:#5f6368;border-color:#5f6368}
 .gate-lattice-footer{padding-top:8px}
 @media(max-width:480px){.gate-lattice-wrap{width:174px}}
+
+
+/* Public Supabase Auth modal and fresh admin workspace */
+.auth-trigger{white-space:nowrap;min-height:38px;padding:10px 15px;font-size:11px}
+.auth-backdrop{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(3,5,8,.78);backdrop-filter:blur(12px);animation:auth-fade-in .16s ease-out}
+.auth-modal{position:relative;width:min(440px,100%);max-height:min(92vh,760px);overflow-y:auto;padding:clamp(22px,5vw,34px);border:1px solid rgba(197,244,103,.2);border-radius:20px;background:radial-gradient(ellipse at 50% 0,rgba(197,244,103,.08),transparent 48%),#11141b;box-shadow:0 30px 100px rgba(0,0,0,.5)}
+.auth-modal .eyebrow{margin-bottom:10px}
+.auth-modal h2{padding-right:26px;font-size:clamp(24px,5vw,30px);letter-spacing:-1px}
+.auth-copy{margin:10px 0 20px;color:var(--muted);font-size:12px;line-height:1.7}
+.auth-close{position:absolute;right:17px;top:15px;width:34px;height:34px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.035);color:#cbd1db;font-size:24px;line-height:1}
+.auth-close:hover{background:rgba(255,255,255,.08);color:#fff}
+.auth-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:0 0 20px;padding:4px;border:1px solid var(--line);border-radius:11px;background:rgba(0,0,0,.18)}
+.auth-mode-switch button{min-height:38px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:12px;font-weight:700}
+.auth-mode-switch button.active{background:rgba(197,244,103,.12);color:var(--lime);box-shadow:inset 0 0 0 1px rgba(197,244,103,.15)}
+.auth-form{display:grid;gap:15px}
+.auth-form label{display:grid;gap:7px;color:#d5d9e1;font-size:11px;font-weight:700}
+.auth-form input{width:100%;min-width:0;padding:12px 13px;border:1px solid rgba(255,255,255,.12);border-radius:10px;outline:0;background:#0b0e14;color:#f3f5f8;font-size:13px}
+.auth-form input:focus{border-color:rgba(197,244,103,.55);box-shadow:0 0 0 3px rgba(197,244,103,.08)}
+.auth-form input::placeholder{color:#687181}
+.auth-submit{width:100%;min-height:44px;margin-top:3px}
+.auth-message,.auth-session-note{margin:14px 0 0;padding:11px 12px;border:1px solid rgba(197,244,103,.18);border-radius:10px;background:rgba(197,244,103,.055);color:#dbe7c7;font-size:11px;line-height:1.7;overflow-wrap:anywhere}
+.auth-signout{width:100%;margin-top:12px}
+.auth-footnote{margin:18px 0 0;color:#778090;font-size:10px;line-height:1.7;text-align:center}
+.admin-workspace-shell{min-height:100vh;display:flex;flex-direction:column}
+.admin-workspace{width:100%;max-width:820px;margin:auto;padding:clamp(58px,10vh,110px) 0;text-align:center}
+.admin-workspace>.eyebrow{margin-bottom:16px}
+.admin-workspace h1{font-size:clamp(42px,7vw,70px);letter-spacing:-3px}
+.admin-workspace h1 span{color:var(--lime)}
+.admin-workspace .hero-copy{margin:20px auto 34px}
+.admin-empty-state{padding:clamp(26px,6vw,50px);border:1px solid rgba(255,255,255,.09);border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012));box-shadow:0 20px 65px rgba(0,0,0,.18)}
+.admin-empty-icon{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 18px;border:1px solid rgba(197,244,103,.22);border-radius:17px;background:rgba(197,244,103,.07);color:var(--lime);font-size:28px}
+.admin-empty-state h2{font-size:23px}
+.admin-empty-state p{max-width:490px;margin:12px auto 0;color:var(--muted);font-size:12px;line-height:1.8}
+@keyframes auth-fade-in{from{opacity:0}to{opacity:1}}
+@media(max-width:600px){
+  .auth-trigger{padding:9px 10px;font-size:10px;min-height:36px}
+  .auth-backdrop{padding:12px}
+  .auth-modal{padding:24px 19px;border-radius:17px}
+  .admin-workspace{padding:52px 0}
+  .admin-workspace h1{letter-spacing:-2px}
+}
+@media(prefers-reduced-motion:reduce){.auth-backdrop{animation:none}}
