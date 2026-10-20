@@ -7,6 +7,8 @@ import CommunityReviews from './components/CommunityReviews'
 import SharedDatabasePanel from './components/SharedDatabasePanel'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
 const DRIVE_API_KEY = 'uflmb.google.apiKey'
 const THEME_KEY = 'uflmb.site-theme.v1'
@@ -131,40 +133,110 @@ const downloadCsv = (cards: PlayerCard[]) => {
 }
 
 export default function App() {
-  const requestedAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin') || window.location.hash === '#admin' || window.location.hash === '#open-sesame'
-  const [adminUnlocked, setAdminUnlocked] = useState(() => {
-    const secretHash = window.location.hash === '#open-sesame'
-    try {
-      if (secretHash) sessionStorage.setItem('uflmb.admin-unlocked', 'yes')
-      return secretHash || sessionStorage.getItem('uflmb.admin-unlocked') === 'yes'
-    } catch { return secretHash }
-  })
-  const isAdmin = requestedAdmin && adminUnlocked
-  const unlockAdmin = () => {
-    try { sessionStorage.setItem('uflmb.admin-unlocked', 'yes') } catch { /* current session still unlocks */ }
-    setAdminUnlocked(true)
-    window.location.hash = 'admin'
+  const [routeHash, setRouteHash] = useState(() => window.location.hash)
+  const requestedAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin') || routeHash === '#admin' || routeHash === '#admin-login'
+  const [adminUnlocked, setAdminUnlocked] = useState(false)
+  const [adminAuthChecking, setAdminAuthChecking] = useState(false)
+  const [adminEmail, setAdminEmail] = useState('')
+  const [adminPassword, setAdminPassword] = useState('')
+  const [adminLoginBusy, setAdminLoginBusy] = useState(false)
+  const [adminLoginError, setAdminLoginError] = useState('')
+  const isAdmin = (routeHash === '#admin' || window.location.pathname.replace(/\/$/, '').endsWith('/admin')) && adminUnlocked
+
+  const verifyAdminToken = async (accessToken: string): Promise<boolean> => {
+    if (!SUPABASE_URL || !SUPABASE_KEY || !accessToken) return false
+    const userResponse = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${accessToken}` },
+    })
+    if (!userResponse.ok) return false
+    const user = await userResponse.json() as { id?: string }
+    if (!user.id) return false
+    const allowlistResponse = await fetch(`${SUPABASE_URL}/rest/v1/admin_users?select=user_id&user_id=eq.${encodeURIComponent(user.id)}`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${accessToken}` },
+    })
+    if (!allowlistResponse.ok) return false
+    const rows = await allowlistResponse.json() as Array<{ user_id: string }>
+    return rows.some(row => row.user_id === user.id)
   }
 
-  // Hidden access shortcuts reveal the admin UI with Ctrl+Shift+U or #open-sesame.
-  // This is an obscurity feature only; client-side code cannot enforce security.
   useEffect(() => {
-    const handleShortcut = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'u') {
-        event.preventDefault()
-        unlockAdmin()
-      }
-    }
-    const handleHashChange = () => {
-      if (window.location.hash === '#open-sesame') unlockAdmin()
-    }
-    window.addEventListener('keydown', handleShortcut)
-    window.addEventListener('hashchange', handleHashChange)
-    return () => {
-      window.removeEventListener('keydown', handleShortcut)
-      window.removeEventListener('hashchange', handleHashChange)
-    }
+    const updateRoute = () => setRouteHash(window.location.hash)
+    window.addEventListener('hashchange', updateRoute)
+    return () => window.removeEventListener('hashchange', updateRoute)
   }, [])
+
+  useEffect(() => {
+    if (!requestedAdmin) {
+      setAdminUnlocked(false)
+      setAdminAuthChecking(false)
+      return
+    }
+    let cancelled = false
+    let token = ''
+    try { token = localStorage.getItem('uflmb.supabase.accessToken') || '' } catch { /* sign-in will be required */ }
+    if (!token) {
+      setAdminUnlocked(false)
+      setAdminAuthChecking(false)
+      return
+    }
+    setAdminAuthChecking(true)
+    void verifyAdminToken(token).then(valid => {
+      if (cancelled) return
+      setAdminUnlocked(valid)
+      if (!valid) {
+        try { localStorage.removeItem('uflmb.supabase.accessToken') } catch { /* ignore storage errors */ }
+        setAdminLoginError('A munkamenet lejárt vagy a fiók nem rendelkezik adminjoggal. Jelentkezz be újra.')
+      }
+    }).catch(() => {
+      if (!cancelled) {
+        setAdminUnlocked(false)
+        setAdminLoginError('A hitelesítési szolgáltatás most nem érhető el. Próbáld újra.')
+      }
+    }).finally(() => { if (!cancelled) setAdminAuthChecking(false) })
+    return () => { cancelled = true }
+  }, [requestedAdmin])
+
+  const signInAdmin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setAdminLoginError('')
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+      setAdminLoginError('A belépési szolgáltatás nincs konfigurálva.')
+      return
+    }
+    if (!adminEmail.trim() || !adminPassword) {
+      setAdminLoginError('Add meg az admin e-mail-címet és jelszót.')
+      return
+    }
+    setAdminLoginBusy(true)
+    try {
+      const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: adminEmail.trim(), password: adminPassword }),
+      })
+      const data = await response.json() as { access_token?: string; msg?: string; message?: string }
+      if (!response.ok || !data.access_token) throw new Error('Hibás belépési adatok vagy nem engedélyezett adminfiók.')
+      const allowed = await verifyAdminToken(data.access_token)
+      if (!allowed) throw new Error('Hibás belépési adatok vagy nem engedélyezett adminfiók.')
+      try { localStorage.setItem('uflmb.supabase.accessToken', data.access_token) } catch { /* token remains valid for this view */ }
+      setAdminPassword('')
+      setAdminUnlocked(true)
+      window.location.hash = 'admin'
+      setRouteHash('#admin')
+    } catch (error) {
+      setAdminLoginError(error instanceof Error ? error.message : 'A belépés nem sikerült.')
+    } finally {
+      setAdminLoginBusy(false)
+    }
+  }
+
+  const signOutAdmin = () => {
+    try { localStorage.removeItem('uflmb.supabase.accessToken') } catch { /* ignore storage errors */ }
+    setAdminUnlocked(false)
+    setAdminPassword('')
+    setRouteHash('')
+    window.location.hash = ''
+  }
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
@@ -1006,11 +1078,34 @@ export default function App() {
     } catch { setNotice('Invalid JSON. Check the file contents.') }
   }
 
-  if (isAdmin) return (
+  if (requestedAdmin && !isAdmin) return (
     <main className="app-shell admin-shell">
       <header className="topbar">
         <a className="brand" href="/UFLMB/" aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
         <a className="back-link" href="/UFLMB/">← Public database</a>
+      </header>
+      <section className="admin-panel shared-database-panel" style={{ maxWidth: 480, margin: '10vh auto 3rem' }}>
+        <p className="eyebrow">RESTRICTED ACCESS</p>
+        <h1>Admin <span>sign in.</span></h1>
+        <p className="muted-copy">UFLMB content management. Sign in with the registered administrator account to continue.</p>
+        {adminAuthChecking ? <p className="field-help" role="status">Checking secure session…</p> : <>
+          <form className="card-form shared-login-form" onSubmit={signInAdmin}>
+            <label>Admin email<input type="email" value={adminEmail} onChange={event => setAdminEmail(event.target.value)} autoComplete="username" required /></label>
+            <label>Password<input type="password" value={adminPassword} onChange={event => setAdminPassword(event.target.value)} autoComplete="current-password" required /></label>
+            {adminLoginError && <p className="notice warning" role="alert">{adminLoginError}</p>}
+            <button className="button primary" type="submit" disabled={adminLoginBusy}>{adminLoginBusy ? 'Verifying…' : 'Sign in securely'}</button>
+          </form>
+          <p className="field-help">Only accounts explicitly authorized in the UFLMB admin allowlist can enter. A valid account without admin permission is not enough.</p>
+        </>}
+      </section>
+    </main>
+  )
+
+  if (isAdmin) return (
+    <main className="app-shell admin-shell">
+      <header className="topbar">
+        <a className="brand" href="/UFLMB/" aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
+        <div className="form-actions"><a className="back-link" href="/UFLMB/">← Public database</a><button className="button secondary" type="button" onClick={signOutAdmin}>Sign out</button></div>
       </header>
       <section className="admin-intro">
         <p className="eyebrow">CONTENT MANAGEMENT</p>
@@ -1216,7 +1311,7 @@ export default function App() {
           {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sortBy !== 'ovr-desc' || minOvr !== '' || maxOvr !== '' || statFilter !== 'Any stat' || minStat !== '' || maxStat !== '' || showBookmarked) && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat(''); setShowBookmarked(false) }}>Reset all filters</button>}
         </div>
       </section>
-      {allCards.some(card => card.id.startsWith('uflmb-demo-')) && <div className="demo-warning" role="status"><strong>TEST DATA LOADED</strong><span>These 22 demo cards are fictional. All OVRs, stats, perks, clubs and nations are synthetic; do not treat them as verified UFL Mobile data. Edit or delete them in Card manager before using real records.</span><a href="/UFLMB/#admin">Open Card manager ↗</a></div>}
+      {allCards.some(card => card.id.startsWith('uflmb-demo-')) && <div className="demo-warning" role="status"><strong>TEST DATA LOADED</strong><span>These 22 demo cards are fictional. All OVRs, stats, perks, clubs and nations are synthetic; do not treat them as verified UFL Mobile data. Edit or delete them in Card manager before using real records.</span><a href="/UFLMB/#admin-login">Open Card manager ↗</a></div>}
       <section className="squad-section" aria-labelledby="squad-title">
         <div className="section-heading"><div><p className="eyebrow">TACTICAL WORKSPACE</p><h2 id="squad-title">My squad builder</h2></div><span className="count-label">Saved in this browser</span></div>
         <div className="squad-toolbar"><div className="squad-team-switch" role="group" aria-label="Choose squad"><button className={activeSquad === 'A' ? 'button primary' : 'button secondary'} type="button" onClick={() => setActiveSquad('A')}>Demo Team A</button><button className={activeSquad === 'B' ? 'button primary' : 'button secondary'} type="button" onClick={() => setActiveSquad('B')}>Demo Team B</button></div><label>Formation <select value={formationId} onChange={e => setFormationId(e.target.value as FormationId)}><option value="4-3-3">4-3-3</option><option value="4-4-2">4-4-2</option><option value="3-5-2">3-5-2</option></select></label><div className="squad-summary"><span><strong>{squadPlayers.length}/11</strong> selected</span><span><strong>{squadRating || '—'}</strong> avg. OVR</span><span><strong>{squadPositionFits}/{squadPlayers.length || 11}</strong> position fits</span></div><button className="button secondary" type="button" onClick={autoFillSquad}>Auto-fill best XI</button><button className="button secondary" type="button" onClick={exportSquad}>Export squad</button><label className="button secondary squad-import-button">Import squad<input type="file" accept="application/json,.json" onChange={importSquad} /></label><button className="button secondary" type="button" onClick={() => setSquadAssignments(current => Object.fromEntries(Object.entries(current).filter(([key]) => !key.startsWith(activeSquadKey))))}>Clear this squad</button></div>
@@ -1244,7 +1339,7 @@ export default function App() {
         {showCompare && <div className="comparison-table-wrap"><table className="comparison-table"><thead><tr><th>Attribute</th>{comparedCards.map(card => <th key={card.id}>{card.playerName}</th>)}</tr></thead><tbody>{[['OVR','overallRating'],['Position','positions'],['Nation','nation'],['Club','club'],['Card type','cardName'],...Array.from(new Set(comparedCards.flatMap(card => Object.keys(card.stats ?? {}))).values()).sort().map(key => [key, `stat:${key}`])].map(([label,key]) => <tr key={key}><th>{label}</th>{comparedCards.map(card => { const value = key === 'overallRating' ? card.overallRating : key === 'positions' ? card.positions.join(' / ') : key.startsWith('stat:') ? card.stats?.[key.slice(5)] ?? '—' : card[key as 'nation' | 'club' | 'cardName'] ?? '—'; return <td key={card.id}>{value}</td> })}</tr>)}</tbody></table></div>}
       </section>}
       {selectedCard && <div className="profile-backdrop" role="presentation" onClick={() => setSelectedCard(null)}><section className="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title" onClick={event => event.stopPropagation()}><button className="profile-close" type="button" onClick={() => setSelectedCard(null)} aria-label="Close player profile">×</button><div className="profile-heading">{selectedCard.imageUrl ? <img src={selectedCard.imageUrl} alt={`${selectedCard.playerName} card`} /> : <div className="profile-placeholder">UFL<span>MB</span></div>}<div><p className="eyebrow">PLAYER PROFILE</p><h2 id="profile-title">{selectedCard.playerName}</h2><p className="muted-copy">{selectedCard.nation}{selectedCard.club ? ` · ${selectedCard.club}` : ''}</p><div className="profile-meta"><strong>OVR {selectedCard.overallRating}</strong><span>{selectedCard.positions.join(' / ')}</span>{selectedCard.cardName && <span>{selectedCard.cardName}</span>}</div></div></div><div className="profile-section"><h3>Attributes</h3>{selectedCard.stats && Object.keys(selectedCard.stats).length ? <div className="profile-stats">{Object.entries(selectedCard.stats).sort(([a],[b]) => a.localeCompare(b)).map(([key,value]) => <div key={key}><span>{key}</span><strong>{value}</strong><i><b style={{width:`${Math.max(0,Math.min(100,Number(value)))}%`}} /></i></div>)}</div> : <p className="muted-copy">No verified attribute data has been entered for this card yet.</p>}</div>{selectedCard.perks?.length ? <div className="profile-section"><h3>Perks</h3><div className="perk-row">{selectedCard.perks.map(perk => <span key={perk}>{perk}</span>)}</div></div> : null}<CommunityReviews cardId={selectedCard.id} /><div className="profile-footer"><span className="verified-date">Verified {selectedCard.verifiedAt}</span>{selectedCard.id.startsWith('uflmb-demo-') ? <span className="field-help">Demo fixture — no verified source</span> : <a className="button primary" href={selectedCard.sourceUrl} target="_blank" rel="noreferrer">Open verified source ↗</a>}<button className="button secondary" type="button" onClick={() => toggleBookmark(selectedCard.id)}>{bookmarkedIds.includes(selectedCard.id) ? '★ Saved' : '☆ Save card'}</button></div></section></div>}
-      <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><span className="footer-muted">Independent community project; not affiliated with or endorsed by the game’s publisher.</span><a href="/UFLMB/#admin">Card manager</a></footer>
+      <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><a className="footer-muted" href="/UFLMB/#admin-login" aria-label="Administrator sign in" title="Administrator sign in">Independent community project; not affiliated with or endorsed by the game’s publisher.</a></footer>
     </main>
   )
 }
