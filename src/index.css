@@ -1509,3 +1509,57 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 @media (prefers-reduced-motion:reduce){
   .profile-modal,.auth-modal{animation:none}
 }
+
+
+/* Motion polish: short, compositor-friendly transitions and restrained entrance cues. */
+@media (prefers-reduced-motion:no-preference){
+  .player-card,.analytics-panel,.quality-tile,.empty-state,.admin-empty-state,
+  .admin-panel,.theme-live-preview,.branding-preview-item,.theme-preset,
+  .compare-chip,.record-row,.leader-list li{
+    transition:transform .26s cubic-bezier(.2,.75,.25,1),opacity .26s cubic-bezier(.2,.75,.25,1),border-color .26s ease;
+  }
+  .player-card:hover,.analytics-panel:hover,.quality-tile:hover,
+  .branding-preview-item:hover,.theme-preset:hover{
+    transform:translateY(-2px);
+  }
+  .category,.button,.compare-toggle,.admin-tab,.menu-toggle,
+  .profile-close,.auth-close,.auth-mode-switch button,.auth-trigger-icon{
+    transition:transform .22s cubic-bezier(.2,.75,.25,1),opacity .22s ease;
+  }
+  .category:active,.button:active,.compare-toggle:active,.admin-tab:active{
+    transform:scale(.98);
+  }
+  .profile-modal{animation:polished-modal-enter .28s cubic-bezier(.2,.75,.25,1) both}
+  .profile-backdrop{animation:polished-backdrop-enter .2s ease-out both}
+  .player-card{animation:polished-card-enter .3s cubic-bezier(.2,.75,.25,1) both}
+  .empty-state,.analytics-panel,.admin-panel{animation:polished-fade-up .28s cubic-bezier(.2,.75,.25,1) both}
+  .auth-close:hover,.profile-close:hover{transform:scale(1.08);opacity:.82}
+}
+@keyframes polished-modal-enter{
+  from{opacity:0;transform:translateY(10px) scale(.99)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes polished-backdrop-enter{from{opacity:0}to{opacity:1}}
+@keyframes polished-card-enter{
+  from{opacity:0;transform:translateY(7px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes polished-fade-up{
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+/* The mobile close button keeps its existing fade, with a small hover scale added. */
+@media (max-width:768px) and (prefers-reduced-motion:no-preference){
+  .auth-close:hover,.profile-close:hover{transform:scale(1.08);opacity:.82}
+}
+@media (prefers-reduced-motion:reduce){
+  .player-card,.analytics-panel,.quality-tile,.empty-state,.admin-empty-state,
+  .admin-panel,.theme-live-preview,.branding-preview-item,.theme-preset,
+  .compare-chip,.record-row,.leader-list li,.category,.button,.compare-toggle,
+  .admin-tab,.menu-toggle,.profile-close,.auth-close,.auth-mode-switch button,
+  .auth-trigger-icon,.profile-modal,.profile-backdrop{
+    animation:none!important;
+    transition:none!important;
+    transform:none!important;
+  }
+}
