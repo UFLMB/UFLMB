@@ -90,6 +90,27 @@ revoke all on public.admin_users from anon, authenticated;
 -- Remove the helper from public if this schema is reapplied over an older setup.
 drop function if exists public.is_uflmb_admin();
 
+
+-- One primary cloud snapshot for non-card app data (bookmarks, squad and appearance).
+-- Only trusted admins can read or write it; browser-local storage remains a recovery cache.
+create table if not exists public.app_state (
+  id text primary key check (id = 'primary'),
+  payload jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.app_state enable row level security;
+revoke all on public.app_state from anon, authenticated;
+grant select, insert, update on public.app_state to authenticated;
+drop policy if exists "UFLMB admins can read app state" on public.app_state;
+create policy "UFLMB admins can read app state" on public.app_state
+  for select to authenticated using (private.is_uflmb_admin());
+drop policy if exists "UFLMB admins can insert app state" on public.app_state;
+create policy "UFLMB admins can insert app state" on public.app_state
+  for insert to authenticated with check (private.is_uflmb_admin());
+drop policy if exists "UFLMB admins can update app state" on public.app_state;
+create policy "UFLMB admins can update app state" on public.app_state
+  for update to authenticated using (private.is_uflmb_admin()) with check (private.is_uflmb_admin());
+
 -- Public reviews are still open for initial community testing. Apply anti-spam
 -- controls (captcha, rate limits, moderation) before promoting this widely.
 drop policy if exists "Public can submit reviews" on public.card_reviews;
