@@ -146,6 +146,8 @@ export default function App() {
   const [nationFilter, setNationFilter] = useState('All nations')
   const [positionFilter, setPositionFilter] = useState('All positions')
   const [cardTypeFilter, setCardTypeFilter] = useState('All card types')
+  const [eventFilter, setEventFilter] = useState('All events')
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'imported' | 'verified' | 'demo'>('all')
   const [sortBy, setSortBy] = useState<'ovr-desc' | 'ovr-asc' | 'name-asc' | 'verified-desc'>('ovr-desc')
   const [minOvr, setMinOvr] = useState('')
   const [maxOvr, setMaxOvr] = useState('')
@@ -362,6 +364,7 @@ export default function App() {
   const availableStats = useMemo(() => Array.from(new Set(allCards.flatMap(card => Object.keys(card.stats ?? {})))).sort((a,b) => a.localeCompare(b)), [allCards])
   const positions = useMemo(() => Array.from(new Set(allCards.flatMap(card => card.positions).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [allCards])
   const cardTypes = useMemo(() => Array.from(new Set(allCards.map(card => card.cardName).filter((value): value is string => Boolean(value?.trim())))).sort((a, b) => a.localeCompare(b)), [allCards])
+  const events = useMemo(() => Array.from(new Set(allCards.map(card => card.event).filter((value): value is string => Boolean(value?.trim())))).sort((a, b) => a.localeCompare(b)), [allCards])
 
   const visibleCards = useMemo(() => allCards.filter(card => {
     const text = [card.playerName, card.nation, card.club, card.cardName, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)])].filter(Boolean).join(' ').toLowerCase()
@@ -370,6 +373,8 @@ export default function App() {
       (nationFilter === 'All nations' || card.nation === nationFilter) &&
       (positionFilter === 'All positions' || card.positions.includes(positionFilter)) &&
       (cardTypeFilter === 'All card types' || card.cardName === cardTypeFilter) &&
+      (eventFilter === 'All events' || card.event === eventFilter) &&
+      (sourceFilter === 'all' || (sourceFilter === 'imported' && card.sourceStatus === 'imported-unverified') || (sourceFilter === 'demo' && card.id.startsWith('uflmb-demo-')) || (sourceFilter === 'verified' && card.sourceStatus !== 'imported-unverified' && !card.id.startsWith('uflmb-demo-'))) &&
       (minOvr === '' || card.overallRating >= Number(minOvr)) &&
       (maxOvr === '' || card.overallRating <= Number(maxOvr)) &&
       (statFilter === 'Any stat' || (typeof card.stats?.[statFilter] === 'number' && (minStat === '' || card.stats[statFilter] >= Number(minStat)) && (maxStat === '' || card.stats[statFilter] <= Number(maxStat)))) &&
@@ -377,7 +382,7 @@ export default function App() {
   }).sort((a, b) => sortBy === 'ovr-desc' ? b.overallRating - a.overallRating || a.playerName.localeCompare(b.playerName) :
     sortBy === 'ovr-asc' ? a.overallRating - b.overallRating || a.playerName.localeCompare(b.playerName) :
       sortBy === 'verified-desc' ? (b.verifiedAt || '').localeCompare(a.verifiedAt || '') || a.playerName.localeCompare(b.playerName) :
-        a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, positionFilter, cardTypeFilter, sortBy, minOvr, maxOvr, statFilter, minStat, maxStat, showBookmarked, bookmarkedIds])
+        a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, positionFilter, cardTypeFilter, eventFilter, sourceFilter, sortBy, minOvr, maxOvr, statFilter, minStat, maxStat, showBookmarked, bookmarkedIds])
 
   const comparedCards = useMemo(() => compareIds.map(id => allCards.find(card => card.id === id)).filter((card): card is PlayerCard => Boolean(card)), [allCards, compareIds])
   const squadSlots = formations[formationId]
@@ -1305,6 +1310,8 @@ export default function App() {
           <label>Nation <select value={nationFilter} onChange={e => setNationFilter(e.target.value)}><option>All nations</option>{nations.map(nation => <option key={nation} value={nation}>{nation}</option>)}</select></label>
           <label>Position <select value={positionFilter} onChange={e => setPositionFilter(e.target.value)}><option>All positions</option>{positions.map(position => <option key={position} value={position}>{position}</option>)}</select></label>
           <label>Card type <select value={cardTypeFilter} onChange={e => setCardTypeFilter(e.target.value)}><option>All card types</option>{cardTypes.map(cardType => <option key={cardType} value={cardType}>{cardType}</option>)}</select></label>
+          <label>Event <select value={eventFilter} onChange={e => setEventFilter(e.target.value)}><option>All events</option>{events.map(event => <option key={event} value={event}>{event}</option>)}</select></label>
+          <label>Data status <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value as 'all' | 'imported' | 'verified' | 'demo')}><option value="all">All data statuses</option><option value="imported">Imported · unverified</option><option value="verified">Verified records</option><option value="demo">Demo records</option></select></label>
           <label>Sort by <select value={sortBy} onChange={e => setSortBy(e.target.value as 'ovr-desc' | 'ovr-asc' | 'name-asc' | 'verified-desc')}><option value="ovr-desc">Highest OVR</option><option value="ovr-asc">Lowest OVR</option><option value="name-asc">Player name A–Z</option><option value="verified-desc">Recently verified</option></select></label>
           <label className="ovr-range">Min OVR <input aria-label="Minimum overall rating" type="number" min="1" max="999" value={minOvr} onChange={e => setMinOvr(e.target.value)} placeholder="Any" /></label>
           <label className="ovr-range">Max OVR <input aria-label="Maximum overall rating" type="number" min="1" max="999" value={maxOvr} onChange={e => setMaxOvr(e.target.value)} placeholder="Any" /></label>
@@ -1312,7 +1319,7 @@ export default function App() {
           <label className="ovr-range">Min stat <input aria-label="Minimum selected attribute" type="number" min="0" max="999" disabled={statFilter === 'Any stat'} value={minStat} onChange={e => setMinStat(e.target.value)} placeholder="Any" /></label>
           <label className="ovr-range">Max stat <input aria-label="Maximum selected attribute" type="number" min="0" max="999" disabled={statFilter === 'Any stat'} value={maxStat} onChange={e => setMaxStat(e.target.value)} placeholder="Any" /></label>
           <button className={showBookmarked ? 'category active' : 'category'} type="button" aria-pressed={showBookmarked} onClick={() => setShowBookmarked(value => !value)}>★ Saved cards ({bookmarkedIds.length})</button>
-          {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sortBy !== 'ovr-desc' || minOvr !== '' || maxOvr !== '' || statFilter !== 'Any stat' || minStat !== '' || maxStat !== '' || showBookmarked) && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat(''); setShowBookmarked(false) }}>Reset all filters</button>}
+          {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || eventFilter !== 'All events' || sourceFilter !== 'all' || sortBy !== 'ovr-desc' || minOvr !== '' || maxOvr !== '' || statFilter !== 'Any stat' || minStat !== '' || maxStat !== '' || showBookmarked) && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setEventFilter('All events'); setSourceFilter('all'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat(''); setShowBookmarked(false) }}>Reset all filters</button>}
           </div>
         </details>
       </section>
