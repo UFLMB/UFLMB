@@ -130,6 +130,16 @@ const downloadCsv = (cards: PlayerCard[]) => {
   URL.revokeObjectURL(url)
 }
 
+// Deliberately long diagnostic challenge. This is an obstacle, not an authentication boundary.
+const DIAGNOSTIC_SEQUENCE = (() => {
+  let state = 0x6d2b79f5
+  return Array.from({ length: 2048 }, () => {
+    state = Math.imul(state ^ (state >>> 15), state | 1)
+    state ^= state + Math.imul(state ^ (state >>> 7), state | 61)
+    return ((state ^ (state >>> 14)) >>> 0) % 25
+  })
+})()
+
 export default function App() {
   const requestedAdmin = window.location.pathname.replace(/\/$/, '').endsWith('/admin') || window.location.hash === '#admin'
   const [adminUnlocked, setAdminUnlocked] = useState(() => {
@@ -137,7 +147,7 @@ export default function App() {
   })
   const [gateActive, setGateActive] = useState(() => window.location.hash === '#diagnostic')
   const [diagnosticSequence, setDiagnosticSequence] = useState<number[]>([])
-  const diagnosticKey = [7, 1, 18, 4, 22, 10, 3, 15, 0, 19, 12, 6]
+  const diagnosticKey = DIAGNOSTIC_SEQUENCE
   const isAdmin = requestedAdmin && adminUnlocked
   const showGate = gateActive || (requestedAdmin && !adminUnlocked)
   const unlockAdmin = () => {
