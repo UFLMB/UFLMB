@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ChangeEvent } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
 import type { PlayerCard } from './types/card'
 import { cards as starterCards } from './data/cards'
 import { demoCards } from './data/demoCards'
@@ -159,12 +159,6 @@ export default function App() {
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud'>('cards')
-
-  // Admin UI was removed for a clean rebuild; keep these local data handlers available for selective reuse.
-  void [notice, autoSaveStatus, setAutoSaveStatus, setAdminSearch, setGoogleClientId, setGoogleApiKey, driveBusy,
-    setSiteBranding, backgroundUrlsText, setBackgroundUrlsText, adminTab, setAdminTab, loadDemoSquads,
-    dataQuality, reviewCandidates, toggleSelected, selectVisible, deleteSelected, handleImage, handleBulkImages,
-    handleJsonFile, clearAllLocalData, submitCard, startEdit, saveEverything, saveDriveSettings, openDrivePicker, importCards];
 
   const autoSaveSnapshot = useRef({ allCards, bookmarkedIds, formationId, squadAssignments, siteTheme, siteBranding, googleClientId, googleApiKey })
   autoSaveSnapshot.current = { allCards, bookmarkedIds, formationId, squadAssignments, siteTheme, siteBranding, googleClientId, googleApiKey }
@@ -947,6 +941,12 @@ export default function App() {
       }
     } catch { setNotice('Invalid JSON. Check the file contents.') }
   }
+
+  // Admin UI was removed for a clean rebuild; keep these local data handlers available for selective reuse.
+  void [notice, autoSaveStatus, setAutoSaveStatus, setAdminSearch, setGoogleClientId, setGoogleApiKey, driveBusy,
+    setSiteBranding, backgroundUrlsText, setBackgroundUrlsText, adminTab, setAdminTab, loadDemoSquads,
+    dataQuality, reviewCandidates, toggleSelected, selectVisible, deleteSelected, handleImage, handleBulkImages,
+    handleJsonFile, clearAllLocalData, submitCard, startEdit, saveEverything, saveDriveSettings, openDrivePicker, importCards];
 
   return (
     <main className="app-shell">
