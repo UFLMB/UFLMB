@@ -1625,3 +1625,10 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .admin-shell .brand-word span {
   color: var(--accent, var(--lime, #c5f467));
 }
+
+
+/* Compact, low-emphasis backup action at the end of the admin workspace. */
+.admin-backup-action{display:flex;justify-content:flex-end;align-items:center;max-width:1240px;margin:22px auto 12px;padding:0 20px}
+.admin-backup-action .button{display:inline-flex;align-items:center;gap:9px;min-height:40px;padding:9px 14px;font-size:12px}
+.admin-backup-action .button span{font-size:17px;line-height:1}
+@media(max-width:600px){.admin-backup-action{padding:0 14px;margin-top:16px}.admin-backup-action .button{width:auto;min-height:42px}}
