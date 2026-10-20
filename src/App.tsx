@@ -1137,21 +1137,12 @@ export default function App() {
       <div style={{ display: adminTab === 'cloud' ? 'contents' : 'none' }}>
       <SharedDatabasePanel
         cards={allCards}
-        appState={{ bookmarkedIds, formationId, squadAssignments, siteBranding }}
+        appState={{ bookmarkedIds, formationId, squadAssignments }}
         onLoad={remoteCards => setAllCards(current => [...remoteCards, ...current.filter(card => card.id.startsWith('uflmb-demo-') || !remoteCards.some(remote => remote.id === card.id))])}
         onLoadAppState={saved => {
           if (Array.isArray(saved.bookmarkedIds)) setBookmarkedIds(saved.bookmarkedIds.filter((id): id is string => typeof id === 'string'))
           if (saved.formationId === '4-3-3' || saved.formationId === '4-4-2' || saved.formationId === '3-5-2') setFormationId(saved.formationId)
           if (saved.squadAssignments && typeof saved.squadAssignments === 'object' && !Array.isArray(saved.squadAssignments)) setSquadAssignments(Object.fromEntries(Object.entries(saved.squadAssignments).filter((entry): entry is [string, string] => typeof entry[1] === 'string')))
-          if (saved.siteBranding && typeof saved.siteBranding === 'object') {
-            const value = saved.siteBranding as Partial<SiteBranding>
-            setSiteBranding({
-              iconText: typeof value.iconText === 'string' ? value.iconText : defaultBranding.iconText,
-              logoUrl: typeof value.logoUrl === 'string' ? value.logoUrl : '',
-              faviconUrl: typeof value.faviconUrl === 'string' ? value.faviconUrl : '',
-              backgroundImageUrls: Array.isArray(value.backgroundImageUrls) ? parseBackgroundUrls(value.backgroundImageUrls.filter((url): url is string => typeof url === 'string').join('\\n')) : [],
-            })
-          }
         }}
         onMessage={setNotice}
       />
