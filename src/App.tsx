@@ -983,7 +983,6 @@ export default function App() {
         <p className="eyebrow">CONTENT MANAGEMENT</p>
         <h1>Card <span>manager.</span></h1>
         <p className="hero-copy">Manually add, edit, save, and export cards, images, stats, and verification sources.</p>
-        <div className="notice"><strong>Local editor:</strong> changes are stored in this browser. To sync verified card records across devices, open <strong>Cloud sync</strong> and sign in with the trusted Supabase admin account. Cloud writes require authenticated admin permissions.</div>
         {notice && <div className="notice">{notice}</div>}
         <div className={autoSaveStatus.startsWith("Auto-save failed") ? "autosave-status is-error" : "autosave-status"} role="status" aria-live="polite"><span className="autosave-status-dot" aria-hidden="true" />{autoSaveStatus}</div>
         <div className="form-actions save-everything-actions">
