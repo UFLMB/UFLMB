@@ -199,13 +199,14 @@ export default function App() {
     const image = images.length ? images[backgroundIndex % images.length] : ''
     // The gradient is always above the image, preserving legible text regardless of the photo.
     document.body.classList.toggle('has-background-images', Boolean(image))
-    document.body.style.backgroundImage = image
+    document.body.style.setProperty('--site-background-image', image
       ? `url("${image.replace(/["\\\\]/g, '')}")`
-      : ''
+      : 'none')
+    document.body.style.backgroundImage = ''
     document.body.style.backgroundColor = '#0b0d12'
-    document.body.style.backgroundSize = image ? 'cover' : ''
-    document.body.style.backgroundPosition = image ? 'center center' : ''
-    document.body.style.backgroundAttachment = image ? 'fixed' : ''
+    document.body.style.backgroundSize = ''
+    document.body.style.backgroundPosition = ''
+    document.body.style.backgroundAttachment = ''
   }, [siteBranding.backgroundImageUrls, backgroundIndex])
 
   useEffect(() => {
