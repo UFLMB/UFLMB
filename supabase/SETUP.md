@@ -2,7 +2,7 @@
 
 > **Current status (2026-10-20):** The admin login page and admin workspace have been removed from the frontend for a redesign. The Supabase schema, access-control policies, and existing database records are intentionally preserved; no cloud data was deleted. The steps below describe the backend setup intended for the replacement admin workflow.
 
-The application uses Supabase as its primary cloud store for shared card records and the non-sensitive app-state snapshot (bookmarks, squad assignments, and branding), plus community ratings/reviews. Browser local storage remains a fallback cache. Google Picker credentials and the admin session token remain local and are never uploaded.
+The application uses Supabase as its primary cloud store for shared card records, private non-sensitive app-state (bookmarks and squad assignments), and public shared site appearance (branding and background image URLs), plus community ratings/reviews. Browser local storage remains a fallback cache. Google Picker credentials and the admin session token remain local and are never uploaded.
 
 ## 1. Create and configure Supabase
 
@@ -32,7 +32,7 @@ After changing the project or rotating the publishable key, update those two val
 - Sign in using the trusted Supabase admin user.
 - Click **Load shared records & enable auto-save** before editing. The app merges shared records with local-only records and enables cloud auto-save for non-demo cards.
 - After a card is added or edited, the app waits briefly and upserts the non-demo collection to Supabase. Auto-save never deletes remote rows.
-- Bookmarks, squad assignments, and appearance settings are also saved to one Supabase app-state row after changes. Google Picker credentials and session tokens are excluded.
+- Bookmarks and squad assignments are saved to the admin-only Supabase app-state row. Branding, logo/icon and rotating background URLs are saved separately to `public.site_settings`; all visitors can read these shared appearance settings, but only allowlisted admins can change them. Google Picker credentials and session tokens are excluded.
 - Use **Publish + apply deletions** only when you intentionally want to apply local deletions to the shared database. Review the confirmation carefully.
 - Public visitors can read shared cards and submit ratings/reviews from a card's full profile.
 
