@@ -188,7 +188,8 @@ export default function App() {
   }
   const openGate = () => {
     setGateActive(true)
-    setDiagnosticSequence([])
+    setLattice([...initialLattice])
+    setLatticePulses(0)
     window.location.hash = 'diagnostic'
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
