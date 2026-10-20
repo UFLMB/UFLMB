@@ -158,9 +158,9 @@ body.has-background-images::before{
   pointer-events:none;
   background:linear-gradient(
     180deg,
-    rgba(5,8,14,.42) 0%,
-    rgba(5,8,14,.52) 48%,
-    rgba(5,8,14,.62) 100%
+    rgba(5,8,14,.52) 0%,
+    rgba(5,8,14,.62) 48%,
+    rgba(5,8,14,.72) 100%
   );
 }
 body.has-background-images .app-shell{
