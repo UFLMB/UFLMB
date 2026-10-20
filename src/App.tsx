@@ -1068,13 +1068,18 @@ export default function App() {
           </div>
           <div className="branding-publish-panel">
             <div className="branding-publish-copy"><strong>Publish site appearance</strong><span>Apply the current branding to every visitor through the shared database.</span></div>
-            <button className="button primary branding-publish-button" type="button" onClick={() => void publishBranding()} disabled={brandingPublishBusy || !sharedBrandingLoaded || !isAdminSession}>
-              <span aria-hidden="true">{brandingPublishBusy ? '◌' : '↗'}</span>{brandingPublishBusy ? 'Updating branding…' : 'Update branding'}
-            </button>
+            <div className="branding-publish-actions">
+              <button className="button primary branding-publish-button" type="button" onClick={() => void publishBranding()} disabled={brandingPublishBusy || !sharedBrandingLoaded || !isAdminSession}>
+                <span aria-hidden="true">{brandingPublishBusy ? '◌' : '↗'}</span>{brandingPublishBusy ? 'Updating branding…' : 'Update branding'}
+              </button>
+              <div className={`branding-publish-status ${brandingPublishBusy ? 'is-loading' : /verified:|shared appearance saved/i.test(sharedBrandingStatus) ? 'is-success' : /failed|could not|please use|admin sign-in|wait until|reload before/i.test(sharedBrandingStatus) ? 'is-error' : 'is-info'}`} role="status" aria-live="polite">
+                <span className="branding-status-icon" aria-hidden="true">{brandingPublishBusy ? '◌' : /verified:|shared appearance saved/i.test(sharedBrandingStatus) ? '✓' : /failed|could not|please use|admin sign-in|wait until|reload before/i.test(sharedBrandingStatus) ? '!' : 'i'}</span>
+                <span className="branding-status-text">{sharedBrandingStatus}</span>
+              </div>
+            </div>
           </div>
           <div className="form-actions"><button className="button secondary" type="button" onClick={() => { const backgroundImageUrls = parseBackgroundUrls(backgroundUrlsText); setSiteBranding(current => ({ ...current, backgroundImageUrls })); setBackgroundIndex(0); setBackgroundUrlsText(backgroundImageUrls.join('\n')) }}>Apply backgrounds</button><button className="button secondary" type="button" onClick={() => { setSiteBranding(defaultBranding); setBackgroundUrlsText(''); setBackgroundIndex(0) }}>Reset branding</button></div>
         </section>
-        <p className="field-help" role="status" aria-live="polite">{sharedBrandingStatus}</p>
       </section>
       </>}
       {adminTab === 'cards' && <>
