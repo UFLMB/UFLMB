@@ -159,7 +159,7 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
           <p className="eyebrow">UFLMB COMMUNITY</p>
           <h2 id="auth-title">{mode === 'signin' ? 'Welcome back' : 'Create your account'}</h2>
           <p className="auth-copy">{mode === 'signin' ? 'Sign in to your UFLMB account.' : 'Create a community account to get started.'}</p>
-          <div className="auth-mode-switch" role="group" aria-label="Account action">
+          <div className={`auth-mode-switch ${mode === 'signup' ? 'mode-signup' : 'mode-signin'}`} role="group" aria-label="Account action">
             <button type="button" className={mode === 'signin' ? 'active' : ''} onClick={() => { setMode('signin'); setMessage('') }}>Sign In</button>
             <button type="button" className={mode === 'signup' ? 'active' : ''} onClick={() => { setMode('signup'); setMessage('') }}>Sign Up</button>
           </div>
