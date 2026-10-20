@@ -332,24 +332,47 @@ export default function App() {
     }
   }, [allCards])
 
-  // When configured, shared records are loaded for every visitor; local demo fixtures stay browser-only.
+  // Public reads must preserve the full cloud record, not just the legacy card fields.
+  // Otherwise a refresh silently hides event, physical metadata, source provenance and raw CSV fields.
   useEffect(() => {
     const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
     if (!endpoint || !anonKey) return
     let cancelled = false
+    type PublicDbCard = {
+      id: string; player_name: string; overall_rating: number; positions: string[]; nation: string
+      card_name?: string | null; club?: string | null; stats?: Record<string, number> | null
+      perks?: string[] | null; image_url?: string | null; source_url: string; verified_at: string
+      event?: string | null; position_category?: string | null; date_of_birth?: string | null
+      height_cm?: number | string | null; weight_kg?: number | string | null; foot?: string | null
+      weak_foot?: number | null; skill_moves?: number | null; source_image_path?: string | null
+      source_data?: Record<string, string> | null; source_status?: 'verified' | 'imported-unverified' | null
+    }
     void fetch(`${endpoint}/rest/v1/cards?select=*&order=player_name.asc`, {
       headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
     }).then(async response => {
       if (!response.ok) throw new Error('Shared database read failed')
-      return await response.json() as Array<{id:string;player_name:string;overall_rating:number;positions:string[];nation:string;card_name?:string|null;club?:string|null;stats?:Record<string,number>|null;perks?:string[]|null;image_url?:string|null;source_url:string;verified_at:string}>
+      return await response.json() as PublicDbCard[]
     }).then(rows => {
       if (cancelled) return
       const remoteCards: PlayerCard[] = rows.filter(row => !row.id.startsWith('uflmb-demo-')).map(row => ({
         id: row.id, playerName: row.player_name, overallRating: row.overall_rating, positions: row.positions,
-        nation: row.nation, ...(row.card_name ? {cardName: row.card_name} : {}),
-        ...(row.club ? {club: row.club} : {}), ...(row.stats && Object.keys(row.stats).length ? {stats: row.stats} : {}),
-        ...(row.perks?.length ? {perks: row.perks} : {}), ...(row.image_url ? {imageUrl: row.image_url} : {}),
+        nation: row.nation, ...(row.card_name ? { cardName: row.card_name } : {}),
+        ...(row.club ? { club: row.club } : {}),
+        ...(row.stats && Object.keys(row.stats).length ? { stats: row.stats } : {}),
+        ...(row.perks?.length ? { perks: row.perks } : {}),
+        ...(row.image_url ? { imageUrl: row.image_url } : {}),
+        ...(row.event ? { event: row.event } : {}),
+        ...(row.position_category ? { positionCategory: row.position_category } : {}),
+        ...(row.date_of_birth ? { dateOfBirth: row.date_of_birth } : {}),
+        ...(row.height_cm != null ? { heightCm: Number(row.height_cm) } : {}),
+        ...(row.weight_kg != null ? { weightKg: Number(row.weight_kg) } : {}),
+        ...(row.foot ? { foot: row.foot } : {}),
+        ...(row.weak_foot != null ? { weakFoot: Number(row.weak_foot) } : {}),
+        ...(row.skill_moves != null ? { skillMoves: Number(row.skill_moves) } : {}),
+        ...(row.source_image_path ? { sourceImagePath: row.source_image_path } : {}),
+        ...(row.source_data ? { sourceData: row.source_data } : {}),
+        sourceStatus: row.source_status || 'imported-unverified',
         sourceUrl: row.source_url, verifiedAt: row.verified_at,
       }))
       const ids = new Set(remoteCards.map(card => card.id))
