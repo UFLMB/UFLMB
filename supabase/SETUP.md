@@ -1,6 +1,6 @@
 # UFLMB shared backend setup
 
-The application uses Supabase for shared card records and community ratings/reviews. Admin card auto-save is enabled after a trusted admin signs in and loads the shared records. Browser-local bookmarks, squad assignments, branding, and Google Picker configuration are still local.
+The application uses Supabase as its primary cloud store for shared card records and the non-sensitive app-state snapshot (bookmarks, squad assignments, and branding), plus community ratings/reviews. Browser local storage remains a fallback cache. Google Picker credentials and the admin session token remain local and are never uploaded.
 
 ## 1. Create and configure Supabase
 
@@ -30,6 +30,7 @@ After changing the project or rotating the publishable key, update those two val
 - Sign in using the trusted Supabase admin user.
 - Click **Load shared records & enable auto-save** before editing. The app merges shared records with local-only records and enables cloud auto-save for non-demo cards.
 - After a card is added or edited, the app waits briefly and upserts the non-demo collection to Supabase. Auto-save never deletes remote rows.
+- Bookmarks, squad assignments, and appearance settings are also saved to one Supabase app-state row after changes. Google Picker credentials and session tokens are excluded.
 - Use **Publish + apply deletions** only when you intentionally want to apply local deletions to the shared database. Review the confirmation carefully.
 - Public visitors can read shared cards and submit ratings/reviews from a card's full profile.
 
@@ -41,5 +42,5 @@ The two-team demo fixture is local-only and is excluded from shared-database pub
 - Card writes are protected by row-level security and an explicit `admin_users` allowlist. Public sign-ups should remain disabled; do not add untrusted accounts to the allowlist.
 - Community review insertion is currently open to anonymous visitors for the initial test. Before a broad public launch, add CAPTCHA, rate limits, moderation/reporting and preferably verified-user controls.
 - The daily GitHub Actions job audits the checked-in production starter dataset and, when Supabase is configured, checks shared source-link reachability and flags verification dates older than 90 days. It does not scrape third-party pages or change player ratings. Reliable automatic content refresh needs a supported source/API and an explicit mapping/verification policy. Do not treat the audit as an automatic facts refresh.
-- The current cloud auto-save covers shared card records only. Bookmarks, squad formation/assignments, branding, and Google Picker settings remain browser-local. The local cache and downloadable JSON backup remain enabled as a recovery path.
+- Supabase is the primary cloud save. The local cache and downloadable JSON backup remain available only as a recovery path. Google Picker credentials and the admin session token remain browser-local and are not included in the cloud snapshot.
 - The schema change only changes database permissions when you run it in your Supabase project. Committing the SQL file to GitHub does not apply it to a live Supabase project.
