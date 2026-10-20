@@ -18,6 +18,18 @@ create table if not exists public.cards (
   source_url text not null check (source_url ~* '^https?://'),
   verified_at date not null,
   is_demo boolean not null default false,
+  event text,
+  position_category text,
+  date_of_birth text,
+  height_cm numeric,
+  weight_kg numeric,
+  foot text,
+  weak_foot integer,
+  skill_moves integer,
+  source_image_path text,
+  source_data jsonb not null default '{}'::jsonb,
+  source_status text not null default 'imported-unverified'
+    check (source_status in ('verified', 'imported-unverified')),
   updated_at timestamptz not null default now()
 );
 
