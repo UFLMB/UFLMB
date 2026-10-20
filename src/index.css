@@ -813,3 +813,76 @@ input,select,textarea{accent-color:var(--lime)}
 .squad-import-button input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .squad-toolbar .button{white-space:nowrap}
 @media(max-width:650px){.squad-toolbar .button,.squad-import-button{flex:1 1 calc(50% - 8px)}.squad-import-button{display:inline-flex;align-items:center;justify-content:center}}
+
+
+/* Final responsive hardening: cloud sync, admin navigation and small-screen overflow. */
+html{scroll-behavior:smooth;overflow-x:clip}
+body{overflow-x:clip}
+img,svg,video,canvas{max-width:100%}
+.app-shell{min-width:0}
+.admin-shell{padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.admin-tabs{grid-template-columns:repeat(auto-fit,minmax(min(100%,205px),1fr));align-items:stretch}
+.admin-tab{height:100%;min-height:74px}
+.admin-tab-copy strong,.admin-tab-copy small{overflow-wrap:anywhere}
+.shared-database-panel{min-width:0}
+.shared-database-panel .shared-login-form{grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}
+.shared-database-panel .shared-login-form .button{grid-column:1/-1;justify-self:start;min-width:150px}
+.shared-database-panel .form-actions{align-items:stretch}
+.shared-database-panel .form-actions .button{flex:1 1 220px;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.shared-db-status{flex-wrap:wrap;overflow-wrap:anywhere}
+.shared-database-panel .field-help,.shared-database-panel .muted-copy{overflow-wrap:anywhere}
+.cloud-safety-list{margin:12px 0 0;padding-left:22px;color:var(--muted);font-size:12px;line-height:1.8}
+.cloud-safety-list li+li{margin-top:7px}
+.admin-intro .save-everything-actions{justify-content:center;max-width:900px;margin:18px auto 0}
+.save-everything-actions .field-help{max-width:560px;text-align:left}
+.record-row>*{min-width:0}
+.record-info{overflow-wrap:anywhere}
+.admin-panel,.analytics-panel,.player-card,.shared-database-panel{min-width:0}
+.card-form label,.tools-panel label{min-width:0;overflow-wrap:anywhere}
+.card-form input,.card-form textarea,.tools-panel input,.tools-panel select,.tools-panel textarea{max-width:100%;min-width:0}
+.footer>*{min-width:0;overflow-wrap:anywhere}
+@media(max-width:850px){
+  .admin-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-intro{padding-top:32px}
+}
+@media(max-width:600px){
+  .app-shell{width:calc(100% - 28px)}
+  .admin-shell .topbar{min-height:66px;gap:10px}
+  .admin-shell .brand-word{font-size:17px}
+  .admin-shell .back-link{max-width:45%;text-align:right;line-height:1.5}
+  .admin-intro{padding:32px 0 22px}
+  .admin-intro h1{font-size:clamp(34px,10vw,48px);letter-spacing:-1.8px}
+  .admin-intro .hero-copy{font-size:12px;line-height:1.7}
+  .admin-panel{padding:clamp(13px,4vw,18px);margin-bottom:15px}
+  .admin-tabs{gap:8px;margin-bottom:17px}
+  .admin-tab{min-height:68px;padding:10px;gap:8px}
+  .admin-tab-icon{width:30px;height:30px;font-size:15px}
+  .admin-tab-copy strong{font-size:10px}
+  .admin-tab-copy small{font-size:9px}
+  .shared-database-panel .shared-login-form{grid-template-columns:minmax(0,1fr)}
+  .shared-database-panel .shared-login-form .button{grid-column:auto;width:100%}
+  .shared-database-panel .form-actions{display:grid;grid-template-columns:minmax(0,1fr)}
+  .shared-database-panel .form-actions .button{width:100%;min-height:44px}
+  .save-everything-actions{align-items:stretch;flex-direction:column}
+  .save-everything-actions>.button{width:100%;white-space:normal}
+  .save-everything-actions .field-help{text-align:left}
+  .record-row{align-items:flex-start;flex-wrap:wrap}
+  .record-row .record-info{flex:1 1 calc(100% - 76px);min-width:0}
+  .record-row .button{flex:1 1 auto}
+  .theme-controls{grid-template-columns:minmax(0,1fr)}
+  .theme-presets{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .branding-wide{grid-column:auto}
+  .branding-background-preview{min-width:0;width:100%}
+  .form-actions>.button,.form-actions>a.button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+  .quality-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:380px){
+  .app-shell{width:calc(100% - 22px)}
+  .admin-tabs{grid-template-columns:minmax(0,1fr)}
+  .admin-tab{min-height:58px}
+  .admin-tab-arrow{display:block}
+  .admin-shell .brand-word{font-size:15px}
+  .admin-shell .back-link{font-size:10px}
+  .section-heading h2,.admin-panel h2{font-size:20px}
+  .quality-grid{grid-template-columns:minmax(0,1fr)}
+}
