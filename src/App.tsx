@@ -167,6 +167,7 @@ export default function App() {
   const [backgroundIndex, setBackgroundIndex] = useState(0)
   const [sharedBrandingLoaded, setSharedBrandingLoaded] = useState(false)
   const [sharedBrandingStatus, setSharedBrandingStatus] = useState('Loading shared appearance…')
+  const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud'>('cards')
@@ -1065,7 +1066,13 @@ export default function App() {
             {siteBranding.faviconUrl.trim() && <div className="branding-preview-item"><strong>Browser icon</strong><img className="favicon-preview" src={siteBranding.faviconUrl.trim()} alt="Favicon preview" /></div>}
             {siteBranding.backgroundImageUrls.length > 0 && <div className="branding-background-preview" style={{ backgroundImage: `linear-gradient(rgba(5,8,14,.74), rgba(5,8,14,.82)), url("${siteBranding.backgroundImageUrls[backgroundIndex % siteBranding.backgroundImageUrls.length].replace(/["\\]/g, '')}")` }}><span>Background preview · {backgroundIndex % siteBranding.backgroundImageUrls.length + 1}/{siteBranding.backgroundImageUrls.length} · rotates every 30 seconds</span></div>}
           </div>
-          <div className="form-actions"><button className="button primary" type="button" onClick={() => { const backgroundImageUrls = parseBackgroundUrls(backgroundUrlsText); setSiteBranding(current => ({ ...current, backgroundImageUrls })); setBackgroundIndex(0); setBackgroundUrlsText(backgroundImageUrls.join('\n')) }}>Apply backgrounds</button><button className="button secondary" type="button" onClick={() => { setSiteBranding(defaultBranding); setBackgroundUrlsText(''); setBackgroundIndex(0) }}>Reset branding</button></div>
+          <div className="branding-publish-panel">
+            <div className="branding-publish-copy"><strong>Publish site appearance</strong><span>Apply the current branding to every visitor through the shared database.</span></div>
+            <button className="button primary branding-publish-button" type="button" onClick={() => void publishBranding()} disabled={brandingPublishBusy || !sharedBrandingLoaded || !isAdminSession}>
+              <span aria-hidden="true">{brandingPublishBusy ? '◌' : '↗'}</span>{brandingPublishBusy ? 'Updating branding…' : 'Update branding'}
+            </button>
+          </div>
+          <div className="form-actions"><button className="button secondary" type="button" onClick={() => { const backgroundImageUrls = parseBackgroundUrls(backgroundUrlsText); setSiteBranding(current => ({ ...current, backgroundImageUrls })); setBackgroundIndex(0); setBackgroundUrlsText(backgroundImageUrls.join('\n')) }}>Apply backgrounds</button><button className="button secondary" type="button" onClick={() => { setSiteBranding(defaultBranding); setBackgroundUrlsText(''); setBackgroundIndex(0) }}>Reset branding</button></div>
         </section>
         <p className="field-help" role="status" aria-live="polite">{sharedBrandingStatus}</p>
       </section>
@@ -1183,6 +1190,85 @@ export default function App() {
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href="/UFLMB/">Back to home</a></footer>
     </main>
   )
+
+
+  const publishBranding = async () => {
+    if (brandingPublishBusy) return
+    if (!sharedBrandingLoaded) {
+      setSharedBrandingStatus('Wait until the current shared appearance has loaded before publishing.')
+      return
+    }
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    let token = ''
+    try {
+      const raw = sessionStorage.getItem('uflmb.auth.session.v1')
+      token = raw ? (JSON.parse(raw) as { access_token?: string }).access_token || '' : ''
+    } catch { /* require a valid admin session */ }
+    if (!endpoint || !anonKey || !token || !isAdminSession) {
+      setSharedBrandingStatus('Admin sign-in is required to publish the site appearance.')
+      return
+    }
+
+    const brandingToPublish: SiteBranding = {
+      iconText: siteBranding.iconText.trim().slice(0, 5) || defaultBranding.iconText,
+      logoUrl: siteBranding.logoUrl.trim(),
+      faviconUrl: siteBranding.faviconUrl.trim(),
+      backgroundImageUrls: parseBackgroundUrls(backgroundUrlsText),
+    }
+    if ((brandingToPublish.logoUrl && !isHttpUrl(brandingToPublish.logoUrl)) ||
+        (brandingToPublish.faviconUrl && !isHttpUrl(brandingToPublish.faviconUrl))) {
+      setSharedBrandingStatus('Please use valid HTTP or HTTPS URLs for the logo and browser icon before publishing.')
+      return
+    }
+
+    setBrandingPublishBusy(true)
+    setSharedBrandingStatus('Publishing appearance to the shared site…')
+    setSiteBranding(brandingToPublish)
+    setBackgroundUrlsText(brandingToPublish.backgroundImageUrls.join('\n'))
+    setBackgroundIndex(0)
+    const payload = { theme: siteTheme, branding: brandingToPublish }
+    const updatedAt = new Date().toISOString()
+    try {
+      const response = await fetch(`${endpoint}/rest/v1/site_settings?on_conflict=id`, {
+        method: 'POST',
+        headers: {
+          apikey: anonKey,
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=merge-duplicates,return=minimal',
+        },
+        body: JSON.stringify({ id: 'branding', payload, updated_at: updatedAt }),
+      })
+      if (!response.ok) {
+        const detail = await response.text().catch(() => '')
+        throw new Error(detail || `Request failed (HTTP ${response.status}).`)
+      }
+
+      // Confirm the shared row can immediately be read back before reporting success.
+      const verifyResponse = await fetch(`${endpoint}/rest/v1/site_settings?id=eq.branding&select=payload,updated_at`, {
+        cache: 'no-store',
+        headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
+      })
+      if (!verifyResponse.ok) throw new Error('The save request completed, but the shared appearance could not be verified.')
+      const rows = await verifyResponse.json() as Array<{ payload?: { branding?: Partial<SiteBranding> }; updated_at?: string }>
+      const saved = rows[0]?.payload?.branding
+      if (!saved || saved.iconText !== brandingToPublish.iconText ||
+          saved.logoUrl !== brandingToPublish.logoUrl ||
+          saved.faviconUrl !== brandingToPublish.faviconUrl ||
+          JSON.stringify(saved.backgroundImageUrls ?? []) !== JSON.stringify(brandingToPublish.backgroundImageUrls)) {
+        throw new Error('The shared appearance did not match the submitted settings after saving. Please try again.')
+      }
+      setSharedBrandingStatus(`Verified: appearance updated for all visitors · ${new Date().toLocaleTimeString()}`)
+    } catch (error) {
+      setSharedBrandingStatus(error instanceof Error
+        ? `Branding update failed: ${error.message}`
+        : 'Branding update failed. Please try again.')
+    } finally {
+      setBrandingPublishBusy(false)
+    }
+  }
+
 
   return (
     <main className="app-shell">
