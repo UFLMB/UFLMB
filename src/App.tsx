@@ -237,7 +237,6 @@ export default function App() {
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
     if (!endpoint || !anonKey) {
       setSharedBrandingStatus('Shared appearance is not configured; using this browser’s saved settings.')
-      setSharedBrandingLoaded(true)
       return
     }
     let cancelled = false
@@ -267,8 +266,7 @@ export default function App() {
       setSharedBrandingLoaded(true)
     }).catch(() => {
       if (cancelled) return
-      setSharedBrandingStatus('Could not load shared appearance; using this browser’s saved settings.')
-      setSharedBrandingLoaded(true)
+      setSharedBrandingStatus('Could not load shared appearance; using this browser’s saved settings. Reload before publishing to avoid overwriting a shared version.')
     })
     return () => { cancelled = true }
   }, [])
