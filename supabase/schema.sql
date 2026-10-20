@@ -84,8 +84,13 @@ drop policy if exists "UFLMB admins can delete cards" on public.cards;
 create policy "UFLMB admins can delete cards" on public.cards
   for delete to authenticated using (private.is_uflmb_admin());
 
--- Do not expose or allow browser writes to the admin allowlist.
+-- The browser may read only its own allowlist row after authentication.
+-- No browser role can insert, update, or delete allowlist entries.
 revoke all on public.admin_users from anon, authenticated;
+grant select on public.admin_users to authenticated;
+drop policy if exists "Admins can read own allowlist entry" on public.admin_users;
+create policy "Admins can read own allowlist entry" on public.admin_users
+  for select to authenticated using (user_id = (select auth.uid()));
 
 -- Remove the helper from public if this schema is reapplied over an older setup.
 drop function if exists public.is_uflmb_admin();
