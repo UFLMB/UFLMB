@@ -2706,3 +2706,44 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   object-fit: cover;
   border-radius: 2px;
 }
+
+
+/* Final card-art layout: keep the event/card-type ribbon clear of the bottom controls. */
+.player-image { position: relative; }
+.player-image .event-ribbon {
+  bottom: 52px;
+  left: 10px;
+  right: 10px;
+  width: auto;
+  padding: 8px 10px;
+  border: 1px solid rgba(250, 204, 21, .32);
+  border-radius: 8px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+  text-overflow: clip;
+  box-shadow: 0 5px 18px rgba(0,0,0,.24);
+  backdrop-filter: blur(10px);
+}
+.player-card.ovr-elite .event-ribbon {
+  color: #f3ffc9;
+  background: linear-gradient(100deg, rgba(165, 139, 32, .38), rgba(31, 42, 16, .92));
+  border-color: rgba(217, 255, 139, .68);
+  box-shadow: 0 0 17px rgba(197,244,103,.18), 0 5px 18px rgba(0,0,0,.24);
+}
+.player-card.ovr-elite .event-ribbon span { color: #e6ffad; }
+.player-image .card-position-mark { display: none !important; }
+.position-badge {
+  color: #baf4ff;
+  background: rgba(8, 39, 58, .94);
+  border-color: rgba(34, 211, 238, .62);
+  box-shadow: 0 0 12px rgba(34,211,238,.09);
+}
+.player-card.ovr-elite { border-color: rgba(197,244,103,.55); }
+.player-card.ovr-elite .event-ribbon { font-weight: 700; letter-spacing: 1px; }
+@media (max-width: 420px) {
+  .player-image .event-ribbon { bottom: 47px; left: 7px; right: 7px; padding: 6px 7px; font-size: 7px; }
+}
+@media (max-width: 360px) {
+  .player-image .event-ribbon { bottom: 45px; white-space: normal; }
+}
