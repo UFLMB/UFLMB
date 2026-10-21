@@ -73,15 +73,15 @@ async function checkAdmin(session: AuthSession): Promise<boolean> {
 }
 
 
-async function lookupEmailForUsername(value: string): Promise<string> {
+async function usernameSignIn(username: string, password: string): Promise<AuthResponse> {
   const { url, key } = getConfig()
-  const response = await fetch(`${url}/rest/v1/rpc/email_for_username`, {
-    method: 'POST', headers: { apikey: key, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ input_username: value.trim() }),
+  const response = await fetch(`${url}/functions/v1/username-signin`, {
+    method: 'POST',
+    headers: { apikey: key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: username.trim(), password }),
   })
-  if (!response.ok) throw new Error('The username or password is incorrect.')
-  const result = await response.json()
-  if (typeof result !== 'string' || !result) throw new Error('The username or password is incorrect.')
+  const result = await response.json().catch(() => ({})) as AuthResponse
+  if (!response.ok) throw new Error(result.error_description || result.message || result.error || 'The username or password is incorrect.')
   return result
 }
 async function getProfileUsername(session: AuthSession): Promise<string> {
@@ -279,8 +279,9 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange }: 
       const path = mode === 'signup'
         ? `signup?redirect_to=${encodeURIComponent(getRedirectUrl())}`
         : 'token?grant_type=password'
-      const loginEmail = mode === 'signin' && !email.trim().includes('@') ? await lookupEmailForUsername(email.trim()) : email.trim()
-      const result = await requestAuth(path, mode === 'signup' ? { email: email.trim(), password, data: { username: username.trim() } } : { email: loginEmail, password })
+      const result = mode === 'signin' && !email.trim().includes('@')
+        ? await usernameSignIn(email.trim(), password)
+        : await requestAuth(path, mode === 'signup' ? { email: email.trim(), password, data: { username: username.trim() } } : { email: email.trim(), password })
       const nextSession = toSession(result)
       if (!nextSession) {
         if (mode === 'signup') {
