@@ -3465,3 +3465,42 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] ::selection{background:rgba(163,230,53,.35);color:#18202b}
 @media(max-width:600px){.account-dropdown{right:0;width:208px}}
 @media(prefers-reduced-motion:reduce){.public-theme-toggle{transition:none}}
+
+:root[data-ui-theme="light"] .card-form label,:root[data-ui-theme="light"] .tools-panel label,:root[data-ui-theme="light"] .community-review-form label,:root[data-ui-theme="light"] .auth-form label{color:#344054}
+:root[data-ui-theme="light"] .auth-modal,:root[data-ui-theme="light"] .profile-modal{color:#18202b;background:linear-gradient(160deg,#fff,transparent 35%),radial-gradient(ellipse at 50% 0,rgba(163,230,53,.1),transparent 55%),#fff;border-color:rgba(101,133,42,.25);box-shadow:0 24px 70px rgba(24,32,43,.18)}
+:root[data-ui-theme="light"] .auth-close{color:#596579;background:#f1f4f7}
+:root[data-ui-theme="light"] .auth-mode-switch{background:#edf1f5}
+:root[data-ui-theme="light"] .auth-mode-switch button:not(.active){color:#647084}
+:root[data-ui-theme="light"] .auth-mode-switch button.active{color:#365314;background:#fff}
+:root[data-ui-theme="light"] .auth-message,:root[data-ui-theme="light"] .auth-session-note,:root[data-ui-theme="light"] .notice{color:#344054}
+:root[data-ui-theme="light"] .notice{background:rgba(163,230,53,.08);border-color:rgba(101,133,42,.22)}
+:root[data-ui-theme="light"] .notice.warning{color:#7c4a03;background:#fff8e8;border-color:rgba(180,120,20,.22)}
+:root[data-ui-theme="light"] .demo-warning{background:#fff8e8;border-color:rgba(180,120,20,.3)}
+:root[data-ui-theme="light"] .demo-warning span{color:#7c4a03}
+:root[data-ui-theme="light"] .profile-heading>img,:root[data-ui-theme="light"] .profile-placeholder,:root[data-ui-theme="light"] .record-thumb,:root[data-ui-theme="light"] .leader-list img,:root[data-ui-theme="light"] .leader-avatar{background:#f1f4f7;border-color:rgba(24,32,43,.12)}
+:root[data-ui-theme="light"] .profile-meta>*{color:#344054;background:#f7f9fb;border-color:rgba(24,32,43,.12)}
+:root[data-ui-theme="light"] .profile-stats span{color:#596579}
+:root[data-ui-theme="light"] .profile-stats strong{color:#18202b}
+:root[data-ui-theme="light"] .profile-stats i{background:rgba(24,32,43,.1)}
+:root[data-ui-theme="light"] .comparison-table thead th{background:#edf2e6;color:#365314}
+:root[data-ui-theme="light"] .comparison-table tbody th{color:#596579}
+:root[data-ui-theme="light"] .comparison-table td{color:#263140}
+:root[data-ui-theme="light"] .comparison-table tbody tr:hover,:root[data-ui-theme="light"] .record-row:hover,:root[data-ui-theme="light"] .community-review-list article:hover{background:rgba(24,32,43,.035)}
+:root[data-ui-theme="light"] .footer{color:#344054;border-top-color:rgba(24,32,43,.12)}
+:root[data-ui-theme="light"] .footer-muted{color:#647084}
+:root[data-ui-theme="light"] .gate-page{background:radial-gradient(ellipse at 50% 0%,rgba(163,230,53,.09),transparent 58%),#f4f6f8;color:#18202b}
+:root[data-ui-theme="light"] .gate-error-heading{color:#596579}
+:root[data-ui-theme="light"] .gate-error-heading b,:root[data-ui-theme="light"] .gate-error-symbol{color:#b42323;border-color:rgba(24,32,43,.18)}
+:root[data-ui-theme="light"] .gate-page h1{color:#18202b}
+:root[data-ui-theme="light"] .gate-page h1 span,:root[data-ui-theme="light"] .gate-error-detail,:root[data-ui-theme="light"] .gate-error-meta span{color:#647084}
+:root[data-ui-theme="light"] .gate-error-message{color:#18202b}
+:root[data-ui-theme="light"] .gate-error-meta,:root[data-ui-theme="light"] .gate-error-meta>div{border-color:rgba(24,32,43,.12)}
+:root[data-ui-theme="light"] .gate-error-meta strong{color:#263140}
+:root[data-ui-theme="light"] .gate-diagnostic-grid,:root[data-ui-theme="light"] .gate-lattice-wrap{background:#fff;border-color:rgba(24,32,43,.13)}
+:root[data-ui-theme="light"] .diagnostic-cell,:root[data-ui-theme="light"] .lattice-cell{background:#f1f4f7;border-color:#d4dbe4}
+:root[data-ui-theme="light"] .diagnostic-cell-active,:root[data-ui-theme="light"] .lattice-cell-on{background:#a3e635;border-color:#a3e635}
+:root[data-ui-theme="light"] .gate-lattice-readout,:root[data-ui-theme="light"] .gate-lattice-footer{color:#647084}
+:root[data-ui-theme="light"] .gate-lattice-readout strong{color:#18202b}
+:root[data-ui-theme="light"] .gate-error-foot,:root[data-ui-theme="light"] .gate-error-footer{color:#647084;border-color:rgba(24,32,43,.12)}
+:root[data-ui-theme="light"] .gate-home-link{color:#596579}
+:root[data-ui-theme="light"] .gate-home-link:hover{color:#18202b}
