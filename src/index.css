@@ -2069,7 +2069,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   background:
     radial-gradient(ellipse at 86% 18%, rgba(197,244,103,.19), transparent 34%),
     radial-gradient(ellipse at 7% 100%, rgba(74,112,159,.12), transparent 43%),
-    linear-gradient(128deg, rgba(26,32,42,.95), rgba(10,13,19,.94) 72%);
+    linear-gradient(128deg, rgba(26,32,42,.93), rgba(10,13,19,.92) 72%);
 }
 .home-hero::before {
   content: "";
