@@ -3434,3 +3434,44 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .public-theme-toggle{color:#596273;border-color:rgba(31,41,55,.16);background:rgba(255,255,255,.7)}
 :root[data-ui-theme="light"] .public-theme-toggle:hover,:root[data-ui-theme="light"] .public-theme-toggle:focus-visible{color:#33451c;border-color:rgba(101,133,42,.55);background:rgba(101,133,42,.08)}
 @media(prefers-reduced-motion:reduce){.public-theme-toggle{transition:none}}
+
+/* Dark-mode comfort pass: retain semantic colours, but reduce harsh red/yellow intensity. */
+:root[data-ui-theme="dark"]{
+  --warning-text:#d8c49a;
+  --warning-border:rgba(211,174,105,.24);
+  --warning-surface:rgba(170,126,54,.075);
+  --danger-text:#d99b9b;
+  --danger-border:rgba(211,123,123,.25);
+  --danger-surface:rgba(150,61,61,.075);
+}
+:root[data-ui-theme="dark"] .notice.warning,
+:root[data-ui-theme="dark"] .demo-warning,
+:root[data-ui-theme="dark"] .demo-warning span{
+  color:var(--warning-text)!important;
+  background-color:var(--warning-surface);
+  border-color:var(--warning-border);
+}
+:root[data-ui-theme="dark"] .branding-publish-status.is-error,
+:root[data-ui-theme="dark"] .account-menu-item.logout-item,
+:root[data-ui-theme="dark"] .account-menu-item.logout-item:hover,
+:root[data-ui-theme="dark"] .gate-error-heading b,
+:root[data-ui-theme="dark"] .gate-error-symbol{
+  color:var(--danger-text)!important;
+  border-color:var(--danger-border);
+}
+:root[data-ui-theme="dark"] .branding-publish-status.is-error,
+:root[data-ui-theme="dark"] .account-menu-item.logout-item:hover{
+  background-color:var(--danger-surface);
+}
+:root[data-ui-theme="dark"] .event-ribbon span{color:#d9c77e!important;text-shadow:none}
+:root[data-ui-theme="dark"] .auth-mode-switch button.active,
+:root[data-ui-theme="dark"] .theme-mode-button.active,
+:root[data-ui-theme="dark"] .account-menu-item:hover{
+  filter:saturate(.78) brightness(.94);
+}
+:root[data-ui-theme="dark"] .gate-token>span,
+:root[data-ui-theme="dark"] .lattice-cell-on{
+  background:#b6d887;
+  border-color:#b6d887;
+  filter:saturate(.78) brightness(.94);
+}
