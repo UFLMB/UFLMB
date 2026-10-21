@@ -2373,3 +2373,137 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .profile-stats .profile-stat-label { font-size: 9px; }
   .profile-stats .profile-stat-meter { gap: 5px; }
 }
+
+
+/* Grouped player-profile attributes: category headers stay distinct from their substats. */
+.profile-stat-groups {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  min-width: 0;
+}
+.profile-stat-group {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 12px;
+  background: rgba(8,11,16,.38);
+}
+.profile-stat-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 11px 13px;
+  border-bottom: 1px solid rgba(197,244,103,.22);
+  background: linear-gradient(90deg, rgba(197,244,103,.12), rgba(255,255,255,.025));
+}
+.profile-stat-group-code {
+  display: inline-flex;
+  flex: 0 0 42px;
+  width: 42px;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(197,244,103,.32);
+  border-radius: 7px;
+  color: var(--accent,#c5f467) !important;
+  background: rgba(197,244,103,.08);
+  font: 700 12px 'DM Mono',monospace;
+  letter-spacing: .04em;
+}
+.profile-stat-group-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #f3f5f8 !important;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+.profile-stat-group-score {
+  display: flex;
+  flex: 0 1 140px;
+  align-items: center;
+  gap: 9px;
+  min-width: 70px;
+}
+.profile-stat-group-score i,
+.profile-stat-group-details .profile-stat-meter i {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.09);
+}
+.profile-stat-group-score strong,
+.profile-stat-group-details .profile-stat-meter strong {
+  flex: 0 0 28px;
+  width: 28px;
+  min-width: 28px;
+  color: #fff;
+  text-align: right;
+  white-space: nowrap;
+  font: 13px 'DM Mono',monospace;
+}
+.profile-stat-group-details {
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  gap: 0;
+  padding: 3px 12px 5px;
+}
+.profile-stat-group-details .profile-stat-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 42%) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 9px 2px;
+  border-bottom: 1px solid rgba(255,255,255,.055);
+  font-size: 11px;
+}
+.profile-stat-group-details .profile-stat-detail:last-child { border-bottom: 0; }
+.profile-stat-group-details .profile-stat-label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: #b9c2d0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  line-height: 1.3;
+}
+.profile-stat-group-details .profile-stat-meter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  min-width: 0;
+  width: 100%;
+}
+.profile-stat-group-details .profile-stat-meter strong { font-size: 12px; }
+@media (max-width: 560px) {
+  .profile-stat-groups { gap: 11px; }
+  .profile-stat-group-header { gap: 8px; padding: 9px 10px; }
+  .profile-stat-group-code { flex-basis: 36px; width: 36px; min-height: 28px; font-size: 11px; }
+  .profile-stat-group-name { font-size: 11px; }
+  .profile-stat-group-score { flex-basis: 100px; gap: 7px; }
+  .profile-stat-group-score strong { flex-basis: 25px; width: 25px; min-width: 25px; font-size: 12px; }
+  .profile-stat-group-details { padding: 2px 9px 4px; }
+  .profile-stat-group-details .profile-stat-detail { grid-template-columns: minmax(0, 40%) minmax(0, 1fr); gap: 8px; padding: 8px 1px; }
+  .profile-stat-group-details .profile-stat-meter { gap: 6px; }
+  .profile-stat-group-details .profile-stat-meter strong { flex-basis: 24px; width: 24px; min-width: 24px; font-size: 11px; }
+}
+@media (max-width: 360px) {
+  .profile-stat-group-header { padding: 8px; gap: 6px; }
+  .profile-stat-group-code { flex-basis: 32px; width: 32px; min-height: 26px; font-size: 10px; }
+  .profile-stat-group-name { font-size: 10px; }
+  .profile-stat-group-score { flex-basis: 82px; gap: 5px; }
+  .profile-stat-group-details { padding-left: 7px; padding-right: 7px; }
+  .profile-stat-group-details .profile-stat-detail { grid-template-columns: minmax(0, 38%) minmax(0, 1fr); gap: 6px; }
+  .profile-stat-group-details .profile-stat-label { font-size: 10px; }
+}
