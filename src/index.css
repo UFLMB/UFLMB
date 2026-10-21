@@ -2204,3 +2204,22 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .home-hero::before { animation: none !important; }
   .home-overview article, .featured-player, .home-actions .button { transition: none !important; }
 }
+
+
+/* Keep mobile navigation anchored to the viewport, not the scrolling app shell. */
+@media (max-width: 760px) {
+  .mobile-bottom-nav {
+    position: fixed;
+    inset: auto 10px max(9px, env(safe-area-inset-bottom, 0px)) 10px;
+    z-index: 1000;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+  }
+  body:has(.auth-backdrop) .mobile-bottom-nav {
+    display: none !important;
+  }
+  .auth-backdrop {
+    z-index: 2000;
+    overscroll-behavior: contain;
+  }
+}
