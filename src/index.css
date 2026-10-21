@@ -3154,18 +3154,6 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Card click selection is independent of Compare membership. */
-.player-card.card-selected{
-  border:3px solid var(--accent,#c5f467)!important;
-  box-shadow:0 0 0 1px rgba(197,244,103,.6),0 0 16px rgba(197,244,103,.38),0 0 28px rgba(197,244,103,.2)!important;
-}
-@media(max-width:600px){
-  .player-card.card-selected{
-    border-width:3px!important;
-    box-shadow:0 0 0 1px rgba(197,244,103,.65),0 0 14px rgba(197,244,103,.42),0 0 22px rgba(197,244,103,.22)!important;
-  }
-}
-
 /* Keep the two floating card actions visually adjacent without their old button boxes. */
 .player-card .card-quick-actions{
   display:flex!important;
