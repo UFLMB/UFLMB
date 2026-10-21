@@ -14,7 +14,7 @@ const THEME_KEY = 'uflmb.site-theme.v1'
 const THEME_MODE_KEY = 'uflmb.ui-theme-mode.v1'
 type ThemeMode = 'dark' | 'light' | 'system'
 const loadThemeMode = (): ThemeMode => {
-  try { const value = localStorage.getItem(THEME_MODE_KEY); return value === 'dark' || value === 'light' || value === 'system' ? value : 'system' } catch { return 'system' }
+  try { const value = localStorage.getItem(THEME_MODE_KEY); return value === 'dark' || value === 'light' || value === 'system' ? value : 'dark' } catch { return 'dark' }
 }
 const BRANDING_KEY = 'uflmb.site-branding.v1'
 type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[] }
