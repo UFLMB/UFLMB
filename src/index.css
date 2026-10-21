@@ -4066,3 +4066,142 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 :root[data-ui-theme="light"] .profile-stats i{background:rgba(24,32,43,.12)!important}
 :root[data-ui-theme="light"] ::selection{background:rgba(163,230,53,.35)!important;color:#18202b!important}
+
+
+/* Final theme rules requested: hide the rotating photo completely in light mode. */
+:root[data-ui-theme="light"] body.has-background-images::before,
+:root[data-ui-theme="light"] body.has-background-images::after {
+  display: none !important;
+  content: none !important;
+  background-image: none !important;
+}
+:root[data-ui-theme="light"] body,
+:root[data-ui-theme="light"] #root {
+  background: #f4f6f8 !important;
+  background-image: none !important;
+}
+
+/* Brand container is intentionally present only in light mode. */
+:root[data-ui-theme="light"] .topbar .brand {
+  padding: 7px 11px;
+  border: 1px solid rgba(24, 32, 43, .13);
+  border-radius: 13px;
+  background: linear-gradient(135deg, #ffffff, #f5f8f1) !important;
+  box-shadow: 0 3px 12px rgba(24, 32, 43, .055) !important;
+}
+:root[data-ui-theme="dark"] .topbar .brand {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+:root[data-ui-theme="light"] .brand-word { color: #18202b !important; }
+:root[data-ui-theme="light"] .brand-word span { color: #527b13 !important; }
+
+/* Light-mode account/sign-in, menus and all navigation surfaces. */
+:root[data-ui-theme="light"] .auth-trigger:not(.account-trigger),
+:root[data-ui-theme="light"] .auth-trigger.account-trigger {
+  color: #26351a !important;
+  background: linear-gradient(135deg, #fafff2, #edf5df) !important;
+  border: 1px solid rgba(101, 133, 42, .34) !important;
+  box-shadow: 0 3px 12px rgba(24, 32, 43, .06) !important;
+}
+:root[data-ui-theme="light"] .public-theme-toggle {
+  color: #344054 !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(24, 32, 43, .15) !important;
+}
+:root[data-ui-theme="light"] .account-dropdown,
+:root[data-ui-theme="light"] .auth-modal,
+:root[data-ui-theme="light"] .auth-mode-switch,
+:root[data-ui-theme="light"] .mobile-bottom-nav,
+:root[data-ui-theme="light"] .mobile-bottom-nav .mobile-nav-item,
+:root[data-ui-theme="light"] .site-nav,
+:root[data-ui-theme="light"] .site-nav a,
+:root[data-ui-theme="light"] .topbar .nav-page {
+  color: #263140 !important;
+  background: #ffffff !important;
+  border-color: rgba(24, 32, 43, .14) !important;
+}
+:root[data-ui-theme="light"] .mobile-bottom-nav {
+  border-top: 1px solid rgba(24, 32, 43, .14) !important;
+  box-shadow: 0 -5px 20px rgba(24, 32, 43, .06) !important;
+}
+:root[data-ui-theme="light"] .mobile-bottom-nav .mobile-nav-item,
+:root[data-ui-theme="light"] .mobile-bottom-nav .mobile-nav-item svg,
+:root[data-ui-theme="light"] .mobile-bottom-nav .mobile-nav-item span,
+:root[data-ui-theme="light"] .topbar .nav-page {
+  color: #344054 !important;
+}
+:root[data-ui-theme="light"] .mobile-bottom-nav .mobile-nav-item.active,
+:root[data-ui-theme="light"] .topbar .nav-page.active {
+  color: #365314 !important;
+  background: #edf5df !important;
+}
+:root[data-ui-theme="light"] .account-dropdown .account-menu-item,
+:root[data-ui-theme="light"] .account-dropdown .theme-mode-button {
+  color: #263140 !important;
+  background: #f7f9fb !important;
+}
+:root[data-ui-theme="light"] .account-dropdown .account-menu-item:hover,
+:root[data-ui-theme="light"] .account-dropdown .theme-mode-button.active {
+  color: #263b12 !important;
+  background: #edf5df !important;
+}
+
+/* Remove dark inherited surfaces from all player/list/summary card descendants. */
+:root[data-ui-theme="light"] .player-card,
+:root[data-ui-theme="light"] .player-card-body,
+:root[data-ui-theme="light"] .player-card .stats-grid span,
+:root[data-ui-theme="light"] .featured-player,
+:root[data-ui-theme="light"] .featured-list,
+:root[data-ui-theme="light"] .featured-list > *,
+:root[data-ui-theme="light"] .home-overview article,
+:root[data-ui-theme="light"] .leader-list li,
+:root[data-ui-theme="light"] .record-row,
+:root[data-ui-theme="light"] .stat-leader-panel,
+:root[data-ui-theme="light"] .stat-leader-grid > *,
+:root[data-ui-theme="light"] .compare-chip,
+:root[data-ui-theme="light"] .comparison-table-wrap,
+:root[data-ui-theme="light"] .profile-stat-group,
+:root[data-ui-theme="light"] .profile-stat-group-header,
+:root[data-ui-theme="light"] .squad-slot,
+:root[data-ui-theme="light"] .snapshot-grid > div,
+:root[data-ui-theme="light"] .quality-tile,
+:root[data-ui-theme="light"] .community-review-list article,
+:root[data-ui-theme="light"] .branding-preview-item,
+:root[data-ui-theme="light"] .branding-background-preview {
+  color: #18202b !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border-color: rgba(24, 32, 43, .14) !important;
+}
+:root[data-ui-theme="light"] .player-card .stats-grid span,
+:root[data-ui-theme="light"] .snapshot-grid > div,
+:root[data-ui-theme="light"] .squad-slot,
+:root[data-ui-theme="light"] .quality-tile {
+  background: #f1f4f7 !important;
+}
+:root[data-ui-theme="light"] .player-card .stats-grid b,
+:root[data-ui-theme="light"] .player-card .stats-grid small,
+:root[data-ui-theme="light"] .player-card .player-card-body *,
+:root[data-ui-theme="light"] .featured-player *,
+:root[data-ui-theme="light"] .home-overview article *,
+:root[data-ui-theme="light"] .leader-list li *,
+:root[data-ui-theme="light"] .record-row *,
+:root[data-ui-theme="light"] .stat-leader-panel *,
+:root[data-ui-theme="light"] .compare-chip,
+:root[data-ui-theme="light"] .squad-slot *,
+:root[data-ui-theme="light"] .quality-tile * {
+  text-shadow: none !important;
+}
+:root[data-ui-theme="light"] .player-card .card-quick-actions .bookmark-toggle,
+:root[data-ui-theme="light"] .player-card .card-quick-actions .compare-toggle {
+  color: #344054 !important;
+  text-shadow: 0 1px 2px rgba(255,255,255,.85) !important;
+}
+:root[data-ui-theme="light"] .player-card .card-quick-actions .bookmark-toggle.saved,
+:root[data-ui-theme="light"] .player-card .card-quick-actions .compare-toggle.selected {
+  color: #527b13 !important;
+}
