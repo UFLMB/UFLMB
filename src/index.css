@@ -2262,3 +2262,51 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .player-title-copy p { width: 100%; min-width: 0; }
   .card-position-mark { flex: 0 0 auto; }
 }
+
+
+/* Refined, compact player-card layout across desktop and mobile. */
+.card-grid { align-items: stretch; }
+.player-card { height: 100%; min-width: 0; }
+.player-image { height: clamp(150px, 19vw, 208px); }
+.player-card-body { min-width: 0; gap: 0; padding: 13px; }
+.player-title-row { width: 100%; min-width: 0; gap: 7px; margin-bottom: 8px; }
+.player-title-copy { flex: 1 1 0; min-width: 0; }
+.player-title-copy h3 { white-space: normal; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.player-title-copy p { min-width: 0; }
+.card-type { margin: 0 0 8px; }
+.stats-grid { width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin: 2px 0 10px; }
+.stats-grid span { min-width: 0; min-height: 48px; justify-content: center; padding: 6px 3px; }
+.stats-grid b { line-height: 1.15; }
+.stats-grid small { line-height: 1.2; }
+.perk-row { width: 100%; min-width: 0; gap: 5px; margin: 0 0 10px; }
+.perk-row > span:not(.perk-heading) { min-width: 0; }
+.card-actions { width: 100%; margin-top: auto; padding-top: 10px; }
+.card-actions .button { width: 100%; min-height: 38px; justify-content: center; }
+@media (min-width: 761px) {
+  .player-card { min-height: 100%; }
+  .player-image { height: clamp(170px, 18vw, 208px); }
+}
+@media (max-width: 760px) {
+  .card-grid { gap: 10px; }
+  .player-image { height: clamp(118px, 34vw, 165px); }
+  .player-card-body { padding: 9px 8px; }
+  .player-title-row { gap: 5px; margin-bottom: 7px; }
+  .player-title-copy h3 { font-size: 12px; line-height: 1.3; }
+  .player-title-copy p { font-size: 9px; }
+  .card-type { max-width: 100%; font-size: 8px; padding: 4px 6px; margin-bottom: 7px; }
+  .stats-grid { gap: 4px; margin-bottom: 8px; }
+  .stats-grid span { min-height: 42px; padding: 5px 2px; }
+  .stats-grid b { font-size: 12px; }
+  .stats-grid small { font-size: 8px; letter-spacing: .6px; }
+  .perk-row { gap: 4px; margin-bottom: 8px; }
+  .perk-row span { padding: 4px 5px; font-size: 8px; }
+  .card-actions { padding-top: 8px; }
+  .card-actions .button { min-height: 36px; padding: 7px 6px; font-size: 9px; }
+}
+@media (max-width: 380px) {
+  .card-grid { gap: 8px; }
+  .player-card-body { padding: 8px 7px; }
+  .player-title-copy h3 { font-size: 11px; }
+  .stats-grid { gap: 3px; }
+  .stats-grid span { min-height: 39px; }
+}
