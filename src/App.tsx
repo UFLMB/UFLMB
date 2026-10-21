@@ -11,6 +11,11 @@ const STORAGE_KEY = 'uflmb.cards.v1'
 const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
 const DRIVE_API_KEY = 'uflmb.google.apiKey'
 const THEME_KEY = 'uflmb.site-theme.v1'
+const THEME_MODE_KEY = 'uflmb.ui-theme-mode.v1'
+type ThemeMode = 'dark' | 'light' | 'system'
+const loadThemeMode = (): ThemeMode => {
+  try { const value = localStorage.getItem(THEME_MODE_KEY); return value === 'dark' || value === 'light' || value === 'system' ? value : 'system' } catch { return 'system' }
+}
 const BRANDING_KEY = 'uflmb.site-branding.v1'
 type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[] }
 const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrls: [] }
@@ -227,7 +232,10 @@ export default function App() {
   const [page, setPage] = useState<'home' | 'players' | 'compare'>('home')
   const [cardPage, setCardPage] = useState(1)
   const [isAdminSession, setIsAdminSession] = useState(false)
-  const [account, setAccount] = useState<{ userId: string; username: string; accessToken: string } | null>(null)
+  const [adminDashboardOpen, setAdminDashboardOpen] = useState(false)
+  useEffect(() => { if (!isAdminSession) setAdminDashboardOpen(false) }, [isAdminSession])
+  const [themeMode, setThemeMode] = useState<ThemeMode>(loadThemeMode)
+  const [account, setAccount = useState<{ userId: string; username: string; accessToken: string } | null>(null)
   const cloudReadyFor = useRef<string | null>(null)
   const [category, setCategory] = useState<Category>('All cards')
   const [nationFilter, setNationFilter] = useState('All nations')
@@ -338,6 +346,16 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('uflmb.squad.formation', formationId); localStorage.setItem('uflmb.squad.assignments', JSON.stringify(squadAssignments)) } catch { /* squad remains available for this session */ }
   }, [formationId, squadAssignments])
+
+  useEffect(() => {
+    try { localStorage.setItem(THEME_MODE_KEY, themeMode) } catch { /* theme still applies for this session */ }
+    const root = document.documentElement
+    const applyTheme = () => { root.dataset.uiTheme = themeMode === 'system' ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') : themeMode }
+    applyTheme()
+    const media = window.matchMedia('(prefers-color-scheme: light)')
+    if (themeMode === 'system') media.addEventListener('change', applyTheme)
+    return () => media.removeEventListener('change', applyTheme)
+  }, [themeMode])
 
   useEffect(() => {
     const root = document.documentElement
@@ -1214,11 +1232,11 @@ export default function App() {
     } catch { setNotice('Invalid JSON. Check the file contents.') }
   }
 
-    if (isAdminSession) return (
+    if (isAdminSession && adminDashboardOpen) return (
     <main className="app-shell admin-shell">
       <header className="topbar admin-topbar">
         <a className="brand" href="/UFLMB/" aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
-        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Admin access verified</span><a className="back-link" href="/UFLMB/">Public database ↗</a><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} /></div>
+        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Admin access verified</span><a className="back-link" href="/UFLMB/">Public database ↗</a><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setAdminDashboardOpen} /></div>
       </header>
       <section className="admin-intro">
         <p className="eyebrow">CONTENT MANAGEMENT</p>
@@ -1489,7 +1507,7 @@ export default function App() {
           <button type="button" className={showBookmarked && page === 'players' ? 'nav-page active' : 'nav-page'} aria-current={showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { setPage('players'); setShowBookmarked(true); setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setEventFilter('All events'); setSourceFilter('all'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat(''); setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}>Favorites <span className="nav-count">{bookmarkedIds.length}</span></button>
           <button type="button" className={page === 'compare' ? 'nav-page active' : 'nav-page'} aria-current={page === 'compare' ? 'page' : undefined} onClick={() => { setPage('compare'); setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}>Compare <span className="nav-count">{compareIds.length}</span></button>
         </nav>
-        <div className="top-actions"><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} /><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
+        <div className="top-actions"><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setAdminDashboardOpen} /><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
       </header>
       {page === 'home' && <section className="home-page">
         <section className="home-hero"><p className="eyebrow">UFL MOBILE DATABASE</p><h1>Every card.<br /><span>One arena.</span></h1>
