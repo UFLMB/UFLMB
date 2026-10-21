@@ -3237,3 +3237,192 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .account-menu-item:hover{background:rgba(101,133,42,.1);color:#263d12}
 :root[data-ui-theme="light"] .account-menu-divider{background:rgba(31,41,55,.1)}
 @media(max-width:600px){.account-dropdown{right:0;width:208px}}
+
+
+/* Complete UFLMB dark theme — applied consistently to public, profile, comparison,
+   squad builder, community, authentication, admin, and access/error surfaces. */
+:root[data-ui-theme="dark"]{
+  color-scheme:dark;
+  --page-bg:#090c11;
+  --panel-bg:#121722;
+  --text-color:#edf1f7;
+  --muted:#98a3b3;
+  --line:rgba(222,232,245,.105);
+  --surface-1:#111722;
+  --surface-2:#161e2b;
+  --surface-3:#1d2736;
+  --surface-light:#121722;
+  --accent-soft:rgba(197,244,103,.09);
+  --accent-border:rgba(197,244,103,.25);
+  --focus-ring:0 0 0 3px rgba(197,244,103,.23);
+  --arena-surface:linear-gradient(145deg,#171e29 0%,#0e131c 100%);
+  --arena-border:rgba(222,232,245,.11);
+}
+:root[data-ui-theme="dark"] body{
+  background:
+    radial-gradient(ellipse at 50% -16%,rgba(197,244,103,.105),transparent 42%),
+    radial-gradient(ellipse at 0% 42%,rgba(62,91,123,.075),transparent 36%),
+    var(--page-bg)!important;
+  color:var(--text-color);
+}
+:root[data-ui-theme="dark"] .app-shell,
+:root[data-ui-theme="dark"] .admin-shell,
+:root[data-ui-theme="dark"] .admin-workspace-shell,
+:root[data-ui-theme="dark"] .gate-shell{color:var(--text-color)}
+:root[data-ui-theme="dark"] .topbar{border-bottom-color:rgba(222,232,245,.11)}
+:root[data-ui-theme="dark"] .site-nav a{color:#aeb8c8}
+:root[data-ui-theme="dark"] .site-nav a:hover,
+:root[data-ui-theme="dark"] .site-nav a:focus-visible{color:#f3f6fb;background:rgba(197,244,103,.075)}
+:root[data-ui-theme="dark"] .status-pill,
+:root[data-ui-theme="dark"] .count-label{background:rgba(255,255,255,.035);color:#bac4d2;border-color:var(--line)}
+:root[data-ui-theme="dark"] .search-wrap,
+:root[data-ui-theme="dark"] .browse-controls,
+:root[data-ui-theme="dark"] .squad-toolbar,
+:root[data-ui-theme="dark"] .admin-panel,
+:root[data-ui-theme="dark"] .analytics-panel,
+:root[data-ui-theme="dark"] .shared-database-panel,
+:root[data-ui-theme="dark"] .admin-empty-state,
+:root[data-ui-theme="dark"] .gate-diagnostic{
+  color:var(--text-color);
+  border-color:var(--arena-border);
+  background:var(--arena-surface);
+}
+:root[data-ui-theme="dark"] .player-card{
+  color:var(--text-color);
+  border-color:var(--arena-border);
+  background:linear-gradient(155deg,#171e29 0%,#0f141d 100%);
+}
+:root[data-ui-theme="dark"] .player-image{
+  background:
+    radial-gradient(ellipse at 50% 25%,rgba(197,244,103,.12),transparent 58%),
+    linear-gradient(145deg,#171e29,#0e131b);
+}
+:root[data-ui-theme="dark"] .empty-state,
+:root[data-ui-theme="dark"] .squad-empty,
+:root[data-ui-theme="dark"] .quality-tile,
+:root[data-ui-theme="dark"] .theme-live-preview,
+:root[data-ui-theme="dark"] .branding-editor,
+:root[data-ui-theme="dark"] .filter-disclosure,
+:root[data-ui-theme="dark"] .compare-panel,
+:root[data-ui-theme="dark"] .squad-panel,
+:root[data-ui-theme="dark"] .home-overview article,
+:root[data-ui-theme="dark"] .featured-player{
+  color:var(--text-color);
+  border-color:var(--arena-border);
+  background-color:#121722;
+}
+:root[data-ui-theme="dark"] .stats-grid span,
+:root[data-ui-theme="dark"] .snapshot-grid>div,
+:root[data-ui-theme="dark"] .community-review-list article,
+:root[data-ui-theme="dark"] .shared-database-panel .field-help[role=status],
+:root[data-ui-theme="dark"] .theme-controls label{
+  background:rgba(255,255,255,.035);
+  border-color:rgba(222,232,245,.09);
+}
+:root[data-ui-theme="dark"] .category{color:#aab4c3;border-color:var(--line);background:rgba(255,255,255,.025)}
+:root[data-ui-theme="dark"] .category:hover{color:#f5f7fb;background:rgba(255,255,255,.06)}
+:root[data-ui-theme="dark"] .category.active{color:var(--accent,#c5f467);background:rgba(197,244,103,.09);border-color:rgba(197,244,103,.35)}
+:root[data-ui-theme="dark"] .button.secondary{color:#e7ebf2;background:linear-gradient(180deg,#202938,#171e29);border-color:var(--line)}
+:root[data-ui-theme="dark"] .button.secondary:hover{background:#273243;border-color:rgba(222,232,245,.2)}
+:root[data-ui-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+:root[data-ui-theme="dark"] select,
+:root[data-ui-theme="dark"] textarea,
+:root[data-ui-theme="dark"] .card-form input,
+:root[data-ui-theme="dark"] .card-form textarea,
+:root[data-ui-theme="dark"] .tools-panel input,
+:root[data-ui-theme="dark"] .tools-panel select,
+:root[data-ui-theme="dark"] .tools-panel textarea,
+:root[data-ui-theme="dark"] .admin-search,
+:root[data-ui-theme="dark"] .community-review-form input,
+:root[data-ui-theme="dark"] .community-review-form select,
+:root[data-ui-theme="dark"] .community-review-form textarea,
+:root[data-ui-theme="dark"] .auth-form input,
+:root[data-ui-theme="dark"] .squad-slot select,
+:root[data-ui-theme="dark"] .ovr-range input{
+  color:#edf1f7;
+  background-color:#0b1018;
+  border-color:rgba(222,232,245,.15);
+}
+:root[data-ui-theme="dark"] input::placeholder,
+:root[data-ui-theme="dark"] textarea::placeholder{color:#7f8b9c}
+:root[data-ui-theme="dark"] .card-form label,
+:root[data-ui-theme="dark"] .tools-panel label,
+:root[data-ui-theme="dark"] .community-review-form label,
+:root[data-ui-theme="dark"] .auth-form label{color:#d4dbe6}
+:root[data-ui-theme="dark"] .profile-modal{
+  color:var(--text-color);
+  background:var(--arena-surface);
+  border-color:var(--arena-border);
+}
+:root[data-ui-theme="dark"] .profile-heading>img,
+:root[data-ui-theme="dark"] .profile-placeholder,
+:root[data-ui-theme="dark"] .record-thumb,
+:root[data-ui-theme="dark"] .leader-list img,
+:root[data-ui-theme="dark"] .leader-avatar{background:#090d13;border-color:var(--arena-border)}
+:root[data-ui-theme="dark"] .profile-meta>*{color:#dce3ed;background:rgba(0,0,0,.25);border-color:var(--arena-border)}
+:root[data-ui-theme="dark"] .profile-stats span{color:#b9c4d3}
+:root[data-ui-theme="dark"] .profile-stats strong{color:#f4f6fa}
+:root[data-ui-theme="dark"] .profile-stats i{background:rgba(255,255,255,.1)}
+:root[data-ui-theme="dark"] .comparison-table thead th{background:#171f2b;color:var(--accent,#c5f467)}
+:root[data-ui-theme="dark"] .comparison-table tbody th{color:#aeb8c7}
+:root[data-ui-theme="dark"] .comparison-table td{color:#e6ebf3}
+:root[data-ui-theme="dark"] .comparison-table tbody tr:hover,
+:root[data-ui-theme="dark"] .record-row:hover,
+:root[data-ui-theme="dark"] .community-review-list article:hover{background:rgba(255,255,255,.035)}
+:root[data-ui-theme="dark"] .account-dropdown{color:#edf1f7;background:rgba(17,22,31,.98);border-color:var(--arena-border);box-shadow:0 18px 50px rgba(0,0,0,.55)}
+:root[data-ui-theme="dark"] .account-menu-label{color:#8f9bac}
+:root[data-ui-theme="dark"] .theme-mode-button{color:#c5cfdd;background:#171e29;border-color:var(--arena-border)}
+:root[data-ui-theme="dark"] .theme-mode-button:hover,
+:root[data-ui-theme="dark"] .theme-mode-button.active{color:#d8ff91;background:rgba(197,244,103,.12);border-color:rgba(197,244,103,.5)}
+:root[data-ui-theme="dark"] .account-menu-item{color:#e0e6ef}
+:root[data-ui-theme="dark"] .account-menu-item:hover{color:#e3ffb1;background:rgba(197,244,103,.08)}
+:root[data-ui-theme="dark"] .account-menu-item.logout-item{color:#ff9b9b}
+:root[data-ui-theme="dark"] .account-menu-divider{background:rgba(222,232,245,.1)}
+:root[data-ui-theme="dark"] .auth-modal{
+  color:var(--text-color);
+  background:linear-gradient(160deg,rgba(255,255,255,.035),transparent 32%),radial-gradient(ellipse at 50% 0,rgba(197,244,103,.12),transparent 55%),#111722;
+  border-color:rgba(197,244,103,.27);
+}
+:root[data-ui-theme="dark"] .auth-close{color:#aeb8c7;background:rgba(255,255,255,.035)}
+:root[data-ui-theme="dark"] .auth-mode-switch{background:rgba(0,0,0,.24)}
+:root[data-ui-theme="dark"] .auth-mode-switch button:not(.active){color:#98a3b3}
+:root[data-ui-theme="dark"] .auth-mode-switch button.active{color:#d8ff91}
+:root[data-ui-theme="dark"] .auth-message,
+:root[data-ui-theme="dark"] .auth-session-note{color:#dbe7c7}
+:root[data-ui-theme="dark"] .notice{color:#d5ddc5;background:rgba(197,244,103,.055)}
+:root[data-ui-theme="dark"] .notice.warning{color:#e8d9bd;background:rgba(255,195,90,.055)}
+:root[data-ui-theme="dark"] .demo-warning{background:rgba(255,195,90,.07);border-color:rgba(255,195,90,.35)}
+:root[data-ui-theme="dark"] .demo-warning span{color:#e8d9bd}
+:root[data-ui-theme="dark"] .quiet-access{background:rgba(15,18,24,.82);color:rgba(197,244,103,.78);border-color:rgba(197,244,103,.18)}
+:root[data-ui-theme="dark"] .gate-page{
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(197,244,103,.06),transparent 58%),
+    #090c11;
+  color:#edf1f7;
+  font-family:'Manrope',ui-sans-serif,system-ui,sans-serif;
+}
+:root[data-ui-theme="dark"] .gate-error-heading{color:#aeb8c7}
+:root[data-ui-theme="dark"] .gate-error-heading b,
+:root[data-ui-theme="dark"] .gate-error-symbol{color:#ff9292;border-color:rgba(255,255,255,.18)}
+:root[data-ui-theme="dark"] .gate-page h1{color:#f3f6fb}
+:root[data-ui-theme="dark"] .gate-page h1 span,
+:root[data-ui-theme="dark"] .gate-error-detail,
+:root[data-ui-theme="dark"] .gate-error-meta span{color:#aeb8c7}
+:root[data-ui-theme="dark"] .gate-error-message{color:#edf1f7}
+:root[data-ui-theme="dark"] .gate-error-meta,
+:root[data-ui-theme="dark"] .gate-error-meta>div{border-color:rgba(222,232,245,.12)}
+:root[data-ui-theme="dark"] .gate-error-meta strong{color:#e3e9f2}
+:root[data-ui-theme="dark"] .gate-diagnostic-grid,
+:root[data-ui-theme="dark"] .gate-lattice-wrap{background:#111722;border-color:rgba(222,232,245,.13)}
+:root[data-ui-theme="dark"] .diagnostic-cell,
+:root[data-ui-theme="dark"] .lattice-cell{background:#1b2432;border-color:#344153}
+:root[data-ui-theme="dark"] .diagnostic-cell-active,
+:root[data-ui-theme="dark"] .lattice-cell-on{background:#c5f467;border-color:#c5f467}
+:root[data-ui-theme="dark"] .gate-lattice-readout,
+:root[data-ui-theme="dark"] .gate-lattice-footer{color:#9aa6b7}
+:root[data-ui-theme="dark"] .gate-lattice-readout strong{color:#e5ebf3}
+:root[data-ui-theme="dark"] .gate-error-foot,
+:root[data-ui-theme="dark"] .gate-error-footer{color:#8995a6;border-color:rgba(222,232,245,.12)}
+:root[data-ui-theme="dark"] .gate-home-link{color:#9aa6b7}
+:root[data-ui-theme="dark"] .gate-home-link:hover{color:#f3f6fb}
+:root[data-ui-theme="dark"] ::selection{background:rgba(197,244,103,.3);color:#fff}
