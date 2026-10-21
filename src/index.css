@@ -3183,3 +3183,57 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .auth-trigger.account-trigger .auth-trigger-icon{width:19px;height:19px;flex:0 0 19px;stroke:none}
 .auth-trigger.account-trigger span{overflow:hidden;text-overflow:ellipsis;max-width:175px}
 .auth-trigger.account-trigger:hover{border-color:rgba(197,244,103,.7);background:rgba(197,244,103,.12)}
+
+
+/* Account dropdown: lightweight transitions, icon-only theme selection, single logout entry. */
+.auth-account-wrap{position:relative;display:inline-flex;align-items:center}
+.auth-trigger.account-trigger{cursor:pointer}
+.auth-trigger.account-trigger .auth-admin-icon{width:19px;height:19px;flex:0 0 19px;color:var(--lime,#c5f467)}
+.auth-trigger.account-trigger:has(.auth-admin-icon){border-color:rgba(197,244,103,.62);background:linear-gradient(135deg,rgba(197,244,103,.17),rgba(197,244,103,.045));color:var(--lime,#c5f467);letter-spacing:.11em}
+.account-chevron{width:13px;height:13px;flex:0 0 13px;transition:transform .16s ease}
+.account-chevron.is-open{transform:rotate(180deg)}
+.account-dropdown{position:absolute;z-index:250;top:calc(100% + 10px);right:0;width:218px;padding:9px;border:1px solid rgba(197,244,103,.2);border-radius:14px;background:rgba(15,19,26,.98);color:#f3f5f8;box-shadow:0 16px 44px rgba(0,0,0,.42);backdrop-filter:blur(14px);transform-origin:top right;animation:account-dropdown-in .16s ease-out both}
+.account-dropdown[hidden]{display:none}
+.account-menu-label{padding:7px 8px 8px;color:#8d98a8;font-size:9px;font-weight:800;letter-spacing:.16em}
+.theme-mode-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:0 3px 9px}
+.theme-mode-button{display:grid;place-items:center;min-height:37px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(255,255,255,.035);color:#b8c1cf;cursor:pointer;transition:background .16s ease,border-color .16s ease,color .16s ease}
+.theme-mode-button svg{width:18px;height:18px}
+.theme-mode-button:hover,.theme-mode-button.active{border-color:rgba(197,244,103,.65);background:rgba(197,244,103,.12);color:#dfff9b}
+.account-menu-divider{height:1px;margin:5px 2px;background:rgba(255,255,255,.09)}
+.account-menu-item{display:flex;align-items:center;gap:11px;width:100%;min-height:40px;padding:9px 10px;border:0;border-radius:9px;background:transparent;color:#edf1f7;text-align:left;font-family:inherit;font-size:12px;font-weight:600;line-height:1.3;cursor:pointer;transition:background .14s ease,color .14s ease}
+.account-menu-item svg{width:17px;height:17px;flex:0 0 17px}
+.account-menu-item:hover{background:rgba(197,244,103,.1);color:#dfff9b}
+.account-menu-item.logout-item{color:#ffb4b4}
+.account-menu-item.logout-item:hover{background:rgba(248,113,113,.1);color:#ffc7c7}
+@keyframes account-dropdown-in{from{opacity:0;transform:translateY(-5px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.account-dropdown,.account-chevron,.theme-mode-button,.account-menu-item{animation:none!important;transition:none!important}}
+
+/* Light mode applies to the application surfaces; system mode resolves to the OS preference. */
+:root[data-ui-theme="light"]{color-scheme:light;--page-bg:#eef1f5;--panel-bg:#ffffff;--text-color:#18202b;--surface-light:#fff}
+:root[data-ui-theme="light"] body{background-color:#eef1f5!important;color:#18202b}
+:root[data-ui-theme="light"] .app-shell{color:#18202b}
+:root[data-ui-theme="light"] .topbar,
+:root[data-ui-theme="light"] .home-overview article,
+:root[data-ui-theme="light"] .featured-player,
+:root[data-ui-theme="light"] .filter-disclosure,
+:root[data-ui-theme="light"] .player-card,
+:root[data-ui-theme="light"] .compare-panel,
+:root[data-ui-theme="light"] .squad-panel{background-color:rgba(255,255,255,.94)!important;color:#18202b;border-color:rgba(31,41,55,.15)}
+:root[data-ui-theme="light"] .topbar .brand-word,
+:root[data-ui-theme="light"] .topbar .nav-page,
+:root[data-ui-theme="light"] .hero-copy,
+:root[data-ui-theme="light"] .home-overview small,
+:root[data-ui-theme="light"] .featured-name,
+:root[data-ui-theme="light"] .player-card h3,
+:root[data-ui-theme="light"] .player-card .stats-grid b{color:#18202b}
+:root[data-ui-theme="light"] .topbar .nav-page.active{color:#273713}
+:root[data-ui-theme="light"] .auth-trigger.account-trigger{color:#26351a;background:rgba(255,255,255,.94);border-color:rgba(101,133,42,.35)}
+:root[data-ui-theme="light"] .account-dropdown{background:rgba(255,255,255,.98);color:#18202b;border-color:rgba(101,133,42,.25);box-shadow:0 16px 44px rgba(31,41,55,.18)}
+:root[data-ui-theme="light"] .account-menu-label{color:#647084}
+:root[data-ui-theme="light"] .theme-mode-button{background:#f3f5f7;color:#485365;border-color:rgba(31,41,55,.13)}
+:root[data-ui-theme="light"] .theme-mode-button:hover,:root[data-ui-theme="light"] .theme-mode-button.active{background:rgba(101,133,42,.12);color:#33451c;border-color:rgba(101,133,42,.55)}
+:root[data-ui-theme="light"] .account-menu-item{color:#263140}
+:root[data-ui-theme="light"] .account-menu-item.logout-item{color:#b42323}
+:root[data-ui-theme="light"] .account-menu-item:hover{background:rgba(101,133,42,.1);color:#263d12}
+:root[data-ui-theme="light"] .account-menu-divider{background:rgba(31,41,55,.1)}
+@media(max-width:600px){.account-dropdown{right:0;width:208px}}
