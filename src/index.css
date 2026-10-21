@@ -3543,3 +3543,81 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   background:rgba(163,230,53,.12)!important;
   border-color:transparent!important;
 }
+
+/* Final theme contract: dark is the first-run default; each mode owns every major surface. */
+:root[data-ui-theme="dark"] .brand-word{color:#f3f5f8!important}
+:root[data-ui-theme="dark"] .brand-word span{color:#c5f467!important}
+:root[data-ui-theme="dark"] .brand-mark{background:#c5f467!important;color:#11150a!important}
+:root[data-ui-theme="light"] .brand-word{color:#18202b!important}
+:root[data-ui-theme="light"] .brand-word span{color:#527b13!important}
+:root[data-ui-theme="light"] .brand-mark{background:#a3e635!important;color:#18220c!important}
+:root[data-ui-theme="light"] .brand-logo-image{background:transparent!important;box-shadow:none!important}
+:root[data-ui-theme="light"] body{
+  color:#18202b!important;
+  background-image:radial-gradient(ellipse at 50% -20%,rgba(163,230,53,.10),transparent 45%)!important;
+  background-color:#f4f6f8!important;
+}
+:root[data-ui-theme="light"] .app-shell,
+:root[data-ui-theme="light"] .admin-shell,
+:root[data-ui-theme="light"] .admin-workspace-shell,
+:root[data-ui-theme="light"] .gate-shell,
+:root[data-ui-theme="light"] main,
+:root[data-ui-theme="light"] section{color:#18202b}
+:root[data-ui-theme="light"] .player-card,
+:root[data-ui-theme="light"] .featured-player,
+:root[data-ui-theme="light"] .home-overview article,
+:root[data-ui-theme="light"] .compare-panel,
+:root[data-ui-theme="light"] .squad-panel,
+:root[data-ui-theme="light"] .filter-disclosure,
+:root[data-ui-theme="light"] .browse-controls,
+:root[data-ui-theme="light"] .squad-toolbar,
+:root[data-ui-theme="light"] .admin-panel,
+:root[data-ui-theme="light"] .analytics-panel,
+:root[data-ui-theme="light"] .shared-database-panel,
+:root[data-ui-theme="light"] .empty-state,
+:root[data-ui-theme="light"] .squad-empty,
+:root[data-ui-theme="light"] .quality-tile,
+:root[data-ui-theme="light"] .search-wrap{
+  color:#18202b!important;
+  background:linear-gradient(145deg,#fff 0%,#f6f8fb 100%)!important;
+  border-color:rgba(24,32,43,.13)!important;
+}
+:root[data-ui-theme="light"] .player-image,
+:root[data-ui-theme="light"] .stats-grid span,
+:root[data-ui-theme="light"] .snapshot-grid>div,
+:root[data-ui-theme="light"] .profile-meta>*,
+:root[data-ui-theme="light"] .squad-slot,
+:root[data-ui-theme="light"] .comparison-table td,
+:root[data-ui-theme="light"] .community-review-list article{
+  color:#263140;
+  background:#f0f3f7!important;
+  border-color:rgba(24,32,43,.11)!important;
+}
+:root[data-ui-theme="light"] .player-card h3,
+:root[data-ui-theme="light"] .player-card .stats-grid b,
+:root[data-ui-theme="light"] .featured-player *,
+:root[data-ui-theme="light"] .home-overview article strong,
+:root[data-ui-theme="light"] .comparison-table td,
+:root[data-ui-theme="light"] .squad-panel strong,
+:root[data-ui-theme="light"] .compare-panel strong,
+:root[data-ui-theme="light"] .section-heading h2,
+:root[data-ui-theme="light"] .page-title,
+:root[data-ui-theme="light"] .admin-panel h2,
+:root[data-ui-theme="light"] .analytics-panel h2{color:#18202b}
+:root[data-ui-theme="light"] .player-card .stats-grid small,
+:root[data-ui-theme="light"] .player-card-body>p,
+:root[data-ui-theme="light"] .muted-copy,
+:root[data-ui-theme="light"] .footer-muted,
+:root[data-ui-theme="light"] .profile-stats span{color:#647084!important}
+:root[data-ui-theme="light"] .ovr-badge,
+:root[data-ui-theme="light"] .position-badge{background:rgba(255,255,255,.96);color:#263140;border-color:rgba(24,32,43,.16)}
+:root[data-ui-theme="light"] .ovr-badge{color:#365314}
+:root[data-ui-theme="light"] .topbar,
+:root[data-ui-theme="light"] .topbar .brand,
+:root[data-ui-theme="light"] .topbar .top-actions,
+:root[data-ui-theme="light"] .topbar .auth-account-wrap,
+:root[data-ui-theme="light"] .topbar .public-theme-toggle,
+:root[data-ui-theme="dark"] .topbar .brand,
+:root[data-ui-theme="dark"] .topbar .top-actions,
+:root[data-ui-theme="dark"] .topbar .auth-account-wrap,
+:root[data-ui-theme="dark"] .topbar .public-theme-toggle{background:transparent!important;box-shadow:none!important}
