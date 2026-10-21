@@ -333,6 +333,8 @@ body.has-background-images .app-shell{
 .profile-meta{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:15px}
 .profile-meta>*{padding:7px 9px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(0,0,0,.24);font-size:11px}
 .profile-meta strong{color:var(--accent,#c5f467);font:12px 'DM Mono',monospace}
+.profile-meta-badge{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.profile-country-flag{display:block;width:16px;height:11px;flex:0 0 auto;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.16)}
 .profile-section{padding:22px 0;border-bottom:1px solid rgba(255,255,255,.09)}
 .profile-section h3{margin-bottom:15px}
 .profile-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 22px}
