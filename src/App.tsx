@@ -227,6 +227,8 @@ export default function App() {
   const [page, setPage] = useState<'home' | 'players' | 'compare'>('home')
   const [cardPage, setCardPage] = useState(1)
   const [isAdminSession, setIsAdminSession] = useState(false)
+  const [account, setAccount] = useState<{ userId: string; username: string; accessToken: string } | null>(null)
+  const cloudReadyFor = useRef<string | null>(null)
   const [category, setCategory] = useState<Category>('All cards')
   const [nationFilter, setNationFilter] = useState('All nations')
   const [positionFilter, setPositionFilter] = useState('All positions')
@@ -267,6 +269,67 @@ export default function App() {
 
   const autoSaveSnapshot = useRef({ allCards, bookmarkedIds, formationId, squadAssignments, siteTheme, siteBranding, googleClientId, googleApiKey })
   autoSaveSnapshot.current = { allCards, bookmarkedIds, formationId, squadAssignments, siteTheme, siteBranding, googleClientId, googleApiKey }
+
+
+  useEffect(() => {
+    let cancelled = false
+    if (!account) {
+      cloudReadyFor.current = null
+      return
+    }
+    cloudReadyFor.current = null
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    if (!endpoint || !anonKey) return
+    void (async () => {
+      try {
+        const response = await fetch(`${endpoint}/rest/v1/user_preferences?select=favorites,compare_ids&user_id=eq.${encodeURIComponent(account.userId)}&limit=1`, {
+          headers: { apikey: anonKey, Authorization: `Bearer ${account.accessToken}` },
+        })
+        if (!response.ok) throw new Error('Could not load account preferences')
+        const rows = await response.json() as Array<{ favorites?: string[]; compare_ids?: string[] }>
+        if (cancelled) return
+        if (rows.length) {
+          setBookmarkedIds(Array.isArray(rows[0].favorites) ? rows[0].favorites : [])
+          setCompareIds(Array.isArray(rows[0].compare_ids) ? rows[0].compare_ids.slice(0, 3) : [])
+        }
+        cloudReadyFor.current = account.userId
+      } catch {
+        if (!cancelled) setNotice('Cloud preferences could not be loaded. Your changes have not been synced yet.')
+      }
+    })()
+    return () => { cancelled = true }
+  }, [account])
+
+  useEffect(() => {
+    if (!account || cloudReadyFor.current !== account.userId) return
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    if (!endpoint || !anonKey) return
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`${endpoint}/rest/v1/user_preferences?on_conflict=user_id`, {
+          method: 'POST',
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${account.accessToken}`,
+            'Content-Type': 'application/json',
+            Prefer: 'resolution=merge-duplicates,return=minimal',
+          },
+          body: JSON.stringify({
+            user_id: account.userId,
+            favorites: bookmarkedIds,
+            compare_ids: compareIds.slice(0, 3),
+            updated_at: new Date().toISOString(),
+          }),
+        })
+        if (!response.ok) throw new Error('Cloud save failed')
+      } catch {
+        setNotice('Cloud sync failed. Check your connection and try again.')
+      }
+    }, 350)
+    return () => window.clearTimeout(timer)
+  }, [account, bookmarkedIds, compareIds])
 
   useEffect(() => {
     try { localStorage.setItem('uflmb.bookmarks.v1', JSON.stringify(bookmarkedIds)) } catch { /* session-only fallback */ }
@@ -1155,7 +1218,7 @@ export default function App() {
     <main className="app-shell admin-shell">
       <header className="topbar admin-topbar">
         <a className="brand" href="/UFLMB/" aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
-        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Admin access verified</span><a className="back-link" href="/UFLMB/">Public database ↗</a><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} /></div>
+        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Admin access verified</span><a className="back-link" href="/UFLMB/">Public database ↗</a><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} /></div>
       </header>
       <section className="admin-intro">
         <p className="eyebrow">CONTENT MANAGEMENT</p>
@@ -1426,7 +1489,7 @@ export default function App() {
           <button type="button" className={showBookmarked && page === 'players' ? 'nav-page active' : 'nav-page'} aria-current={showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { setPage('players'); setShowBookmarked(true); setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setEventFilter('All events'); setSourceFilter('all'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat(''); setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}>Favorites <span className="nav-count">{bookmarkedIds.length}</span></button>
           <button type="button" className={page === 'compare' ? 'nav-page active' : 'nav-page'} aria-current={page === 'compare' ? 'page' : undefined} onClick={() => { setPage('compare'); setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}>Compare <span className="nav-count">{compareIds.length}</span></button>
         </nav>
-        <div className="top-actions"><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} /><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
+        <div className="top-actions"><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} /><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
       </header>
       {page === 'home' && <section className="home-page">
         <section className="home-hero"><p className="eyebrow">UFL MOBILE DATABASE</p><h1>Every card.<br /><span>One arena.</span></h1>
