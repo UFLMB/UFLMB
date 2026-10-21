@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { FormEvent } from 'react'
 
 type AuthUser = { id: string; email?: string }
@@ -134,6 +135,23 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
   const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info')
   const [sessionEmail, setSessionEmail] = useState('')
   const [session, setSession] = useState<AuthSession | null>(null)
+
+  useEffect(() => {
+    if (!open || isAdmin) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [open, isAdmin])
 
   const showMessage = (text: string, type: 'success' | 'error' | 'info' = 'info') => {
     setMessage(text)
@@ -287,9 +305,9 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
           ? <><svg className="auth-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" /></svg><span>Logout</span></>
           : <><svg className="auth-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6" /></svg><span>{sessionEmail ? 'Account' : 'Sign In/Up'}</span></>}
       </button>
-      {open && !isAdmin && <div className="auth-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
+      {open && !isAdmin && createPortal(<div className="auth-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
         <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-          <button className="auth-close" type="button" aria-label="Close sign-in window" onClick={() => setOpen(false)}>×</button>
+          <button className="auth-close" type="button" aria-label="Close sign-in window" onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); setOpen(false) }}>×</button>
           <p className="eyebrow">UFLMB COMMUNITY</p>
           <h2 id="auth-title">{title}</h2>
           <p className="auth-copy">{description}</p>
@@ -311,7 +329,7 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
           {(mode === 'recovery' || mode === 'updatePassword') && <button className="auth-text-action" type="button" onClick={() => { setMode('signin'); setMessage(''); setPassword(''); setConfirmPassword('') }}>Back to sign in</button>}
           {sessionEmail && <button className="button secondary auth-signout" type="button" onClick={() => void signOut()}>Sign out</button>}
         </section>
-      </div>}
+      </div>, document.body)}
     </>
   )
 }
