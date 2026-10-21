@@ -3426,3 +3426,11 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="dark"] .gate-home-link{color:#9aa6b7}
 :root[data-ui-theme="dark"] .gate-home-link:hover{color:#f3f6fb}
 :root[data-ui-theme="dark"] ::selection{background:rgba(197,244,103,.3);color:#fff}
+
+/* Compact public theme switch: visible only while signed out. */
+.public-theme-toggle{display:inline-grid;place-items:center;flex:0 0 32px;width:32px;height:32px;padding:0;border:1px solid rgba(197,244,103,.22);border-radius:9px;background:rgba(255,255,255,.025);color:var(--muted,#aeb6c4);cursor:pointer;transition:color .16s ease,border-color .16s ease,background .16s ease}
+.public-theme-toggle svg{display:block;width:16px;height:16px}
+.public-theme-toggle:hover,.public-theme-toggle:focus-visible{color:var(--lime,#c5f467);border-color:rgba(197,244,103,.58);background:rgba(197,244,103,.08);outline:none}
+:root[data-ui-theme="light"] .public-theme-toggle{color:#596273;border-color:rgba(31,41,55,.16);background:rgba(255,255,255,.7)}
+:root[data-ui-theme="light"] .public-theme-toggle:hover,:root[data-ui-theme="light"] .public-theme-toggle:focus-visible{color:#33451c;border-color:rgba(101,133,42,.55);background:rgba(101,133,42,.08)}
+@media(prefers-reduced-motion:reduce){.public-theme-toggle{transition:none}}
