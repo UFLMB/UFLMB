@@ -95,14 +95,6 @@ const countryFlagCode = (nation: string) => {
   }
   return aliases[value] || (/^[a-z]{2}$/i.test(value) ? value.toLowerCase() : '')
 }
-const cardNameDuplicatesPlayerName = (cardName: string | undefined, playerName: string) => {
-  const value = cardName?.trim().toLocaleLowerCase()
-  if (!value) return false
-  const normalizedName = playerName.toLocaleLowerCase().replace(/[^\\p{L}\\p{N}]+/gu, ' ').trim()
-  const normalizedCardName = value.replace(/[^\\p{L}\\p{N}]+/gu, ' ').trim()
-  return normalizedName === normalizedCardName || normalizedName.split(' ').includes(normalizedCardName)
-}
-
 const statGroupOrder = ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY', 'POS', 'REF', 'DIV', 'HAN', 'KIC']
 const statGroupNames: Record<string, string> = {
   PAC: 'Pace', SHO: 'Shooting', PAS: 'Passing', DRI: 'Dribbling',
