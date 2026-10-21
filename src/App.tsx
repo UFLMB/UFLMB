@@ -525,7 +525,6 @@ export default function App() {
     return [...current, id]
     })
   }
-  const exportVisibleCsv = () => downloadCsv(visibleCards)
 
   const autoFillSquad = () => {
     if (!allCards.length) { setNotice('Add verified player cards before building a squad.'); return }
