@@ -15,6 +15,7 @@ type Mode = 'signin' | 'signup' | 'recovery' | 'updatePassword'
 type Props = {
   isAdmin: boolean
   onAdminChange: (value: boolean) => void
+  onAccountChange: (value: { userId: string; username: string; accessToken: string } | null) => void
 }
 
 const SESSION_KEY = 'uflmb.auth.session.v1'
@@ -71,6 +72,28 @@ async function checkAdmin(session: AuthSession): Promise<boolean> {
   }
 }
 
+
+async function lookupEmailForUsername(value: string): Promise<string> {
+  const { url, key } = getConfig()
+  const response = await fetch(`${url}/rest/v1/rpc/email_for_username`, {
+    method: 'POST', headers: { apikey: key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input_username: value.trim() }),
+  })
+  if (!response.ok) throw new Error('The username or password is incorrect.')
+  const result = await response.json()
+  if (typeof result !== 'string' || !result) throw new Error('The username or password is incorrect.')
+  return result
+}
+async function getProfileUsername(session: AuthSession): Promise<string> {
+  const { url, key } = getConfig()
+  try {
+    const response = await fetch(`${url}/rest/v1/profiles?select=username&id=eq.${encodeURIComponent(session.user.id)}&limit=1`, {
+      headers: { apikey: key, Authorization: `Bearer ${session.access_token}` },
+    })
+    const rows = response.ok ? await response.json() as Array<{ username?: string }> : []
+    return rows[0]?.username || session.user.email?.split('@')[0] || 'Account'
+  } catch { return session.user.email?.split('@')[0] || 'Account' }
+}
 async function restoreSession(): Promise<AuthSession | null> {
   const { url, key } = getConfig()
   try {
@@ -124,10 +147,12 @@ async function restoreSession(): Promise<AuthSession | null> {
   }
 }
 
-export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
+export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange }: Props) {
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
+  const [sessionUsername, setSessionUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -173,13 +198,16 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
       if (cancelled || !restored) return
       setSession(restored)
       setSessionEmail(restored.user.email || '')
+      const restoredUsername = await getProfileUsername(restored)
+      setSessionUsername(restoredUsername)
+      if (!cancelled) onAccountChange({ userId: restored.user.id, username: restoredUsername, accessToken: restored.access_token })
       const admin = await checkAdmin(restored)
       if (!cancelled) onAdminChange(admin)
       if (!cancelled && fragmentType === 'recovery') showMessage('Choose a new password for your account.', 'info')
       if (!cancelled && fragmentType === 'signup') showMessage('Email confirmed. Your account is ready.', 'success')
     })
     return () => { cancelled = true }
-  }, [onAdminChange])
+  }, [onAdminChange, onAccountChange])
 
   const signOut = async () => {
     const { url, key } = getConfig()
@@ -194,6 +222,8 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
     sessionStorage.removeItem(SESSION_KEY)
     setSession(null)
     setSessionEmail('')
+    setSessionUsername('')
+    onAccountChange(null)
     setPassword('')
     setConfirmPassword('')
     setMessage('')
@@ -237,6 +267,10 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
         return
       }
 
+      if (mode === 'signup' && !/^[A-Za-z0-9_]{3,24}$/.test(username.trim())) {
+        showMessage('Username must be 3–24 characters and use only letters, numbers, or underscores.', 'error')
+        return
+      }
       if (mode === 'signup' && password !== confirmPassword) {
         showMessage('The passwords do not match.', 'error')
         return
@@ -245,7 +279,8 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
       const path = mode === 'signup'
         ? `signup?redirect_to=${encodeURIComponent(getRedirectUrl())}`
         : 'token?grant_type=password'
-      const result = await requestAuth(path, { email: email.trim(), password })
+      const loginEmail = mode === 'signin' && !email.trim().includes('@') ? await lookupEmailForUsername(email.trim()) : email.trim()
+      const result = await requestAuth(path, mode === 'signup' ? { email: email.trim(), password, data: { username: username.trim() } } : { email: loginEmail, password })
       const nextSession = toSession(result)
       if (!nextSession) {
         if (mode === 'signup') {
@@ -261,6 +296,9 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
       saveSession(nextSession)
       setSession(nextSession)
       setSessionEmail(nextSession.user.email || email.trim())
+      const nextUsername = mode === 'signup' ? username.trim() : await getProfileUsername(nextSession)
+      setSessionUsername(nextUsername)
+      onAccountChange({ userId: nextSession.user.id, username: nextUsername, accessToken: nextSession.access_token })
       setPassword('')
       setConfirmPassword('')
       const admin = await checkAdmin(nextSession)
@@ -297,13 +335,9 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
 
   return (
     <>
-      <button className="button primary auth-trigger" type="button" onClick={() => {
-        if (isAdmin) void signOut()
-        else { setOpen(true); setMessage('') }
-      }}>
-        {isAdmin
-          ? <><svg className="auth-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" /></svg><span>Logout</span></>
-          : <><svg className="auth-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M22 11h-6" /></svg><span>{sessionEmail ? 'Account' : 'Sign In/Up'}</span></>}
+      <button className={session ? 'auth-trigger account-trigger' : 'button primary auth-trigger'} type="button" onClick={() => { setOpen(!open); setMessage('') }}>
+        <svg className="auth-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4" fill="currentColor" stroke="none" /><path d="M4 21v-2.2a8 8 0 0 1 16 0V21z" fill="currentColor" stroke="none" /></svg>
+        <span>{session ? sessionUsername || 'Account' : 'Sign In/Up'}</span>
       </button>
       {open && !isAdmin && createPortal(<div className="auth-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
         <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
@@ -319,7 +353,8 @@ export default function AuthAccess({ isAdmin, onAdminChange }: Props) {
           )}
           {sessionEmail && <p className="auth-session-note">Signed in as {sessionEmail}. {isAdmin ? 'Administrator access is active.' : 'Your community session is active.'}</p>}
           <form className="auth-form" onSubmit={submit}>
-            {mode !== 'updatePassword' && <label>Email address<input type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" /></label>}
+            {mode === 'signup' && <label>Username<input type="text" autoComplete="username" required minLength={3} maxLength={24} pattern="[A-Za-z0-9_]{3,24}" value={username} onChange={event => setUsername(event.target.value)} placeholder="Choose a unique username" /></label>}
+            {mode !== 'updatePassword' && <label>{mode === 'signin' ? 'Email or username' : 'Email address'}<input type={mode === 'signin' ? 'text' : 'email'} autoComplete={mode === 'signin' ? 'username' : 'email'} required value={email} onChange={event => setEmail(event.target.value)} placeholder={mode === 'signin' ? 'you@example.com or username' : 'you@example.com'} /></label>
             {mode !== 'recovery' && <label>{mode === 'updatePassword' ? 'New password' : 'Password'}<input type="password" autoComplete={mode === 'signup' || mode === 'updatePassword' ? 'new-password' : 'current-password'} minLength={6} required value={password} onChange={event => setPassword(event.target.value)} placeholder={mode === 'updatePassword' ? 'Enter a new password' : 'At least 6 characters'} /></label>}
             {(mode === 'signup' || mode === 'updatePassword') && <label>Confirm password<input type="password" autoComplete="new-password" minLength={6} required value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} placeholder="Enter the password again" /></label>}
             <button className="button primary auth-submit" type="submit" disabled={busy}>{busy ? 'Please wait…' : mode === 'signin' ? 'Sign In' : mode === 'signup' ? 'Create account' : mode === 'recovery' ? 'Send reset link' : 'Update password'}</button>
