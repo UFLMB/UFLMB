@@ -2310,3 +2310,66 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .stats-grid { gap: 3px; }
   .stats-grid span { min-height: 39px; }
 }
+
+
+/* Player profile stat rows: fixed single-line labels and a resilient meter/value pair. */
+.profile-stats > div {
+  display: grid;
+  grid-template-columns: minmax(0, 120px) minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.profile-stats .profile-stat-label {
+  display: block;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  line-height: 1.25;
+}
+.profile-stats .profile-stat-meter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+}
+.profile-stats .profile-stat-meter i {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+}
+.profile-stats .profile-stat-meter strong {
+  flex: 0 0 28px;
+  width: 28px;
+  min-width: 28px;
+  text-align: right;
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .profile-stats > div {
+    grid-template-columns: minmax(0, 42%) minmax(0, 1fr);
+    gap: 8px;
+  }
+  .profile-stats .profile-stat-label {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    overflow-wrap: normal;
+    word-break: keep-all;
+  }
+  .profile-stats .profile-stat-meter { gap: 7px; }
+  .profile-stats .profile-stat-meter strong { flex-basis: 26px; width: 26px; min-width: 26px; font-size: 11px; }
+}
+@media (max-width: 360px) {
+  .profile-stats > div { grid-template-columns: minmax(0, 40%) minmax(0, 1fr); gap: 6px; }
+  .profile-stats .profile-stat-label { font-size: 9px; }
+  .profile-stats .profile-stat-meter { gap: 5px; }
+}
