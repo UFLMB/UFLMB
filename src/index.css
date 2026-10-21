@@ -2929,3 +2929,16 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     max-height: 11px !important;
   }
 }
+
+/* Refined compact OVR corner badge: clear OVR / flag / position hierarchy. */
+.player-image > .ovr-badge { width:52px; min-width:52px; max-width:52px; padding:7px 5px; gap:4px; border-radius:9px; }
+.player-image > .ovr-badge > strong { font-size:21px; font-weight:700; letter-spacing:-1px; }
+.player-image > .ovr-badge > img.ovr-country-flag { width:24px !important; min-width:24px; max-width:24px !important; height:16px !important; min-height:16px; max-height:16px !important; border-radius:3px; }
+.player-image > .ovr-badge > .ovr-flag-fallback { height:16px; font-size:15px; line-height:16px; }
+.player-image > .ovr-badge > .ovr-position { font-size:10px; font-weight:600; letter-spacing:.2px; }
+@media (max-width:600px) {
+ .player-image > .ovr-badge { width:47px; min-width:47px; max-width:47px; padding:6px 4px; gap:4px; }
+ .player-image > .ovr-badge > strong { font-size:18px; }
+ .player-image > .ovr-badge > img.ovr-country-flag { width:22px !important; min-width:22px; max-width:22px !important; height:15px !important; min-height:15px; max-height:15px !important; }
+ .player-image > .ovr-badge > .ovr-position { font-size:9px; }
+}
