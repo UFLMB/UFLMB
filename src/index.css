@@ -3621,3 +3621,91 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="dark"] .topbar .top-actions,
 :root[data-ui-theme="dark"] .topbar .auth-account-wrap,
 :root[data-ui-theme="dark"] .topbar .public-theme-toggle{background:transparent!important;box-shadow:none!important}
+
+/* Theme correction: the sun is shown in the intended dark view; clicking it switches to light. */
+:root[data-ui-theme="dark"] .brand-word{color:#f5f7fb!important}
+:root[data-ui-theme="dark"] .brand-word span{color:#c5f467!important}
+:root[data-ui-theme="dark"] .brand-mark{background:#c5f467!important;color:#10140b!important}
+:root[data-ui-theme="light"] .brand-word{color:#18202b!important}
+:root[data-ui-theme="light"] .brand-word span{color:#527b13!important}
+:root[data-ui-theme="light"] .brand-mark{background:#a3e635!important;color:#18220c!important}
+
+/* Light mode must be light from the page canvas down to the card metrics and controls. */
+:root[data-ui-theme="light"] body,
+:root[data-ui-theme="light"] #root{background-color:#f4f6f8!important;color:#18202b!important}
+:root[data-ui-theme="light"] body{background-image:radial-gradient(ellipse at 50% -20%,rgba(163,230,53,.09),transparent 45%)!important}
+:root[data-ui-theme="light"] .app-shell,
+:root[data-ui-theme="light"] .admin-shell,
+:root[data-ui-theme="light"] .admin-workspace-shell,
+:root[data-ui-theme="light"] .gate-shell,
+:root[data-ui-theme="light"] .database-section,
+:root[data-ui-theme="light"] .hero,
+:root[data-ui-theme="light"] .admin-intro{color:#18202b!important;background-color:transparent!important}
+:root[data-ui-theme="light"] .player-card,
+:root[data-ui-theme="light"] .featured-player,
+:root[data-ui-theme="light"] .home-overview article,
+:root[data-ui-theme="light"] .compare-panel,
+:root[data-ui-theme="light"] .squad-panel,
+:root[data-ui-theme="light"] .filter-disclosure,
+:root[data-ui-theme="light"] .browse-controls,
+:root[data-ui-theme="light"] .squad-toolbar,
+:root[data-ui-theme="light"] .admin-panel,
+:root[data-ui-theme="light"] .analytics-panel,
+:root[data-ui-theme="light"] .shared-database-panel,
+:root[data-ui-theme="light"] .empty-state,
+:root[data-ui-theme="light"] .squad-empty,
+:root[data-ui-theme="light"] .quality-tile,
+:root[data-ui-theme="light"] .search-wrap,
+:root[data-ui-theme="light"] .branding-editor,
+:root[data-ui-theme="light"] .theme-live-preview{
+  color:#18202b!important;
+  background:#fff!important;
+  background-image:none!important;
+  border-color:rgba(24,32,43,.14)!important;
+  box-shadow:0 8px 24px rgba(24,32,43,.055)!important;
+}
+:root[data-ui-theme="light"] .player-image{
+  background:radial-gradient(ellipse at 50% 20%,rgba(163,230,53,.10),transparent 60%),#edf1f5!important;
+}
+:root[data-ui-theme="light"] .player-card-body,
+:root[data-ui-theme="light"] .player-title-copy,
+:root[data-ui-theme="light"] .stats-grid,
+:root[data-ui-theme="light"] .profile-stats,
+:root[data-ui-theme="light"] .comparison-table{color:#18202b!important;background:transparent!important}
+:root[data-ui-theme="light"] .stats-grid span,
+:root[data-ui-theme="light"] .snapshot-grid>div,
+:root[data-ui-theme="light"] .profile-meta>*,
+:root[data-ui-theme="light"] .squad-slot,
+:root[data-ui-theme="light"] .community-review-list article,
+:root[data-ui-theme="light"] .theme-controls label{
+  color:#263140!important;background:#f1f4f7!important;border-color:rgba(24,32,43,.12)!important;
+}
+:root[data-ui-theme="light"] .player-card h3,
+:root[data-ui-theme="light"] .player-card .stats-grid b,
+:root[data-ui-theme="light"] .featured-player *,
+:root[data-ui-theme="light"] .home-overview article strong,
+:root[data-ui-theme="light"] .section-heading h2,
+:root[data-ui-theme="light"] .page-title,
+:root[data-ui-theme="light"] .admin-panel h2,
+:root[data-ui-theme="light"] .analytics-panel h2,
+:root[data-ui-theme="light"] .comparison-table td,
+:root[data-ui-theme="light"] .squad-panel strong,
+:root[data-ui-theme="light"] .compare-panel strong{color:#18202b!important}
+:root[data-ui-theme="light"] .player-card .stats-grid small,
+:root[data-ui-theme="light"] .player-card-body>p,
+:root[data-ui-theme="light"] .muted-copy,
+:root[data-ui-theme="light"] .profile-stats span,
+:root[data-ui-theme="light"] .footer-muted{color:#647084!important}
+:root[data-ui-theme="light"] .search-wrap input{color:#18202b!important;background:transparent!important}
+:root[data-ui-theme="light"] .search-wrap input::placeholder{color:#7b8797!important}
+:root[data-ui-theme="light"] .ovr-badge{color:#365314!important;background:rgba(255,255,255,.97)!important}
+:root[data-ui-theme="light"] .position-badge{color:#263140!important;background:rgba(255,255,255,.97)!important}
+:root[data-ui-theme="light"] .topbar,
+:root[data-ui-theme="light"] .topbar .brand,
+:root[data-ui-theme="light"] .topbar .top-actions,
+:root[data-ui-theme="light"] .topbar .auth-account-wrap,
+:root[data-ui-theme="light"] .topbar .public-theme-toggle,
+:root[data-ui-theme="dark"] .topbar .brand,
+:root[data-ui-theme="dark"] .topbar .top-actions,
+:root[data-ui-theme="dark"] .topbar .auth-account-wrap,
+:root[data-ui-theme="dark"] .topbar .public-theme-toggle{background:transparent!important;box-shadow:none!important}
