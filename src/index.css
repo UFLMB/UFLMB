@@ -3097,3 +3097,58 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 /* Clear, low-cost selected-card state: static lime border and restrained glow. */
 .player-card:has(.compare-toggle.selected){border:2px solid var(--accent,#c5f467)!important;box-shadow:0 0 0 1px rgba(197,244,103,.28),0 0 12px rgba(197,244,103,.2)!important}
 .player-card:has(.compare-toggle.selected) .compare-toggle.selected{border:1px solid var(--accent,#c5f467)!important;background:rgba(197,244,103,.18)!important;color:var(--accent,#c5f467)!important}
+
+/* Final player-card polish: floating actions, compact title, uniform stats, clear selection. */
+/* Keep the hit targets, but remove every visible surface behind the top-right icons. */
+.player-card .card-quick-actions .bookmark-toggle,
+.player-card .card-quick-actions .compare-toggle{
+  width:32px!important;height:32px!important;min-height:32px!important;
+  padding:0!important;margin:0!important;
+  border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  color:#f3f5f8!important;
+  text-shadow:0 2px 6px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.6)!important;
+  transition:color .15s ease,transform .15s ease!important;
+}
+.player-card .card-quick-actions .bookmark-toggle.saved,
+.player-card .card-quick-actions .compare-toggle.selected{
+  border:0!important;background:transparent!important;
+  color:var(--accent,#c5f467)!important;box-shadow:none!important;
+  text-shadow:0 0 8px rgba(197,244,103,.45),0 2px 6px rgba(0,0,0,.95)!important;
+}
+.player-card .card-quick-actions button:hover{transform:scale(1.08)!important}
+
+/* The flag is already in the card artwork, so remove the redundant nationality line. */
+.player-card .player-title-copy p{display:none!important}
+.player-card .player-card-body .player-title-row{margin-bottom:4px!important}
+.player-card .player-card-body .stats-grid{margin-top:0!important}
+
+/* All six stat tiles share one dark surface and border; no highlighted first two tiles. */
+.player-card .stats-grid span,
+.player-card:hover .stats-grid span{
+  border:1px solid rgba(255,255,255,.075)!important;
+  background:rgba(255,255,255,.035)!important;
+  box-shadow:none!important;
+}
+.player-card .stats-grid b,
+.player-card.elite-card .stats-grid span:first-child b,
+.player-card.elite-card .stats-grid span:nth-child(2) b{
+  color:#eef2f7!important;
+}
+
+/* High-contrast selected comparison state; static CSS only, no continuous animation. */
+.player-card:has(.compare-toggle.selected){
+  border:3px solid var(--accent,#c5f467)!important;
+  box-shadow:0 0 0 1px rgba(197,244,103,.55),0 0 16px rgba(197,244,103,.34),0 0 28px rgba(197,244,103,.16)!important;
+}
+.player-card:has(.compare-toggle.selected) .compare-toggle.selected{
+  color:var(--accent,#c5f467)!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+}
+@media(max-width:600px){
+  .player-card:has(.compare-toggle.selected){
+    border-width:3px!important;
+    box-shadow:0 0 0 1px rgba(197,244,103,.6),0 0 14px rgba(197,244,103,.38),0 0 22px rgba(197,244,103,.2)!important;
+  }
+}
