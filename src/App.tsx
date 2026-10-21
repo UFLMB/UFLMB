@@ -341,9 +341,13 @@ export default function App() {
   }, [siteBranding, siteTheme, isAdminSession, sharedBrandingLoaded])
 
   useEffect(() => {
-    try { saveCards(allCards) } catch {
-      setNotice('Saving failed. The image may be too large; try a smaller image or use an image URL.')
-    }
+    // Batch rapid state changes so imports/cloud loads do not repeatedly serialize a large collection.
+    const timer = window.setTimeout(() => {
+      try { saveCards(allCards) } catch {
+        setNotice('Saving failed. The image may be too large; try a smaller image or use an image URL.')
+      }
+    }, 350)
+    return () => window.clearTimeout(timer)
   }, [allCards])
 
   // Public reads must preserve the full cloud record, not just the legacy card fields.
@@ -403,10 +407,13 @@ export default function App() {
   const cardTypes = useMemo(() => Array.from(new Set(allCards.map(card => card.cardName).filter((value): value is string => Boolean(value?.trim())))).sort((a, b) => a.localeCompare(b)), [allCards])
   const events = useMemo(() => Array.from(new Set(allCards.map(card => card.event).filter((value): value is string => Boolean(value?.trim())))).sort((a, b) => a.localeCompare(b)), [allCards])
 
+  const searchIndex = useMemo(() => new Map(allCards.map(card => [card.id,
+    [card.playerName, card.nation, card.club, card.cardName, card.event, card.positionCategory, card.foot, card.sourceImagePath, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)]), ...Object.entries(card.sourceData ?? {}).flatMap(([key, value]) => [key, value])]
+      .filter(Boolean).join(' ').toLowerCase(),
+  ] as const)), [allCards])
+
   const visibleCards = useMemo(() => allCards.filter(card => {
-    // Search both the normalized fields and every original CSV field so less-common metadata remains discoverable.
-    const text = [card.playerName, card.nation, card.club, card.cardName, card.event, card.positionCategory, card.foot, card.sourceImagePath, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)]), ...Object.entries(card.sourceData ?? {}).flatMap(([key, value]) => [key, value])].filter(Boolean).join(' ').toLowerCase()
-    return text.includes(query.toLowerCase()) &&
+    return (searchIndex.get(card.id) ?? '').includes(query.toLowerCase()) &&
       (category === 'All cards' || positionGroup(card.positions) === category) &&
       (nationFilter === 'All nations' || card.nation === nationFilter) &&
       (positionFilter === 'All positions' || card.positions.includes(positionFilter)) &&
@@ -420,7 +427,7 @@ export default function App() {
   }).sort((a, b) => sortBy === 'ovr-desc' ? b.overallRating - a.overallRating || a.playerName.localeCompare(b.playerName) :
     sortBy === 'ovr-asc' ? a.overallRating - b.overallRating || a.playerName.localeCompare(b.playerName) :
       sortBy === 'verified-desc' ? (b.verifiedAt || '').localeCompare(a.verifiedAt || '') || a.playerName.localeCompare(b.playerName) :
-        a.playerName.localeCompare(b.playerName)), [allCards, query, category, nationFilter, positionFilter, cardTypeFilter, eventFilter, sourceFilter, sortBy, minOvr, maxOvr, statFilter, minStat, maxStat, showBookmarked, bookmarkedIds])
+        a.playerName.localeCompare(b.playerName)), [allCards, searchIndex, query, category, nationFilter, positionFilter, cardTypeFilter, eventFilter, sourceFilter, sortBy, minOvr, maxOvr, statFilter, minStat, maxStat, showBookmarked, bookmarkedIds])
 
   const comparedCards = useMemo(() => compareIds.map(id => allCards.find(card => card.id === id)).filter((card): card is PlayerCard => Boolean(card)), [allCards, compareIds])
   const pagedCards = useMemo(() => visibleCards.slice(0, cardPage * 24), [visibleCards, cardPage])
