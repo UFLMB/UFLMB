@@ -3709,3 +3709,360 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="dark"] .topbar .top-actions,
 :root[data-ui-theme="dark"] .topbar .auth-account-wrap,
 :root[data-ui-theme="dark"] .topbar .public-theme-toggle{background:transparent!important;box-shadow:none!important}
+
+
+/* Complete light-theme pass: every application surface, overlay, form, table and admin control. */
+:root[data-ui-theme="light"]{
+  color-scheme:light;
+  --page-bg:#f4f6f8;
+  --panel-bg:#ffffff;
+  --text-color:#18202b;
+  --muted:#647084;
+  --line:rgba(24,32,43,.13);
+  --surface-1:#ffffff;
+  --surface-2:#f7f9fb;
+  --surface-3:#edf1f5;
+  --surface-light:#ffffff;
+  --accent-soft:rgba(163,230,53,.14);
+  --accent-border:rgba(101,133,42,.32);
+  --arena-surface:linear-gradient(145deg,#ffffff 0%,#f6f8fb 100%);
+  --arena-border:rgba(24,32,43,.14);
+}
+:root[data-ui-theme="light"] body,
+:root[data-ui-theme="light"] #root,
+:root[data-ui-theme="light"] .gate-page{
+  color:#18202b!important;
+  background:#f4f6f8!important;
+  background-image:radial-gradient(ellipse at 50% -20%,rgba(163,230,53,.10),transparent 45%)!important;
+}
+:root[data-ui-theme="light"] .app-shell,
+:root[data-ui-theme="light"] .admin-shell,
+:root[data-ui-theme="light"] .admin-workspace-shell,
+:root[data-ui-theme="light"] .gate-shell,
+:root[data-ui-theme="light"] main,
+:root[data-ui-theme="light"] section,
+:root[data-ui-theme="light"] .database-section,
+:root[data-ui-theme="light"] .analytics-section,
+:root[data-ui-theme="light"] .compare-section,
+:root[data-ui-theme="light"] .home-page,
+:root[data-ui-theme="light"] .admin-workspace{
+  color:#18202b!important;
+  background-color:transparent!important;
+  background-image:none!important;
+}
+:root[data-ui-theme="light"] .topbar,
+:root[data-ui-theme="light"] .footer,
+:root[data-ui-theme="light"] .database-section,
+:root[data-ui-theme="light"] .analytics-section,
+:root[data-ui-theme="light"] .compare-section{
+  border-color:rgba(24,32,43,.13)!important;
+  color:#344054!important;
+}
+:root[data-ui-theme="light"] .hero,
+:root[data-ui-theme="light"] .admin-intro,
+:root[data-ui-theme="light"] .home-hero,
+:root[data-ui-theme="light"] .home-featured,
+:root[data-ui-theme="light"] .featured-list,
+:root[data-ui-theme="light"] .gate-page .gate-error,
+:root[data-ui-theme="light"] .gate-error-meta,
+:root[data-ui-theme="light"] .gate-error-meta>div,
+:root[data-ui-theme="light"] .gate-diagnostic,
+:root[data-ui-theme="light"] .gate-diagnostic-grid,
+:root[data-ui-theme="light"] .gate-lattice-wrap,
+:root[data-ui-theme="light"] .admin-empty-state,
+:root[data-ui-theme="light"] .admin-panel,
+:root[data-ui-theme="light"] .analytics-panel,
+:root[data-ui-theme="light"] .shared-database-panel,
+:root[data-ui-theme="light"] .branding-editor,
+:root[data-ui-theme="light"] .theme-live-preview,
+:root[data-ui-theme="light"] .search-wrap,
+:root[data-ui-theme="light"] .browse-controls,
+:root[data-ui-theme="light"] .squad-toolbar,
+:root[data-ui-theme="light"] .filter-disclosure,
+:root[data-ui-theme="light"] .compare-panel,
+:root[data-ui-theme="light"] .squad-panel,
+:root[data-ui-theme="light"] .squad-empty,
+:root[data-ui-theme="light"] .empty-state,
+:root[data-ui-theme="light"] .quality-tile,
+:root[data-ui-theme="light"] .player-card,
+:root[data-ui-theme="light"] .featured-player,
+:root[data-ui-theme="light"] .home-overview article,
+:root[data-ui-theme="light"] .profile-modal,
+:root[data-ui-theme="light"] .auth-modal,
+:root[data-ui-theme="light"] .account-dropdown{
+  color:#18202b!important;
+  background:#ffffff!important;
+  background-image:none!important;
+  border-color:rgba(24,32,43,.14)!important;
+  box-shadow:0 8px 24px rgba(24,32,43,.055)!important;
+}
+:root[data-ui-theme="light"] .home-hero{
+  background:radial-gradient(ellipse at 80% 10%,rgba(163,230,53,.12),transparent 42%),linear-gradient(135deg,#ffffff,#f1f5f9)!important;
+}
+:root[data-ui-theme="light"] .player-image{
+  background:radial-gradient(ellipse at 50% 20%,rgba(163,230,53,.10),transparent 60%),#edf1f5!important;
+  border-color:rgba(24,32,43,.10)!important;
+}
+:root[data-ui-theme="light"] .player-image:after,
+:root[data-ui-theme="light"] .player-card:after,
+:root[data-ui-theme="light"] .home-hero:before,
+:root[data-ui-theme="light"] .admin-tab:before{
+  background:none!important;
+  box-shadow:none!important;
+}
+:root[data-ui-theme="light"] .player-card:before{
+  background:linear-gradient(90deg,transparent,rgba(101,133,42,.3),transparent)!important;
+}
+:root[data-ui-theme="light"] .player-card h3,
+:root[data-ui-theme="light"] .player-card .stats-grid b,
+:root[data-ui-theme="light"] .featured-player *,
+:root[data-ui-theme="light"] .home-overview article strong,
+:root[data-ui-theme="light"] .section-heading,
+:root[data-ui-theme="light"] .section-heading h2,
+:root[data-ui-theme="light"] .page-title,
+:root[data-ui-theme="light"] h1,
+:root[data-ui-theme="light"] h2,
+:root[data-ui-theme="light"] h3,
+:root[data-ui-theme="light"] h4,
+:root[data-ui-theme="light"] .admin-panel h2,
+:root[data-ui-theme="light"] .analytics-panel h2,
+:root[data-ui-theme="light"] .profile-stats strong,
+:root[data-ui-theme="light"] .comparison-table td,
+:root[data-ui-theme="light"] .squad-panel strong,
+:root[data-ui-theme="light"] .compare-panel strong,
+:root[data-ui-theme="light"] .record-info strong,
+:root[data-ui-theme="light"] .gate-page h1,
+:root[data-ui-theme="light"] .gate-error-message,
+:root[data-ui-theme="light"] .gate-error-meta strong{
+  color:#18202b!important;
+}
+:root[data-ui-theme="light"] .hero-copy,
+:root[data-ui-theme="light"] .muted-copy,
+:root[data-ui-theme="light"] .player-card .stats-grid small,
+:root[data-ui-theme="light"] .player-card-body>p,
+:root[data-ui-theme="light"] .footer-muted,
+:root[data-ui-theme="light"] .profile-stats span,
+:root[data-ui-theme="light"] .home-overview article>span,
+:root[data-ui-theme="light"] .home-overview article small,
+:root[data-ui-theme="light"] .featured-name,
+:root[data-ui-theme="light"] .field-help,
+:root[data-ui-theme="light"] .record-info span,
+:root[data-ui-theme="light"] .record-info small,
+:root[data-ui-theme="light"] .account-menu-label,
+:root[data-ui-theme="light"] .gate-error-heading,
+:root[data-ui-theme="light"] .gate-error-detail,
+:root[data-ui-theme="light"] .gate-error-meta span,
+:root[data-ui-theme="light"] .gate-lattice-readout,
+:root[data-ui-theme="light"] .gate-lattice-footer,
+:root[data-ui-theme="light"] .gate-error-foot,
+:root[data-ui-theme="light"] .gate-error-footer{
+  color:#647084!important;
+}
+:root[data-ui-theme="light"] .eyebrow,
+:root[data-ui-theme="light"] h1 span,
+:root[data-ui-theme="light"] .source-link,
+:root[data-ui-theme="light"] .search-icon,
+:root[data-ui-theme="light"] .admin-link,
+:root[data-ui-theme="light"] .back-link{
+  color:#527b13!important;
+}
+:root[data-ui-theme="light"] .status-pill,
+:root[data-ui-theme="light"] .count-label,
+:root[data-ui-theme="light"] .stats-grid span,
+:root[data-ui-theme="light"] .snapshot-grid>div,
+:root[data-ui-theme="light"] .profile-meta>*,
+:root[data-ui-theme="light"] .squad-slot,
+:root[data-ui-theme="light"] .community-review-list article,
+:root[data-ui-theme="light"] .shared-database-panel .field-help[role="status"],
+:root[data-ui-theme="light"] .theme-controls label,
+:root[data-ui-theme="light"] .profile-stat-group,
+:root[data-ui-theme="light"] .profile-stat-group-header,
+:root[data-ui-theme="light"] .record-row:hover,
+:root[data-ui-theme="light"] .community-review-list article:hover,
+:root[data-ui-theme="light"] .comparison-table tbody tr:hover{
+  color:#344054!important;
+  background:#f1f4f7!important;
+  border-color:rgba(24,32,43,.12)!important;
+}
+:root[data-ui-theme="light"] .profile-stat-group,
+:root[data-ui-theme="light"] .profile-stat-group-header{
+  background:#f7f9fb!important;
+}
+:root[data-ui-theme="light"] .comparison-table,
+:root[data-ui-theme="light"] .comparison-table tbody,
+:root[data-ui-theme="light"] .comparison-table tr,
+:root[data-ui-theme="light"] .comparison-table td,
+:root[data-ui-theme="light"] .comparison-table th{
+  color:#344054!important;
+  border-color:rgba(24,32,43,.12)!important;
+  background-color:#ffffff!important;
+}
+:root[data-ui-theme="light"] .comparison-table thead th{
+  color:#365314!important;
+  background:#edf4e2!important;
+}
+:root[data-ui-theme="light"] .comparison-table tbody th{
+  color:#596579!important;
+  background:#f7f9fb!important;
+}
+:root[data-ui-theme="light"] .category,
+:root[data-ui-theme="light"] .admin-tab,
+:root[data-ui-theme="light"] .theme-mode-button,
+:root[data-ui-theme="light"] .auth-close,
+:root[data-ui-theme="light"] .auth-mode-switch,
+:root[data-ui-theme="light"] .auth-mode-switch button:not(.active),
+:root[data-ui-theme="light"] .account-menu-item,
+:root[data-ui-theme="light"] .site-nav a{
+  color:#344054!important;
+  background:#f7f9fb!important;
+  border-color:rgba(24,32,43,.13)!important;
+}
+:root[data-ui-theme="light"] .category.active,
+:root[data-ui-theme="light"] .admin-tab.active,
+:root[data-ui-theme="light"] .theme-mode-button.active,
+:root[data-ui-theme="light"] .auth-mode-switch button.active{
+  color:#263b12!important;
+  background:rgba(163,230,53,.19)!important;
+  border-color:rgba(101,133,42,.42)!important;
+}
+:root[data-ui-theme="light"] .category:hover,
+:root[data-ui-theme="light"] .admin-tab:hover,
+:root[data-ui-theme="light"] .site-nav a:hover,
+:root[data-ui-theme="light"] .site-nav a:focus-visible,
+:root[data-ui-theme="light"] .account-menu-item:hover{
+  color:#18202b!important;
+  background:#edf3e4!important;
+}
+:root[data-ui-theme="light"] .button.secondary,
+:root[data-ui-theme="light"] .compare-toggle,
+:root[data-ui-theme="light"] .squad-slot button{
+  color:#344054!important;
+  background:#edf1f5!important;
+  border-color:rgba(24,32,43,.15)!important;
+}
+:root[data-ui-theme="light"] .button.primary,
+:root[data-ui-theme="light"] .auth-submit{
+  color:#18220c!important;
+  background:linear-gradient(135deg,#d9ff88 0%,#a3e635 100%)!important;
+  border-color:#a3e635!important;
+}
+:root[data-ui-theme="light"] .button.danger,
+:root[data-ui-theme="light"] .danger{
+  color:#a32323!important;
+  background:#fff0f0!important;
+  border-color:#f2b8b8!important;
+}
+:root[data-ui-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+:root[data-ui-theme="light"] select,
+:root[data-ui-theme="light"] textarea,
+:root[data-ui-theme="light"] .card-form input,
+:root[data-ui-theme="light"] .card-form textarea,
+:root[data-ui-theme="light"] .tools-panel input,
+:root[data-ui-theme="light"] .tools-panel select,
+:root[data-ui-theme="light"] .tools-panel textarea,
+:root[data-ui-theme="light"] .admin-search,
+:root[data-ui-theme="light"] .community-review-form input,
+:root[data-ui-theme="light"] .community-review-form select,
+:root[data-ui-theme="light"] .community-review-form textarea,
+:root[data-ui-theme="light"] .auth-form input,
+:root[data-ui-theme="light"] .squad-slot select,
+:root[data-ui-theme="light"] .ovr-range input{
+  color:#18202b!important;
+  background:#ffffff!important;
+  border-color:rgba(24,32,43,.18)!important;
+  box-shadow:none!important;
+}
+:root[data-ui-theme="light"] input::placeholder,
+:root[data-ui-theme="light"] textarea::placeholder{
+  color:#7b8797!important;
+}
+:root[data-ui-theme="light"] .card-form label,
+:root[data-ui-theme="light"] .tools-panel label,
+:root[data-ui-theme="light"] .community-review-form label,
+:root[data-ui-theme="light"] .auth-form label{
+  color:#344054!important;
+}
+:root[data-ui-theme="light"] .card-form input[type="file"]::file-selector-button{
+  color:#344054!important;
+  background:#edf1f5!important;
+}
+:root[data-ui-theme="light"] .image-preview img,
+:root[data-ui-theme="light"] .record-thumb,
+:root[data-ui-theme="light"] .profile-heading>img,
+:root[data-ui-theme="light"] .profile-placeholder,
+:root[data-ui-theme="light"] .leader-list img,
+:root[data-ui-theme="light"] .leader-avatar{
+  background:#edf1f5!important;
+  border-color:rgba(24,32,43,.14)!important;
+}
+:root[data-ui-theme="light"] .notice{
+  color:#365314!important;
+  background:#f1f8e7!important;
+  border-color:#d4e8b4!important;
+}
+:root[data-ui-theme="light"] .notice.warning,
+:root[data-ui-theme="light"] .demo-warning{
+  color:#854d0e!important;
+  background:#fff7e6!important;
+  border-color:#f2d49b!important;
+}
+:root[data-ui-theme="light"] .demo-warning span{color:#854d0e!important}
+:root[data-ui-theme="light"] .account-menu-label{color:#647084!important}
+:root[data-ui-theme="light"] .account-menu-divider{background:rgba(24,32,43,.12)!important}
+:root[data-ui-theme="light"] .account-menu-item.logout-item{color:#b42323!important}
+:root[data-ui-theme="light"] .auth-message,
+:root[data-ui-theme="light"] .auth-session-note{color:#365314!important}
+:root[data-ui-theme="light"] .auth-backdrop{background:rgba(24,32,43,.42)!important}
+:root[data-ui-theme="light"] .quiet-access{
+  color:#527b13!important;
+  background:rgba(255,255,255,.92)!important;
+  border-color:rgba(101,133,42,.28)!important;
+  box-shadow:0 5px 18px rgba(24,32,43,.12)!important;
+}
+:root[data-ui-theme="light"] .gate-page h1 span,
+:root[data-ui-theme="light"] .gate-error-symbol,
+:root[data-ui-theme="light"] .gate-error-heading b{color:#527b13!important}
+:root[data-ui-theme="light"] .gate-error-meta,
+:root[data-ui-theme="light"] .gate-error-meta>div,
+:root[data-ui-theme="light"] .gate-error-foot,
+:root[data-ui-theme="light"] .gate-error-footer{border-color:rgba(24,32,43,.13)!important}
+:root[data-ui-theme="light"] .diagnostic-cell,
+:root[data-ui-theme="light"] .lattice-cell{
+  color:#344054!important;
+  background:#edf1f5!important;
+  border-color:#d5dce5!important;
+}
+:root[data-ui-theme="light"] .diagnostic-cell-active,
+:root[data-ui-theme="light"] .lattice-cell-on{
+  color:#18220c!important;
+  background:#a3e635!important;
+  border-color:#a3e635!important;
+}
+:root[data-ui-theme="light"] .ovr-badge,
+:root[data-ui-theme="light"] .position-badge{
+  color:#263140!important;
+  background:rgba(255,255,255,.97)!important;
+  border-color:rgba(24,32,43,.16)!important;
+}
+:root[data-ui-theme="light"] .ovr-badge{color:#365314!important}
+:root[data-ui-theme="light"] .elite-card .ovr-badge{
+  color:#365314!important;
+  background:#f1f8e7!important;
+  border-color:#c5e39a!important;
+}
+:root[data-ui-theme="light"] .event-ribbon{
+  color:#365314!important;
+  background:linear-gradient(90deg,rgba(163,230,53,.24),rgba(255,255,255,.88))!important;
+}
+:root[data-ui-theme="light"] .event-ribbon span{color:#365314!important}
+:root[data-ui-theme="light"] .perk-row span{
+  color:#4b5563!important;
+  border-color:rgba(24,32,43,.14)!important;
+  background:#f7f9fb!important;
+}
+:root[data-ui-theme="light"] .card-type{
+  color:#365314!important;
+  background:rgba(163,230,53,.16)!important;
+}
+:root[data-ui-theme="light"] .profile-stats i{background:rgba(24,32,43,.12)!important}
+:root[data-ui-theme="light"] ::selection{background:rgba(163,230,53,.35)!important;color:#18202b!important}
