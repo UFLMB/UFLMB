@@ -11,7 +11,7 @@ const STORAGE_KEY = 'uflmb.cards.v1'
 const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
 const DRIVE_API_KEY = 'uflmb.google.apiKey'
 const THEME_KEY = 'uflmb.site-theme.v1'
-const THEME_MODE_KEY = 'uflmb.ui-theme-mode.v2'
+const THEME_MODE_KEY = 'uflmb.ui-theme-mode.v3'
 type ThemeMode = 'dark' | 'light' | 'system'
 const loadThemeMode = (): ThemeMode => {
   try { const value = localStorage.getItem(THEME_MODE_KEY); return value === 'dark' || value === 'light' || value === 'system' ? value : 'dark' } catch { return 'dark' }
