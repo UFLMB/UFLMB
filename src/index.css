@@ -2507,3 +2507,30 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .profile-stat-group-details .profile-stat-detail { grid-template-columns: minmax(0, 38%) minmax(0, 1fr); gap: 6px; }
   .profile-stat-group-details .profile-stat-label { font-size: 10px; }
 }
+
+
+/* Restore lime progress fills in the grouped profile-stat layout and reinforce value hierarchy. */
+.profile-stat-group-score i b,
+.profile-stat-group-details .profile-stat-meter i b {
+  display: block;
+  height: 100%;
+  max-width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #83b83d 0%, var(--accent, #c5f467) 100%);
+  box-shadow: 0 0 8px rgba(197,244,103,.18);
+  transition: width .24s ease-out;
+}
+.profile-stat-group-score strong {
+  color: var(--accent, #c5f467) !important;
+  font-size: 15px;
+  font-weight: 800;
+  text-shadow: 0 0 12px rgba(197,244,103,.18);
+}
+.profile-stat-group-details .profile-stat-meter strong {
+  color: #c0c8d4;
+  font-weight: 600;
+  text-shadow: none;
+}
+@media (max-width: 560px) {
+  .profile-stat-group-score strong { font-size: 14px; }
+}
