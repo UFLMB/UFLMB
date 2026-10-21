@@ -438,11 +438,14 @@ export default function App() {
 
   const toggleBookmark = (id: string) => setBookmarkedIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id])
 
-  const toggleCompare = (id: string) => setCompareIds(current => {
+  const toggleCompare = (id: string) => {
+    setShowCompare(true)
+    setCompareIds(current => {
     if (current.includes(id)) return current.filter(value => value !== id)
     if (current.length >= 3) { setNotice('Compare up to three cards at once. Remove one selection first.'); return current }
     return [...current, id]
-  })
+    })
+  }
   const exportVisibleCsv = () => downloadCsv(visibleCards)
 
   const autoFillSquad = () => {
@@ -1408,7 +1411,7 @@ export default function App() {
           </article>)}</div>}
         {visibleCards.length > pagedCards.length && <div className="load-more-wrap"><p>Showing {pagedCards.length} of {visibleCards.length} matching cards</p><button type="button" className="button primary" onClick={() => setCardPage(value => value + 1)}>Load 24 more cards</button></div>}
       </section>}
-      {page === 'compare' && <section className="compare-section" aria-labelledby="compare-title"><div className="section-heading"><div><p className="eyebrow">SIDE-BY-SIDE ANALYSIS</p><h2 id="compare-title">Compare cards ({compareIds.length}/3)</h2></div><div className="form-actions"><button className="button secondary" type="button" onClick={() => setShowCompare(value => !value)}>{showCompare ? 'Hide comparison' : 'Show comparison'}</button><button className="button secondary" type="button" onClick={() => { setCompareIds([]); setShowCompare(false) }}>Clear selection</button></div></div>
+      {page === 'compare' && <section className="compare-section" aria-labelledby="compare-title">{compareIds.length === 0 && <div className="empty-state compare-empty"><div className="empty-emblem" aria-hidden="true">⇄</div><h3>Build your comparison</h3><p>Open Players, select up to three cards with the Compare checkbox, then return here to compare their ratings and attributes.</p><button type="button" className="button primary" onClick={() => setPage('players')}>Browse players</button></div>}<div className="section-heading"><div><p className="eyebrow">SIDE-BY-SIDE ANALYSIS</p><h2 id="compare-title">Compare cards ({compareIds.length}/3)</h2></div><div className="form-actions"><button className="button secondary" type="button" onClick={() => setShowCompare(value => !value)}>{showCompare ? 'Hide comparison' : 'Show comparison'}</button><button className="button secondary" type="button" onClick={() => { setCompareIds([]); setShowCompare(false) }}>Clear selection</button></div></div>
         <div className="compare-chips">{comparedCards.map(card => <span className="compare-chip" key={card.id}>{card.playerName} · {card.overallRating}<button type="button" onClick={() => toggleCompare(card.id)} aria-label={`Remove ${card.playerName} from comparison`}>×</button></span>)}</div>
         {showCompare && <div className="comparison-table-wrap"><table className="comparison-table"><thead><tr><th>Attribute</th>{comparedCards.map(card => <th key={card.id}>{card.playerName}</th>)}</tr></thead><tbody>{[['OVR','overallRating'],['Position','positions'],['Nation','nation'],['Club','club'],['Card type','cardName'],...Array.from(new Set(comparedCards.flatMap(card => Object.keys(card.stats ?? {}))).values()).sort().map(key => [key, `stat:${key}`])].map(([label,key]) => <tr key={key}><th>{label}</th>{comparedCards.map(card => { const value = key === 'overallRating' ? card.overallRating : key === 'positions' ? card.positions.join(' / ') : key.startsWith('stat:') ? card.stats?.[key.slice(5)] ?? '—' : card[key as 'nation' | 'club' | 'cardName'] ?? '—'; return <td key={card.id}>{value}</td> })}</tr>)}</tbody></table></div>}
       </section>}
