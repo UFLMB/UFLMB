@@ -235,7 +235,7 @@ export default function App() {
   const [adminDashboardOpen, setAdminDashboardOpen] = useState(false)
   useEffect(() => { if (!isAdminSession) setAdminDashboardOpen(false) }, [isAdminSession])
   const [themeMode, setThemeMode] = useState<ThemeMode>(loadThemeMode)
-  const [account, setAccount = useState<{ userId: string; username: string; accessToken: string } | null>(null)
+  const [account, setAccount] = useState<{ userId: string; username: string; accessToken: string } | null>(null)
   const cloudReadyFor = useRef<string | null>(null)
   const [category, setCategory] = useState<Category>('All cards')
   const [nationFilter, setNationFilter] = useState('All nations')
