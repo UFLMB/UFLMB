@@ -2171,7 +2171,10 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     border-radius: 11px;
     background: transparent;
     color: #9da7b6;
-    font: 600 10px/1.15 inherit;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.15;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
