@@ -3169,3 +3169,17 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   margin:0!important;
   padding:0!important;
 }
+
+
+/* Signed-in account chip: compact, accessible profile identity in the top bar. */
+.auth-trigger.account-trigger{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-height:40px;max-width:min(230px,45vw);padding:8px 12px;
+  border:1px solid rgba(197,244,103,.34);border-radius:12px;
+  background:linear-gradient(135deg,rgba(197,244,103,.11),rgba(255,255,255,.025));
+  color:#f3f5f8;font-size:12px;font-weight:700;white-space:nowrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+}
+.auth-trigger.account-trigger .auth-trigger-icon{width:19px;height:19px;flex:0 0 19px;stroke:none}
+.auth-trigger.account-trigger span{overflow:hidden;text-overflow:ellipsis;max-width:175px}
+.auth-trigger.account-trigger:hover{border-color:rgba(197,244,103,.7);background:rgba(197,244,103,.12)}
