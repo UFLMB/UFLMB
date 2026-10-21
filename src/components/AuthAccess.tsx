@@ -354,6 +354,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
     : mode === 'signup' ? 'Create a community account to get started.'
     : mode === 'recovery' ? 'We’ll email you a secure link to reset your password.'
     : 'Set a new password to secure your account.'
+  const currentlyDark = themeMode === 'dark' || (themeMode === 'system' && (typeof window === 'undefined' || !window.matchMedia('(prefers-color-scheme: light)').matches))
 
   return (
     <>
@@ -368,6 +369,11 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
           <span>{session ? isAdmin ? 'ADMIN' : sessionUsername || 'Account' : 'Sign In/Up'}</span>
           {session && <svg className={accountMenuOpen ? 'account-chevron is-open' : 'account-chevron'} viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>}
         </button>
+        {!session && <button className="public-theme-toggle" type="button" aria-label={currentlyDark ? 'Switch to light theme' : 'Switch to dark theme'} title={currentlyDark ? 'Light theme' : 'Dark theme'} onClick={() => onThemeModeChange(currentlyDark ? 'light' : 'dark')}>
+          {currentlyDark
+            ? <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="1.8"/><path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6m11 11 1.6 1.6M2 12h2.2m15.6 0H22M4.9 19.1l1.6-1.6m11-11 1.6-1.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+            : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.6 8.6 0 1 0 20.2 15.1Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+        </button>}
         {session && <div className={accountMenuOpen ? 'account-dropdown is-open' : 'account-dropdown'} role="menu" aria-label="Account menu" hidden={!accountMenuOpen}>
           <div className="account-menu-label">APPEARANCE</div>
           <div className="theme-mode-options" role="group" aria-label="Theme mode">
