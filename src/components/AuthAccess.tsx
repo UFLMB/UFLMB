@@ -335,7 +335,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange }: 
 
   return (
     <>
-      <button className={session ? 'auth-trigger account-trigger' : 'button primary auth-trigger'} type="button" onClick={() => { setOpen(!open); setMessage('') }}>
+      <button className={session ? 'auth-trigger account-trigger' : 'button primary auth-trigger'} type="button" onClick={() => { if (isAdmin) void signOut(); else { setOpen(!open); setMessage('') } }}>
         <svg className="auth-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4" fill="currentColor" stroke="none" /><path d="M4 21v-2.2a8 8 0 0 1 16 0V21z" fill="currentColor" stroke="none" /></svg>
         <span>{session ? sessionUsername || 'Account' : 'Sign In/Up'}</span>
       </button>
