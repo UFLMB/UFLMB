@@ -3181,3 +3181,35 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   margin:0!important;
   padding:0!important;
 }
+
+
+/* Compare membership is the only source of the strong card border/glow. */
+.player-card.card-selected{border-color:var(--line,rgba(255,255,255,.1))!important;box-shadow:none!important}
+
+/* Raise floating action icons to the top edge, side-by-side, with distinct mobile-safe hit targets. */
+.player-card .card-quick-actions{
+  top:3px!important;
+  right:3px!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:flex-start!important;
+  justify-content:flex-end!important;
+  gap:5px!important;
+}
+.player-card .card-quick-actions .bookmark-toggle,
+.player-card .card-quick-actions .compare-toggle{
+  width:29px!important;
+  min-width:29px!important;
+  height:29px!important;
+  min-height:29px!important;
+  flex:0 0 29px!important;
+  margin:0!important;
+  padding:0!important;
+}
+@media(max-width:600px){
+  .player-card .card-quick-actions{top:3px!important;right:3px!important;gap:5px!important}
+  .player-card .card-quick-actions .bookmark-toggle,
+  .player-card .card-quick-actions .compare-toggle{
+    width:29px!important;min-width:29px!important;height:29px!important;min-height:29px!important;flex-basis:29px!important;
+  }
+}
