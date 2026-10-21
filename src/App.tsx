@@ -1246,6 +1246,11 @@ export default function App() {
       <div className="admin-backup-action">
         <button className="button secondary" type="button" onClick={saveEverything} title="Save all browser data and download a JSON backup" aria-label="Save everything and download backup"><span aria-hidden="true">⇩</span> Save &amp; backup</button>
       </div>
+      <nav className="mobile-bottom-nav" aria-label="Primary navigation">
+        <button type="button" className={page === 'home' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={page === 'home' ? 'page' : undefined} onClick={() => { setPage('home'); window.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">⌂</span><span>Home</span></button>
+        <button type="button" className={page === 'players' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={page === 'players' ? 'page' : undefined} onClick={() => { setPage('players'); window.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">▦</span><span>Players</span><small>{allCards.length}</small></button>
+        <button type="button" className={page === 'compare' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={page === 'compare' ? 'page' : undefined} onClick={() => { setPage('compare'); window.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">⇄</span><span>Compare</span>{compareIds.length > 0 && <small>{compareIds.length}</small>}</button>
+      </nav>
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href="/UFLMB/">Back to home</a></footer>
     </main>
   )
