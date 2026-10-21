@@ -2942,3 +2942,92 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
  .player-image > .ovr-badge > img.ovr-country-flag { width:22px !important; min-width:22px; max-width:22px !important; height:15px !important; min-height:15px; max-height:15px !important; }
  .player-image > .ovr-badge > .ovr-position { font-size:9px; }
 }
+
+
+/* Final mobile navigation and compact OVR badge alignment fixes. */
+@media (max-width: 760px) {
+  .mobile-bottom-nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 3px !important;
+    padding: 6px !important;
+    align-items: stretch;
+  }
+  .mobile-nav-item {
+    min-width: 0;
+    width: 100%;
+    padding: 5px 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    gap: 4px;
+    font-size: clamp(8px, 2.5vw, 10px);
+  }
+  .mobile-nav-item > span:last-of-type {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mobile-nav-item small {
+    right: 5px;
+    top: 3px;
+  }
+  .mobile-nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    font-size: 20px;
+    line-height: 1;
+  }
+  .mobile-nav-icon svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.player-image > .ovr-badge {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px !important;
+  padding: 5px 4px !important;
+  line-height: 1 !important;
+  text-align: center;
+  box-sizing: border-box;
+}
+.player-image > .ovr-badge > strong {
+  display: block;
+  margin: 0 !important;
+  padding: 0;
+  font-size: 21px;
+  line-height: 1 !important;
+}
+.player-image > .ovr-badge > img.ovr-country-flag {
+  display: block;
+  flex: 0 0 auto;
+  object-fit: cover;
+  margin: 0 !important;
+}
+.player-image > .ovr-badge > .ovr-flag-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+  line-height: 1;
+}
+.player-image > .ovr-badge > .ovr-position {
+  display: block;
+  margin: 0 !important;
+  padding: 0;
+  line-height: 1.05 !important;
+}
+@media (max-width: 600px) {
+  .player-image > .ovr-badge {
+    gap: 2px !important;
+    padding: 5px 4px !important;
+  }
+  .player-image > .ovr-badge > strong { font-size: 18px; }
+}
