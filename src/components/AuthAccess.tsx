@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { FormEvent } from 'react'
 
@@ -16,6 +16,9 @@ type Props = {
   isAdmin: boolean
   onAdminChange: (value: boolean) => void
   onAccountChange: (value: { userId: string; username: string; accessToken: string } | null) => void
+  themeMode: 'dark' | 'light' | 'system'
+  onThemeModeChange: (value: 'dark' | 'light' | 'system') => void
+  onDashboardChange: (value: boolean) => void
 }
 
 const SESSION_KEY = 'uflmb.auth.session.v1'
@@ -147,8 +150,10 @@ async function restoreSession(): Promise<AuthSession | null> {
   }
 }
 
-export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange }: Props) {
+export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, themeMode, onThemeModeChange, onDashboardChange }: Props) {
   const [open, setOpen] = useState(false)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const accountMenuRef = useRef<HTMLDivElement>(null)
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
@@ -160,6 +165,20 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange }: 
   const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info')
   const [sessionEmail, setSessionEmail] = useState('')
   const [session, setSession] = useState<AuthSession | null>(null)
+
+  useEffect(() => {
+    if (!accountMenuOpen) return
+    const closeOnOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !accountMenuRef.current?.contains(event.target)) setAccountMenuOpen(false)
+    }
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setAccountMenuOpen(false) }
+    document.addEventListener('pointerdown', closeOnOutside)
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutside)
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [accountMenuOpen])
 
   useEffect(() => {
     if (!open || isAdmin) return
@@ -228,6 +247,8 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange }: 
     setConfirmPassword('')
     setMessage('')
     setOpen(false)
+    setAccountMenuOpen(false)
+    onDashboardChange(false)
     onAdminChange(false)
   }
 
@@ -336,10 +357,41 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange }: 
 
   return (
     <>
-      <button className={session ? 'auth-trigger account-trigger' : 'button primary auth-trigger'} type="button" onClick={() => { if (isAdmin) void signOut(); else { setOpen(!open); setMessage('') } }}>
-        <svg className="auth-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4" fill="currentColor" stroke="none" /><path d="M4 21v-2.2a8 8 0 0 1 16 0V21z" fill="currentColor" stroke="none" /></svg>
-        <span>{session ? sessionUsername || 'Account' : 'Sign In/Up'}</span>
-      </button>
+      <div className="auth-account-wrap" ref={accountMenuRef}>
+        <button className={session ? 'auth-trigger account-trigger' : 'button primary auth-trigger'} type="button" aria-haspopup={session ? 'menu' : 'dialog'} aria-expanded={session ? accountMenuOpen : open} onClick={() => {
+          if (session) { setAccountMenuOpen(value => !value); setOpen(false) }
+          else { setOpen(value => !value); setMessage('') }
+        }}>
+          {session && isAdmin
+            ? <svg className="auth-trigger-icon auth-admin-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor" stroke="none"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            : <svg className="auth-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4" fill="currentColor" stroke="none" /><path d="M4 21v-2.2a8 8 0 0 1 16 0V21z" fill="currentColor" stroke="none" /></svg>}
+          <span>{session ? isAdmin ? 'ADMIN' : sessionUsername || 'Account' : 'Sign In/Up'}</span>
+          {session && <svg className={accountMenuOpen ? 'account-chevron is-open' : 'account-chevron'} viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+        </button>
+        {session && <div className={accountMenuOpen ? 'account-dropdown is-open' : 'account-dropdown'} role="menu" aria-label="Account menu" hidden={!accountMenuOpen}>
+          <div className="account-menu-label">APPEARANCE</div>
+          <div className="theme-mode-options" role="group" aria-label="Theme mode">
+            <button type="button" role="menuitemradio" aria-label="Dark theme" title="Dark" aria-checked={themeMode === 'dark'} className={themeMode === 'dark' ? 'theme-mode-button active' : 'theme-mode-button'} onClick={() => onThemeModeChange('dark')}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.6 8.6 0 1 0 20.2 15.1Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
+            <button type="button" role="menuitemradio" aria-label="Light theme" title="Light" aria-checked={themeMode === 'light'} className={themeMode === 'light' ? 'theme-mode-button active' : 'theme-mode-button'} onClick={() => onThemeModeChange('light')}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="1.8"/><path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6m11 11 1.6 1.6M2 12h2.2m15.6 0H22M4.9 19.1l1.6-1.6m11-11 1.6-1.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+            </button>
+            <button type="button" role="menuitemradio" aria-label="System theme" title="System" aria-checked={themeMode === 'system'} className={themeMode === 'system' ? 'theme-mode-button active' : 'theme-mode-button'} onClick={() => onThemeModeChange('system')}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2" fill="none" stroke="currentColor" strokeWidth="1.8"/><path d="M8 21h8m-4-4v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+            </button>
+          </div>
+          {isAdmin && <button className="account-menu-item" type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); onDashboardChange(true) }}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8"/><rect x="13" y="3" width="8" height="5" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8"/><rect x="13" y="10" width="8" height="11" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8"/></svg>
+            <span>Dashboard</span>
+          </button>}
+          <div className="account-menu-divider" />
+          <button className="account-menu-item logout-item" type="button" role="menuitem" onClick={() => void signOut()}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5M16 16l5-4-5-4m5 4H9" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <span>Logout</span>
+          </button>
+        </div>}
+      </div>
       {open && !isAdmin && createPortal(<div className="auth-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
         <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
           <button className="auth-close" type="button" aria-label="Close sign-in window" onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); setOpen(false) }}>×</button>
@@ -363,7 +415,6 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange }: 
           {message && <p className={`auth-message auth-message-${messageType}`} role="status" aria-live="polite">{message}</p>}
           {mode === 'signin' && <button className="auth-text-action" type="button" onClick={() => { setMode('recovery'); setMessage(''); setPassword('') }}>Forgot password?</button>}
           {(mode === 'recovery' || mode === 'updatePassword') && <button className="auth-text-action" type="button" onClick={() => { setMode('signin'); setMessage(''); setPassword(''); setConfirmPassword('') }}>Back to sign in</button>}
-          {sessionEmail && <button className="button secondary auth-signout" type="button" onClick={() => void signOut()}>Sign out</button>}
         </section>
       </div>, document.body)}
     </>
