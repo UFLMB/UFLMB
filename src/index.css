@@ -2534,3 +2534,55 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 @media (max-width: 560px) {
   .profile-stat-group-score strong { font-size: 14px; }
 }
+
+
+/* Player profile: consistent UFLMB charcoal surfaces and official lime-400 accent. */
+.profile-stat-group {
+  background: #101216;
+  border-color: rgba(255,255,255,.08);
+}
+.profile-stat-group-header {
+  background: #15181d;
+  border-bottom-color: rgba(163,230,53,.2);
+}
+.profile-stat-group-code {
+  color: #a3e635 !important;
+  border-color: rgba(163,230,53,.3);
+  background: rgba(163,230,53,.07);
+}
+.profile-stat-group-name { color: #f3f5f8 !important; }
+.profile-stat-group-score {
+  flex: 0 0 auto;
+  min-width: 0;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+.profile-stat-group-score strong.profile-stat-main-value {
+  display: block;
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 2ch;
+  color: #a3e635 !important;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: right;
+  text-shadow: none;
+}
+.profile-stat-group-score i { display: none !important; }
+.profile-stat-group-score,
+.profile-stat-group-details .profile-stat-meter { color: #c0c8d4; }
+.profile-stat-group-score strong,
+.profile-stat-group-details .profile-stat-meter strong { font-family: 'DM Mono', monospace; }
+.profile-stat-group-details .profile-stat-meter i {
+  background: #292d33;
+}
+.profile-stat-group-details .profile-stat-meter i b {
+  background: #a3e635 !important;
+  background-image: none !important;
+  box-shadow: none;
+}
+@media (max-width: 560px) {
+  .profile-stat-group-score { flex-basis: auto; }
+  .profile-stat-group-score strong.profile-stat-main-value { font-size: 14px; }
+}
