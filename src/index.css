@@ -2747,3 +2747,99 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 @media (max-width: 360px) {
   .player-image .event-ribbon { bottom: 45px; white-space: normal; }
 }
+
+
+/* Card composition update: stacked rating/flag/position badge and icon-only actions. */
+.ovr-badge {
+  left: 10px;
+  top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 48px;
+  padding: 7px 6px;
+  color: var(--lime, #c5f467);
+  line-height: 1;
+  text-align: center;
+}
+.ovr-badge strong { font: 700 21px/1 'DM Mono', monospace; }
+.ovr-country-flag {
+  display: block;
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: 2px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.35);
+}
+.ovr-flag-fallback { font-size: 14px; line-height: 15px; color: #e5e7eb; }
+.ovr-position { color: #dce4ef; font: 700 9px/1.1 'DM Mono', monospace; letter-spacing: .4px; }
+.card-quick-actions {
+  position: absolute;
+  z-index: 4;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.card-quick-actions .bookmark-toggle,
+.card-quick-actions .compare-toggle {
+  position: static;
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  min-height: 35px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 10px;
+  background: rgba(7,10,15,.9);
+  color: #eef2f7;
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 5px 16px rgba(0,0,0,.28);
+  backdrop-filter: blur(8px);
+  transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease;
+}
+.card-quick-actions .compare-toggle { font-size: 22px; }
+.card-quick-actions .bookmark-toggle.saved,
+.card-quick-actions .compare-toggle.selected {
+  color: #15200a;
+  background: #c5f467;
+  border-color: #e2ff9a;
+  box-shadow: 0 0 18px rgba(197,244,103,.28);
+}
+.card-quick-actions button:hover { transform: translateY(-1px); }
+.player-card-body .event-ribbon {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  max-width: 100%;
+  width: fit-content;
+  margin: 0 0 8px;
+  padding: 5px 8px;
+  border: 1px solid rgba(197,244,103,.2);
+  border-radius: 6px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  line-height: 1.35;
+}
+.player-card-body .player-title-row { margin-bottom: 10px; }
+.player-card-body .player-title-copy h3 { white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .ovr-badge { top: 7px; left: 7px; min-width: 40px; gap: 3px; padding: 6px 5px; }
+  .ovr-badge strong { font-size: 17px; }
+  .ovr-country-flag { width: 19px; height: 13px; }
+  .ovr-position { font-size: 8px; }
+  .card-quick-actions { top: 7px; right: 7px; gap: 5px; }
+  .card-quick-actions .bookmark-toggle,
+  .card-quick-actions .compare-toggle { width: 29px; height: 29px; min-height: 29px; border-radius: 8px; font-size: 18px; }
+  .card-quick-actions .compare-toggle { font-size: 19px; }
+  .player-card-body .event-ribbon { margin-bottom: 7px; padding: 4px 6px; font-size: 7px; letter-spacing: .7px; }
+}
