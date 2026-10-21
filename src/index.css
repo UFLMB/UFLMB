@@ -3504,3 +3504,42 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .gate-error-foot,:root[data-ui-theme="light"] .gate-error-footer{color:#647084;border-color:rgba(24,32,43,.12)}
 :root[data-ui-theme="light"] .gate-home-link{color:#596579}
 :root[data-ui-theme="light"] .gate-home-link:hover{color:#18202b}
+
+/* Header cohesion: keep the whole header on one surface, with no separate tiles. */
+.topbar,
+.topbar .brand,
+.topbar .top-actions,
+.topbar .auth-account-wrap,
+.topbar .public-theme-toggle{
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+.topbar .public-theme-toggle{
+  border-color:transparent!important;
+  border-radius:8px;
+}
+.topbar .public-theme-toggle:hover,
+.topbar .public-theme-toggle:focus-visible{
+  background:rgba(197,244,103,.08)!important;
+  border-color:rgba(197,244,103,.22)!important;
+}
+:root[data-ui-theme="light"] .topbar,
+:root[data-ui-theme="light"] .topbar .brand,
+:root[data-ui-theme="light"] .topbar .top-actions,
+:root[data-ui-theme="light"] .topbar .auth-account-wrap,
+:root[data-ui-theme="light"] .topbar .public-theme-toggle{
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+:root[data-ui-theme="light"] .topbar .public-theme-toggle{
+  color:#344054;
+  border-color:transparent!important;
+}
+:root[data-ui-theme="light"] .topbar .public-theme-toggle:hover,
+:root[data-ui-theme="light"] .topbar .public-theme-toggle:focus-visible{
+  color:#365314;
+  background:rgba(163,230,53,.12)!important;
+  border-color:transparent!important;
+}
