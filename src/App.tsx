@@ -85,7 +85,10 @@ const groupProfileStats = (stats: Record<string, number>) => {
     const separator = key.indexOf(' · ')
     const sourceGroup = separator >= 0 ? key.slice(0, separator).trim() : ''
     const detailLabel = separator >= 0 ? key.slice(separator + 3).trim() : key
-    const code = statSourceGroups[sourceGroup] || (sourceGroup === 'Goalkeeping' ? 'GK' : 'OTHER')
+    const goalkeeperGroup = sourceGroup === 'Goalkeeping'
+      ? ({ Positioning: 'POS', Reflexes: 'REF', Diving: 'DIV', Handling: 'HAN', Kicking: 'KIC' } as Record<string, string>)[detailLabel] || 'GK'
+      : ''
+    const code = goalkeeperGroup || statSourceGroups[sourceGroup] || 'OTHER'
     const label = statGroupNames[code] || (code === 'GK' ? 'Goalkeeping' : sourceGroup || 'Other attributes')
     const groupKey = code === 'OTHER' ? `OTHER:${sourceGroup || 'misc'}` : code
     const group = groups.get(groupKey) || { code: groupKey, label, details: [] }
