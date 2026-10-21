@@ -2223,3 +2223,27 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     overscroll-behavior: contain;
   }
 }
+
+
+/* Lightweight Arena motion system: animate only opacity/transform, and respect reduced-motion settings. */
+@media (prefers-reduced-motion: no-preference) {
+  .auth-backdrop { animation: arena-overlay-in .16s ease-out both; }
+  .auth-modal { animation: arena-modal-in .2s cubic-bezier(.2,.75,.25,1) both; }
+  .auth-close, .profile-close { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .auth-close:active, .profile-close:active { transform: scale(.94); }
+  .auth-mode-switch button, .auth-text-action, .mobile-nav-item, .browse-controls select,
+  .card-form input, .card-form textarea, .tools-panel textarea, .admin-search {
+    transition: border-color .16s ease, background-color .16s ease, color .16s ease, box-shadow .16s ease, opacity .16s ease;
+  }
+  .auth-submit:not(:disabled), .cloud-action-grid .button:not(:disabled) { transition: transform .16s ease, filter .16s ease, opacity .16s ease; }
+  .auth-submit:not(:disabled):active, .cloud-action-grid .button:not(:disabled):active { transform: scale(.985); }
+}
+@keyframes arena-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes arena-modal-in { from { opacity: 0; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .auth-backdrop, .auth-modal { animation: none !important; }
+  *, *::before, *::after { scroll-behavior: auto !important; }
+}
+.auth-backdrop { isolation: isolate; touch-action: pan-y; }
+.auth-modal { overscroll-behavior: contain; }
+.auth-close { z-index: 2; cursor: pointer; touch-action: manipulation; }
