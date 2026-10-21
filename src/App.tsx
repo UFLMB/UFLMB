@@ -262,6 +262,7 @@ export default function App() {
   const [sharedBrandingStatus, setSharedBrandingStatus] = useState('Loading shared appearance…')
   const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
   const [compareIds, setCompareIds] = useState<string[]>([])
+  const [selectedCardIds, setSelectedCardIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud'>('cards')
 
@@ -1481,7 +1482,7 @@ export default function App() {
       {page === 'players' && <section className="database-section" aria-labelledby="database-title">
         <div className="section-heading"><div><p className="eyebrow">{showBookmarked ? 'STARRED PLAYERS' : 'THE COLLECTION'}</p><h2 id="database-title">{showBookmarked ? 'Your favorites' : 'Card database'}</h2></div><div className="collection-actions"><span className="count-label">{visibleCards.length} shown / {showBookmarked ? bookmarkedIds.length : allCards.length} total</span></div></div>
         {visibleCards.length === 0 ? <div className="empty-state"><div className="empty-emblem" aria-hidden="true">U<span>+</span></div><h3>{showBookmarked ? 'No favorites yet' : query.trim() ? 'No matching cards found' : 'The database starts here'}</h3><p>{showBookmarked ? 'Tap the star on any player card to add it to this list.' : query.trim() ? `No verified card matches “${query.trim()}”. Try another search or category.` : 'No card records have been entered yet.'}</p><span className="empty-tag">VERIFIED DATA ONLY</span></div> :
-          <div className="card-grid">{pagedCards.map((card, index) => <article className={`player-card ${card.sourceStatus === 'imported-unverified' ? 'imported-card' : ''} ${card.overallRating >= 90 ? 'elite-card ovr-elite' : card.overallRating >= 80 ? 'ovr-high' : card.overallRating >= 70 ? 'ovr-mid' : 'ovr-standard'}`} key={card.id} style={{ animationDelay: `${Math.min(index % 12, 11) * 45}ms` }}>
+          <div className="card-grid">{pagedCards.map((card, index) => <article className={`player-card ${selectedCardIds.includes(card.id) ? 'card-selected' : ''} ${card.sourceStatus === 'imported-unverified' ? 'imported-card' : ''} ${card.overallRating >= 90 ? 'elite-card ovr-elite' : card.overallRating >= 80 ? 'ovr-high' : card.overallRating >= 70 ? 'ovr-mid' : 'ovr-standard'}`} key={card.id} style={{ animationDelay: `${Math.min(index % 12, 11) * 45}ms` }} onClick={(event) => { if ((event.target as HTMLElement).closest('button, a, input, select, textarea')) return; setSelectedCardIds(ids => ids.includes(card.id) ? ids.filter(id => id !== card.id) : [...ids, card.id]); }}>
             <div className="player-image"><div className="card-art-glow" aria-hidden="true" />
               {card.imageUrl ? <img src={card.imageUrl} alt={`${card.playerName} card`} loading="lazy" /> : <div className="no-image"><span className="no-image-mark">✦</span><strong>UFL<span>MB</span></strong><small>PLAYER DATABASE</small></div>}
               <div className="ovr-badge" aria-label={`Overall rating ${card.overallRating}`}>
