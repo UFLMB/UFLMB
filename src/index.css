@@ -4439,7 +4439,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     align-items: stretch !important;
     gap: 3px !important;
-    padding: 7px 8px max(12px, env(safe-area-inset-bottom, 0px)) !important;
+    padding: 7px 8px max(6px, env(safe-area-inset-bottom, 0px)) !important;
     border-radius: 16px 16px 0 0 !important;
     z-index: 9999 !important;
   }
@@ -4518,6 +4518,15 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     overflow: hidden !important;
   }
   .app-shell:not(.admin-shell) > .topbar {
+    flex: 0 0 auto !important;
+  }
+  /* Public header scrolls away with the page content; only the bottom dock stays fixed. */
+  .app-content-scroll > .topbar {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
     flex: 0 0 auto !important;
   }
   .app-content-scroll {
