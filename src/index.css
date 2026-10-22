@@ -5097,3 +5097,153 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   background: rgba(163,230,53,.06);
   box-shadow: 0 0 0 2px rgba(163,230,53,.12);
 }
+
+
+/* Theme-invariant public header geometry.
+   Theme selectors may change paint only; they must never change the header's box model. */
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-height: 82px !important;
+  height: 82px !important;
+  margin: 0 !important;
+  padding: 0 24px !important;
+  gap: 18px !important;
+  flex-wrap: nowrap !important;
+  border-bottom-width: 1px !important;
+  border-bottom-style: solid !important;
+}
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .brand-group {
+  display: flex !important;
+  align-items: center !important;
+  flex: 0 0 180px !important;
+  width: 180px !important;
+  min-width: 180px !important;
+  height: 48px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .brand {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: 0 0 180px !important;
+  box-sizing: border-box !important;
+  width: 180px !important;
+  min-width: 180px !important;
+  height: 48px !important;
+  margin: 0 !important;
+  padding: 6px 10px !important;
+  gap: 11px !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+}
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .brand-mark,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .brand-logo-image {
+  display: block !important;
+  flex: 0 0 36px !important;
+  box-sizing: border-box !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+}
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .brand-word {
+  display: inline-block !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+}
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .site-nav {
+  display: flex;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 6px !important;
+}
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .nav-page {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  min-height: 36px !important;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  white-space: nowrap !important;
+}
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .top-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex: 0 0 auto !important;
+  min-width: max-content !important;
+  height: 48px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 12px !important;
+}
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .public-refresh-toggle,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .public-theme-toggle,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .menu-toggle,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .auth-trigger {
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  border-width: 1px !important;
+}
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .public-refresh-toggle,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .public-theme-toggle {
+  flex: 0 0 32px !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 !important;
+}
+@media (max-width: 760px) {
+  .app-shell:not(.admin-shell) > .app-content-scroll > .topbar {
+    height: 64px !important;
+    min-height: 64px !important;
+    padding: 0 16px !important;
+    gap: 8px !important;
+  }
+  .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .brand-group,
+  .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .brand {
+    flex-basis: 164px !important;
+    width: 164px !important;
+    min-width: 164px !important;
+    height: 44px !important;
+  }
+  .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .brand {
+    padding: 4px 8px !important;
+    gap: 8px !important;
+  }
+  .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .brand-mark,
+  .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .brand-logo-image {
+    flex-basis: 32px !important;
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+  }
+  .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .site-nav {
+    display: none !important;
+  }
+  .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .top-actions {
+    flex: 0 0 auto !important;
+    height: 44px !important;
+    gap: 6px !important;
+  }
+  .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .menu-toggle {
+    box-sizing: border-box !important;
+    min-height: 32px !important;
+    padding: 6px 8px !important;
+  }
+}
