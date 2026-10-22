@@ -4245,3 +4245,17 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="dark"] .topbar .brand-word span {
   color: #c5f467 !important;
 }
+
+
+/* Improve logo artwork legibility against the pale light-mode brand tile. */
+:root[data-ui-theme="light"] .topbar .brand .brand-logo-image,
+:root[data-ui-theme="light"] .topbar .brand .brand-mark {
+  filter: contrast(1.25) drop-shadow(0 1px 2px rgba(0, 0, 0, .4)) !important;
+}
+:root[data-ui-theme="light"] .topbar .brand .brand-word {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+:root[data-ui-theme="light"] .topbar .brand .brand-word span {
+  color: #527b13 !important;
+}
