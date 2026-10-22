@@ -11,6 +11,7 @@ const STORAGE_KEY = 'uflmb.cards.v1'
 const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
 const DRIVE_API_KEY = 'uflmb.google.apiKey'
 const THEME_KEY = 'uflmb.site-theme.v1'
+// v4 deliberately ignores legacy saved light/system modes so first visits start dark.
 const THEME_MODE_KEY = 'uflmb.ui-theme-mode.v4'
 type ThemeMode = 'dark' | 'light' | 'system'
 const loadThemeMode = (): ThemeMode => {
