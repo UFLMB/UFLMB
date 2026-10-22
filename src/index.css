@@ -5295,3 +5295,27 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="dark"] body.has-background-images .app-shell:not(.admin-shell) > .app-content-scroll {
   background-color: transparent !important;
 }
+
+
+/* Rotating branding photos are visible in BOTH public themes.
+   Light mode uses a bright translucent wash so the photo stays subtle and text remains readable. */
+:root[data-ui-theme="light"] body.has-background-images::after {
+  display: block !important;
+  content: "" !important;
+  background-image: var(--site-background-image) !important;
+  background-size: cover !important;
+  background-position: center 42% !important;
+  background-repeat: no-repeat !important;
+  filter: contrast(1.04) saturate(0.88) brightness(1.08) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images::before {
+  display: block !important;
+  content: "" !important;
+  background: linear-gradient(180deg, rgba(248,250,252,.70) 0%, rgba(248,250,252,.78) 48%, rgba(248,250,252,.86) 100%) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell),
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) > .app-content-scroll,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-page {
+  background-color: transparent !important;
+  background-image: none !important;
+}
