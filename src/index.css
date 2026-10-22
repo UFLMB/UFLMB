@@ -5722,3 +5722,33 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     padding: 7px 10px !important;
   }
 }
+
+
+/* Dark-mode visibility and mobile-safe horizontal category scrolling. */
+:root[data-ui-theme="dark"] .app-shell:not(.admin-shell) .filter-disclosure {
+  border-color: rgba(255, 255, 255, .22) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .035);
+}
+:root[data-ui-theme="dark"] .app-shell:not(.admin-shell) .filter-disclosure > summary {
+  border-color: rgba(255, 255, 255, .18);
+}
+@media (max-width: 650px) {
+  .app-shell:not(.admin-shell) .category-row {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-inline: 4px;
+    margin-inline: 0;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .app-shell:not(.admin-shell) .category-row .category {
+    flex: 0 0 auto;
+  }
+}
