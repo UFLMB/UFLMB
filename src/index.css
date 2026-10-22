@@ -4889,3 +4889,143 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   color: #edf1f7 !important;
   border-color: rgba(222,232,245,.11) !important;
 }
+
+
+/* Hybrid public layout: the header scrolls with the page; the mobile dock stays viewport-fixed.
+   This supersedes the fixed-header App Shell rules above while retaining the dark-theme fixes. */
+@media (max-width: 760px) {
+  html:has(body .app-shell:not(.admin-shell)),
+  body:has(.app-shell:not(.admin-shell)) {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+  }
+  body:has(.app-shell:not(.admin-shell)) {
+    position: fixed !important;
+    inset: 0 !important;
+    padding: 0 !important;
+  }
+  #root:has(.app-shell:not(.admin-shell)) {
+    width: 100% !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .app-shell:not(.admin-shell) {
+    position: fixed !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+    isolation: isolate;
+  }
+  .app-content-scroll {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+    box-sizing: border-box !important;
+    padding-top: 0 !important;
+    padding-bottom: 82px !important;
+  }
+  .app-content-scroll > .topbar {
+    position: relative !important;
+    inset: auto !important;
+    z-index: 20 !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-height: 64px !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+  }
+  .mobile-bottom-nav {
+    position: fixed !important;
+    top: auto !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    inset: auto 0 0 0 !important;
+    z-index: 10001 !important;
+    padding-bottom: 8px !important;
+    transform: translateZ(0) !important;
+    will-change: transform !important;
+  }
+}
+@media (min-width: 761px) {
+  html:has(body .app-shell:not(.admin-shell)),
+  body:has(.app-shell:not(.admin-shell)) {
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+  body:has(.app-shell:not(.admin-shell)) {
+    position: fixed !important;
+    inset: 0 !important;
+    padding: 0 !important;
+  }
+  #root:has(.app-shell:not(.admin-shell)) {
+    width: 100% !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  .app-shell:not(.admin-shell) {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  .app-content-scroll {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain !important;
+    box-sizing: border-box !important;
+    padding-top: 0 !important;
+    padding-bottom: 32px !important;
+  }
+  .app-content-scroll > .topbar {
+    position: relative !important;
+    inset: auto !important;
+    z-index: 20 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+  }
+}
+
+/* Reassert dark home surfaces after the layout override; preserve global theme inheritance. */
+:root[data-ui-theme="dark"] .home-page,
+:root[data-ui-theme="dark"] .app-content-scroll {
+  background-color: #0b0d12 !important;
+  color: #edf1f7 !important;
+}
+:root[data-ui-theme="dark"] .home-hero {
+  background:
+    radial-gradient(ellipse at 80% 10%, rgba(197,244,103,.14), transparent 42%),
+    linear-gradient(135deg, rgba(24,29,38,.97), rgba(9,12,17,.98)) !important;
+  color: #edf1f7 !important;
+}
+:root[data-ui-theme="dark"] .home-overview article,
+:root[data-ui-theme="dark"] .featured-player {
+  background-color: rgba(17,23,34,.92) !important;
+  color: #edf1f7 !important;
+  border-color: rgba(222,232,245,.11) !important;
+}
