@@ -5466,3 +5466,12 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .app-shell:not(.admin-shell) .featured-list .featured-ovr {
   color: #fff !important;
 }
+
+/* Match the featured-player OVR tile to the primary lime call-to-action. */
+.app-shell:not(.admin-shell) .featured-list .featured-ovr {
+  background: rgba(163, 230, 53, .78) !important;
+  border-color: rgba(163, 230, 53, .9) !important;
+  color: #fff !important;
+  text-shadow: 0 1px 2px rgba(25, 39, 10, .68);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12), 0 2px 8px rgba(112, 163, 37, .12) !important;
+}
