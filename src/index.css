@@ -5491,3 +5491,17 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   text-shadow: none;
   box-shadow: inset 0 0 18px rgba(197, 244, 103, .035) !important;
 }
+
+/* Light theme only: give the Top-rated cards "View all players" action a dark,
+   high-contrast surface without changing the hero's "Compare cards" button. */
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .home-featured > .section-heading > .button.secondary {
+  background: #20291c !important;
+  border-color: rgba(132, 204, 22, .48) !important;
+  color: #c5f467 !important;
+  box-shadow: 0 3px 10px rgba(32, 41, 28, .16) !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .home-featured > .section-heading > .button.secondary:hover {
+  background: #2b3823 !important;
+  border-color: rgba(163, 230, 53, .72) !important;
+  color: #d9ff8a !important;
+}
