@@ -4384,14 +4384,14 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   color: #0f172a !important;
 }
 :root[data-ui-theme="dark"] .topbar:not(.admin-topbar) .button.primary.auth-trigger:not(.account-trigger) {
-  color: #ffffff !important;
+  color: #c5f467 !important;
   background: #171c25 !important;
-  border: 1px solid rgba(255, 255, 255, .2) !important;
+  border: 1px solid rgba(197, 244, 103, .24) !important;
   box-shadow: 0 3px 12px rgba(0, 0, 0, .18) !important;
 }
 :root[data-ui-theme="dark"] .topbar:not(.admin-topbar) .button.primary.auth-trigger:not(.account-trigger) .auth-trigger-icon,
 :root[data-ui-theme="dark"] .topbar:not(.admin-topbar) .button.primary.auth-trigger:not(.account-trigger) span {
-  color: #ffffff !important;
+  color: #c5f467 !important;
 }
 :root[data-ui-theme="dark"] .topbar:not(.admin-topbar) .button.primary.auth-trigger:not(.account-trigger):hover {
   background: #202734 !important;
