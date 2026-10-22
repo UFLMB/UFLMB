@@ -5925,3 +5925,28 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     0 0 16px rgba(101, 133, 42, .26) !important;
   transform: none !important;
 }
+
+
+/* Comparison membership uses a slightly thinner outline than the independent
+   single-card tap selection. The states remain separate: Compare can contain
+   multiple cards while only one card can have the tap-selection outline. */
+.app-shell:not(.admin-shell) .player-card.compare-selected {
+  border: 2px solid var(--accent, #c5f467) !important;
+  box-shadow:
+    0 0 0 1px rgba(197, 244, 103, .18),
+    0 0 10px rgba(197, 244, 103, .14) !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card.compare-selected {
+  border: 2px solid #84b927 !important;
+  background: #fafff0 !important;
+  box-shadow:
+    0 0 0 1px rgba(101, 133, 42, .30),
+    0 0 12px rgba(132, 185, 39, .22) !important;
+}
+/* Keep the thicker tap-selection treatment when a card is also in Compare. */
+.app-shell:not(.admin-shell) .player-card.card-click-selected {
+  border-width: 3px !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card.card-click-selected {
+  border-width: 3px !important;
+}
