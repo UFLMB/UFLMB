@@ -4554,3 +4554,75 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     overscroll-behavior-y: contain !important;
   }
 }
+
+
+/* Public mobile shell: use the document viewport for native browser pull-to-refresh.
+   Keep the admin workspace on its existing dedicated scroll surface. */
+@media (max-width: 760px) {
+  html:has(body .app-shell:not(.admin-shell)),
+  body:has(.app-shell:not(.admin-shell)) {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: clip !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: auto !important;
+  }
+  body:has(.app-shell:not(.admin-shell)) {
+    position: relative !important;
+    inset: auto !important;
+    min-height: 100dvh !important;
+    padding-bottom: 0 !important;
+  }
+  #root:has(.app-shell:not(.admin-shell)) {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+  }
+  .app-shell:not(.admin-shell) {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .app-content-scroll {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+    overscroll-behavior-y: auto !important;
+    -webkit-overflow-scrolling: auto !important;
+    touch-action: pan-y !important;
+    padding-bottom: 82px !important;
+  }
+  .app-content-scroll > .topbar {
+    position: static !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    z-index: auto !important;
+    flex: initial !important;
+  }
+
+  /* Admin keeps its fixed-height, internally scrolling shell. */
+  html:has(body .app-shell.admin-shell),
+  body:has(.app-shell.admin-shell) {
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+  body:has(.app-shell.admin-shell) {
+    position: fixed !important;
+    inset: 0 !important;
+    height: 100dvh !important;
+  }
+  #root:has(.app-shell.admin-shell) {
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+}
