@@ -1410,7 +1410,6 @@ export default function App() {
       </>}
       <div className="admin-backup-action">
         <button className="button secondary" type="button" onClick={saveEverything} title="Save all browser data and download a JSON backup" aria-label="Save everything and download backup"><span aria-hidden="true">⇩</span> Save &amp; backup</button>
-      </div>
       {createPortal(
         <nav className="mobile-bottom-nav" aria-label="Primary navigation">
                 <button type="button" className={page === 'home' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={page === 'home' ? 'page' : undefined} onClick={() => { setPage('home'); window.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">⌂</span><span>Home</span></button>
