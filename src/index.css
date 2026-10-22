@@ -2208,14 +2208,19 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Keep mobile navigation anchored to the viewport, not the scrolling app shell. */
+/* Keep the mobile navigation fixed directly to the viewport; no scroll-container transforms. */
 @media (max-width: 760px) {
   .mobile-bottom-nav {
-    position: fixed;
-    inset: auto 10px max(9px, env(safe-area-inset-bottom, 0px)) 10px;
-    z-index: 1000;
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    z-index: 1000 !important;
+    transform: translateZ(0) !important;
+    will-change: transform !important;
+    border-radius: 16px 16px 0 0;
+    padding-bottom: calc(7px + env(safe-area-inset-bottom, 0px));
   }
   body:has(.auth-backdrop) .mobile-bottom-nav {
     display: none !important;
@@ -4625,4 +4630,64 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     height: 100dvh !important;
     overflow: hidden !important;
   }
+}
+
+
+/* Explicitly propagate the selected UI theme through the public content tree.
+   Inline site-branding variables must never force a light-looking home screen in dark mode. */
+:root[data-ui-theme="dark"] .app-shell[data-ui-theme="dark"],
+:root[data-ui-theme="dark"] .app-content-scroll[data-ui-theme="dark"],
+:root[data-ui-theme="dark"] .home-page[data-ui-theme="dark"] {
+  color: #edf1f7;
+  background-color: transparent;
+}
+:root[data-ui-theme="dark"] .home-hero {
+  background:
+    radial-gradient(ellipse at 80% 10%, rgba(197,244,103,.14), transparent 42%),
+    linear-gradient(135deg, rgba(24,29,38,.97), rgba(9,12,17,.98)) !important;
+  color: #edf1f7;
+}
+:root[data-ui-theme="dark"] .home-hero .hero-copy,
+:root[data-ui-theme="dark"] .home-overview article > span,
+:root[data-ui-theme="dark"] .home-overview article small {
+  color: #98a3b3;
+}
+:root[data-ui-theme="dark"] .home-overview article strong,
+:root[data-ui-theme="dark"] .featured-name {
+  color: #edf1f7;
+}
+:root[data-ui-theme="dark"] .home-featured,
+:root[data-ui-theme="dark"] .home-overview article,
+:root[data-ui-theme="dark"] .featured-player {
+  background-color: rgba(17,23,34,.92);
+  color: #edf1f7;
+  border-color: rgba(222,232,245,.11);
+}
+:root[data-ui-theme="light"] .app-shell[data-ui-theme="light"],
+:root[data-ui-theme="light"] .app-content-scroll[data-ui-theme="light"],
+:root[data-ui-theme="light"] .home-page[data-ui-theme="light"] {
+  color: #18202b;
+}
+:root[data-ui-theme="light"] .home-hero {
+  background:
+    radial-gradient(ellipse at 80% 10%, rgba(132,170,54,.12), transparent 42%),
+    linear-gradient(135deg, rgba(255,255,255,.98), rgba(238,241,245,.98)) !important;
+  color: #18202b;
+  border-color: rgba(31,41,55,.15);
+}
+:root[data-ui-theme="light"] .home-hero .hero-copy,
+:root[data-ui-theme="light"] .home-overview article > span,
+:root[data-ui-theme="light"] .home-overview article small {
+  color: #647084;
+}
+:root[data-ui-theme="light"] .home-overview article strong,
+:root[data-ui-theme="light"] .featured-name {
+  color: #18202b;
+}
+:root[data-ui-theme="light"] .home-featured,
+:root[data-ui-theme="light"] .home-overview article,
+:root[data-ui-theme="light"] .featured-player {
+  background-color: rgba(255,255,255,.94);
+  color: #18202b;
+  border-color: rgba(31,41,55,.15);
 }
