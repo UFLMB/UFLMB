@@ -1309,7 +1309,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   box-shadow:0 3px 14px rgba(197,244,103,.16),inset 0 1px 0 rgba(255,255,255,.45);
   font-weight:800;
 }
-.button.primary.auth-trigger .auth-trigger-icon{color:#10140b}
+.button.primary.auth-trigger .auth-trigger-icon{color:#c5f467}
 .button.primary.auth-trigger::before{z-index:0;pointer-events:none}
 .button.primary.auth-trigger>*{position:relative;z-index:1}
 .button.primary.auth-trigger:hover{
