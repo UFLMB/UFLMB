@@ -5505,3 +5505,47 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   border-color: rgba(104, 126, 81, .62) !important;
   color: #e2ffab !important;
 }
+
+
+/* Light theme: remove the white slab behind the player search and keep the count badge inside the field. */
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .search-wrap {
+  background: transparent !important;
+  background-image: none !important;
+  border-color: rgba(24, 32, 43, .14) !important;
+  box-shadow: none !important;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .search-wrap input {
+  flex: 1 1 0% !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 100%;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .search-wrap kbd {
+  position: static !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto !important;
+  max-width: 42%;
+  white-space: nowrap;
+  padding: 7px 9px;
+  font-size: 8px;
+  letter-spacing: .5px;
+  line-height: 1;
+  border-radius: 7px;
+}
+@media (max-width: 420px) {
+  :root[data-ui-theme="light"] .app-shell:not(.admin-shell) .search-wrap {
+    gap: 7px;
+    padding-right: 6px;
+  }
+  :root[data-ui-theme="light"] .app-shell:not(.admin-shell) .search-wrap kbd {
+    max-width: 38%;
+    padding: 7px 6px;
+    font-size: 7px;
+    letter-spacing: .2px;
+  }
+}
