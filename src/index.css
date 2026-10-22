@@ -5064,14 +5064,22 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   transform: scale(.96);
   background: rgba(197,244,103,.11);
 }
+/* Keep the refresh action visibly lime-accented even when the light theme
+   is active over the dark public header. Do not inherit dark text colors here. */
 :root[data-ui-theme="light"] .topbar .public-refresh-toggle {
-  color: #344054;
-  border-color: transparent;
-  background: transparent;
+  color: #a3e635;
+  border-color: rgba(163,230,53,.42);
+  background: rgba(163,230,53,.09);
+  box-shadow: 0 0 0 1px rgba(163,230,53,.06), 0 0 10px rgba(163,230,53,.08);
 }
 :root[data-ui-theme="light"] .topbar .public-refresh-toggle:hover,
 :root[data-ui-theme="light"] .topbar .public-refresh-toggle:focus-visible {
-  color: #526f1f;
-  border-color: rgba(101,133,42,.34);
-  background: rgba(197,244,103,.16);
+  color: #a3e635;
+  border-color: #a3e635;
+  background: rgba(163,230,53,.16);
+  box-shadow: 0 0 0 2px rgba(163,230,53,.12), 0 0 14px rgba(163,230,53,.14);
+  outline: none;
+}
+:root[data-ui-theme="light"] .topbar .public-refresh-toggle svg {
+  stroke: currentColor;
 }
