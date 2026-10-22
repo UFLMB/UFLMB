@@ -361,6 +361,11 @@ export default function App() {
         ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
         : themeMode
       root.dataset.uiTheme = resolvedTheme
+      // Keep the CSS variables in sync, including when system mode changes at runtime.
+      root.style.setProperty('--accent', siteTheme.accent)
+      root.style.setProperty('--page-bg', resolvedTheme === 'light' ? '#eef1f5' : siteTheme.background)
+      root.style.setProperty('--panel-bg', resolvedTheme === 'light' ? '#ffffff' : siteTheme.panel)
+      root.style.setProperty('--text-color', resolvedTheme === 'light' ? '#18202b' : siteTheme.text)
       // Mirror the active theme onto the new scroll/content structure as well as <html>.
       document.querySelectorAll<HTMLElement>('.app-shell, .app-content-scroll, .home-page').forEach(element => {
         element.dataset.uiTheme = resolvedTheme
