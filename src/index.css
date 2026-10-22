@@ -5031,7 +5031,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Public header refresh action: match the theme toggle's dimensions and interaction style. */
+/* Public header refresh action: clean by default, with a stable UFLMB lime accent. */
 .topbar .public-refresh-toggle {
   display: inline-grid;
   place-items: center;
@@ -5042,44 +5042,55 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
-  color: var(--muted, #aeb6c4);
+  color: #a3e635;
+  box-shadow: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: color .16s ease, border-color .16s ease, background .16s ease, transform .16s ease;
+  transition: color .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease, transform .16s ease;
 }
 .topbar .public-refresh-toggle svg {
   display: block;
   width: 17px;
   height: 17px;
   overflow: visible;
+  stroke: currentColor;
 }
 .topbar .public-refresh-toggle:hover,
 .topbar .public-refresh-toggle:focus-visible {
-  color: var(--lime, #c5f467);
-  border-color: rgba(197,244,103,.24);
-  background: rgba(197,244,103,.07);
+  color: #a3e635;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
   outline: none;
 }
 .topbar .public-refresh-toggle:active {
+  color: #a3e635;
+  border-color: rgba(163,230,53,.24);
+  background: rgba(163,230,53,.12);
+  box-shadow: 0 0 0 2px rgba(163,230,53,.08);
   transform: scale(.96);
-  background: rgba(197,244,103,.11);
 }
-/* Keep the refresh action visibly lime-accented even when the light theme
-   is active over the dark public header. Do not inherit dark text colors here. */
-:root[data-ui-theme="light"] .topbar .public-refresh-toggle {
+.topbar .public-refresh-toggle:focus-visible {
+  border-color: rgba(163,230,53,.4);
+  box-shadow: 0 0 0 2px rgba(163,230,53,.12);
+}
+/* Theme-independent override: the refresh icon must remain lime in every theme. */
+:root[data-ui-theme="light"] .topbar .public-refresh-toggle,
+:root[data-ui-theme="dark"] .topbar .public-refresh-toggle {
   color: #a3e635;
-  border-color: rgba(163,230,53,.42);
-  background: rgba(163,230,53,.09);
-  box-shadow: 0 0 0 1px rgba(163,230,53,.06), 0 0 10px rgba(163,230,53,.08);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
-:root[data-ui-theme="light"] .topbar .public-refresh-toggle:hover,
-:root[data-ui-theme="light"] .topbar .public-refresh-toggle:focus-visible {
+:root[data-ui-theme="light"] .topbar .public-refresh-toggle:active,
+:root[data-ui-theme="dark"] .topbar .public-refresh-toggle:active {
   color: #a3e635;
-  border-color: #a3e635;
-  background: rgba(163,230,53,.16);
-  box-shadow: 0 0 0 2px rgba(163,230,53,.12), 0 0 14px rgba(163,230,53,.14);
-  outline: none;
+  border-color: rgba(163,230,53,.24);
+  background: rgba(163,230,53,.12);
+  box-shadow: 0 0 0 2px rgba(163,230,53,.08);
 }
-:root[data-ui-theme="light"] .topbar .public-refresh-toggle svg {
-  stroke: currentColor;
+:root[data-ui-theme="light"] .topbar .public-refresh-toggle:focus-visible,
+:root[data-ui-theme="dark"] .topbar .public-refresh-toggle:focus-visible {
+  border-color: rgba(163,230,53,.4);
+  box-shadow: 0 0 0 2px rgba(163,230,53,.12);
 }
