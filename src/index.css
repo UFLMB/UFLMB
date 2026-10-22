@@ -5029,3 +5029,35 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   color: #edf1f7 !important;
   border-color: rgba(222,232,245,.11) !important;
 }
+
+
+/* Keep refresh discreetly grouped immediately before the public brand mark. */
+.topbar .brand-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.topbar .refresh-button-brand {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-color: transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #8e98a7;
+  transition: color .15s ease, background .15s ease, transform .15s ease;
+}
+.topbar .refresh-button-brand:hover {
+  color: var(--lime, #c5f467);
+  background: rgba(197,244,103,.07);
+}
+.topbar .refresh-button-brand svg {
+  width: 16px;
+  height: 16px;
+}
+@media (max-width: 380px) {
+  .topbar .brand-group { gap: 3px; }
+  .topbar .refresh-button-brand { width: 27px; height: 27px; flex-basis: 27px; }
+}
