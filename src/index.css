@@ -5271,3 +5271,14 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   display: block !important;
   content: "" !important;
 }
+
+
+/* Final correction: later dark-theme rules reintroduced an opaque #0b0d12
+   background on the scrolling content, hiding the fixed photo layers. */
+:root[data-ui-theme="dark"] body.has-background-images .app-content-scroll,
+:root[data-ui-theme="dark"] body.has-background-images .home-page {
+  background-color: transparent !important;
+}
+:root[data-ui-theme="dark"] body.has-background-images .home-page {
+  background-image: radial-gradient(ellipse at 50% 0%, rgba(197,244,103,.045), transparent 55%) !important;
+}
