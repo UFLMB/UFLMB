@@ -4081,13 +4081,21 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   background-image: none !important;
 }
 
-/* Brand container is intentionally present only in light mode. */
+/* The original logo artwork is designed for dark surfaces.
+   Keep its contrast in light mode without adding a box in dark mode. */
 :root[data-ui-theme="light"] .topbar .brand {
-  padding: 7px 11px;
-  border: 1px solid rgba(24, 32, 43, .13);
-  border-radius: 13px;
-  background: linear-gradient(135deg, #ffffff, #f5f8f1) !important;
-  box-shadow: 0 3px 12px rgba(24, 32, 43, .055) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid rgba(197, 244, 103, .32);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #111722, #18251e) !important;
+  box-shadow: 0 5px 18px rgba(17, 23, 34, .22), inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+}
+:root[data-ui-theme="light"] .topbar .brand .brand-logo-image,
+:root[data-ui-theme="light"] .topbar .brand .brand-mark {
+  flex: 0 0 auto;
 }
 :root[data-ui-theme="dark"] .topbar .brand {
   padding: 0;
@@ -4096,8 +4104,8 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   background: transparent !important;
   box-shadow: none !important;
 }
-:root[data-ui-theme="light"] .brand-word { color: #18202b !important; }
-:root[data-ui-theme="light"] .brand-word span { color: #527b13 !important; }
+:root[data-ui-theme="light"] .topbar .brand-word { color: #f3f5f8 !important; }
+:root[data-ui-theme="light"] .topbar .brand-word span { color: #c5f467 !important; }
 
 /* Light-mode account/sign-in, menus and all navigation surfaces. */
 :root[data-ui-theme="light"] .auth-trigger:not(.account-trigger),
