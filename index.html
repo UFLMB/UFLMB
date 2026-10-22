@@ -41,6 +41,44 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Keep the mobile dock aligned with the actually visible viewport in Android
+      // browsers and in-app webviews, whose browser chrome can resize the visual viewport.
+      (function () {
+        var nav = null;
+        var frame = 0;
+        function syncDock() {
+          frame = 0;
+          if (!nav || !nav.isConnected) {
+            nav = document.querySelector('.mobile-bottom-nav');
+          }
+          if (!nav || window.matchMedia('(min-width: 761px)').matches) return;
+          var vv = window.visualViewport;
+          var bottomGap = vv
+            ? Math.max(0, window.innerHeight - (vv.height + vv.offsetTop))
+            : 0;
+          nav.style.setProperty('bottom', bottomGap + 'px', 'important');
+        }
+        function scheduleSync() {
+          if (!frame) frame = window.requestAnimationFrame(syncDock);
+        }
+        window.addEventListener('resize', scheduleSync, { passive: true });
+        window.addEventListener('scroll', scheduleSync, { passive: true });
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', scheduleSync, { passive: true });
+          window.visualViewport.addEventListener('scroll', scheduleSync, { passive: true });
+        }
+        new MutationObserver(scheduleSync).observe(document.documentElement, {
+          childList: true,
+          subtree: true
+        });
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', scheduleSync, { once: true });
+        } else {
+          scheduleSync();
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
