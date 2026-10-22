@@ -5031,33 +5031,59 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Keep refresh discreetly grouped immediately before the public brand mark. */
+/* Keep refresh beside the brand and style it as a premium circular header action. */
 .topbar .brand-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   flex: 0 0 auto;
   min-width: 0;
 }
 .topbar .refresh-button-brand {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
-  border-color: transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: #8e98a7;
-  transition: color .15s ease, background .15s ease, transform .15s ease;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(222,232,245,.14);
+  border-radius: 50%;
+  background: rgba(17,23,34,.88);
+  color: #aeb6c4;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease, transform .16s ease;
 }
-.topbar .refresh-button-brand:hover {
+.topbar .refresh-button-brand:hover,
+.topbar .refresh-button-brand:focus-visible {
   color: var(--lime, #c5f467);
-  background: rgba(197,244,103,.07);
+  border-color: rgba(197,244,103,.32);
+  background: rgba(197,244,103,.09);
+  box-shadow: 0 0 0 3px rgba(197,244,103,.045);
+  outline: none;
+}
+.topbar .refresh-button-brand:active {
+  transform: scale(.95);
+  background: rgba(197,244,103,.14);
 }
 .topbar .refresh-button-brand svg {
+  display: block;
   width: 16px;
   height: 16px;
 }
+:root[data-ui-theme="light"] .topbar .refresh-button-brand {
+  color: #344054;
+  border-color: rgba(24,32,43,.16);
+  background: rgba(255,255,255,.92);
+}
+:root[data-ui-theme="light"] .topbar .refresh-button-brand:hover,
+:root[data-ui-theme="light"] .topbar .refresh-button-brand:focus-visible {
+  color: #526f1f;
+  border-color: rgba(101,133,42,.38);
+  background: rgba(197,244,103,.18);
+}
 @media (max-width: 380px) {
-  .topbar .brand-group { gap: 3px; }
-  .topbar .refresh-button-brand { width: 27px; height: 27px; flex-basis: 27px; }
+  .topbar .brand-group { gap: 4px; }
+  .topbar .refresh-button-brand { width: 30px; height: 30px; flex-basis: 30px; }
 }
