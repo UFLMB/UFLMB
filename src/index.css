@@ -4213,3 +4213,35 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .player-card .card-quick-actions .compare-toggle.selected {
   color: #527b13 !important;
 }
+
+/* Final paired theme/logo overrides: first visit defaults to dark in App.tsx.
+   In light mode, match the logo tile to the soft green sign-in buttons. */
+:root[data-ui-theme="light"] .topbar .brand {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 12px !important;
+  border: 1px solid rgba(101, 133, 42, .34) !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #fafff2, #edf5df) !important;
+  box-shadow: 0 3px 12px rgba(24, 32, 43, .06) !important;
+}
+:root[data-ui-theme="light"] .topbar .brand-word {
+  color: #18202b !important;
+}
+:root[data-ui-theme="light"] .topbar .brand-word span {
+  color: #527b13 !important;
+}
+:root[data-ui-theme="dark"] .topbar .brand {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+:root[data-ui-theme="dark"] .topbar .brand-word {
+  color: #f5f7fb !important;
+}
+:root[data-ui-theme="dark"] .topbar .brand-word span {
+  color: #c5f467 !important;
+}
