@@ -5831,3 +5831,46 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   box-shadow: 0 0 0 2px rgba(163, 230, 53, .28) !important;
   transition: border-color .08s ease, box-shadow .08s ease, transform .08s ease;
 }
+
+
+/* HIGH-CONTRAST LIGHT THEME: unify every selected/active public control in lime. */
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card.compare-selected {
+  border: 2.5px solid #a3e635 !important;
+  background: #fafff0 !important;
+  box-shadow: 0 0 12px rgba(163, 230, 53, .4), 0 0 0 2px rgba(101, 133, 42, .24) !important;
+  transform: translateY(-2px);
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card.compare-selected .compare-toggle.selected,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .compare-toggle.selected,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .bookmark-toggle.saved,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .category.active,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .category[aria-pressed="true"],
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .category[aria-current="true"],
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .nav-page.active,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .mobile-nav-item.active,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .theme-mode-button.active,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .auth-mode-switch button.active,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) button[aria-pressed="true"] {
+  color: #17230a !important;
+  background: #a3e635 !important;
+  background-image: none !important;
+  border: 2px solid #65852a !important;
+  box-shadow: 0 0 0 2px rgba(163, 230, 53, .30), 0 3px 10px rgba(76, 105, 28, .18) !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .category:not(.active):not([aria-pressed="true"]):not([aria-current="true"]) {
+  color: #364152 !important;
+  background: #ffffff !important;
+  border: 1px solid #aab4c2 !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .category:not(.active):not([aria-pressed="true"]):not([aria-current="true"]):hover {
+  color: #17230a !important;
+  background: #effbd7 !important;
+  border-color: #65852a !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card:active {
+  border: 2.5px solid #a3e635 !important;
+  box-shadow: 0 0 12px rgba(163, 230, 53, .4) !important;
+}
