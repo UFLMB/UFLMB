@@ -8,6 +8,19 @@ import AuthAccess from './components/AuthAccess'
 import SharedDatabasePanel from './components/SharedDatabasePanel'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
+const VIEW_STATE_KEY = 'uflmb.current-view.v1'
+type PublicPage = 'home' | 'players' | 'compare'
+const loadViewState = (): { page: PublicPage; showBookmarked: boolean } => {
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem(VIEW_STATE_KEY) || 'null')
+    if (saved && typeof saved === 'object') {
+      const value = saved as { page?: unknown; showBookmarked?: unknown }
+      const page: PublicPage = value.page === 'players' || value.page === 'compare' ? value.page : 'home'
+      return { page, showBookmarked: page === 'players' && value.showBookmarked === true }
+    }
+  } catch { /* Start on the home page when saved view state is unavailable. */ }
+  return { page: 'home', showBookmarked: false }
+}
 const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
 const DRIVE_API_KEY = 'uflmb.google.apiKey'
 const THEME_KEY = 'uflmb.site-theme.v1'
@@ -235,7 +248,8 @@ export default function App() {
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
-  const [page, setPage] = useState<'home' | 'players' | 'compare'>('home')
+  const [initialView] = useState(loadViewState)
+  const [page, setPage] = useState<PublicPage>(initialView.page)
   const [cardPage, setCardPage] = useState(1)
   const [isAdminSession, setIsAdminSession] = useState(false)
   const [adminDashboardOpen, setAdminDashboardOpen] = useState(false)
@@ -255,7 +269,7 @@ export default function App() {
   const [statFilter, setStatFilter] = useState('Any stat')
   const [minStat, setMinStat] = useState('')
   const [maxStat, setMaxStat] = useState('')
-  const [showBookmarked, setShowBookmarked] = useState(false)
+  const [showBookmarked, setShowBookmarked] = useState(initialView.showBookmarked)
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() => { try { const saved = JSON.parse(localStorage.getItem('uflmb.bookmarks.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string') : [] } catch { return [] } })
   const [selectedCard, setSelectedCard] = useState<PlayerCard | null>(null)
   const [formationId, setFormationId] = useState<FormationId>(() => { try { const v = localStorage.getItem('uflmb.squad.formation'); return v === '4-4-2' || v === '3-5-2' ? v : '4-3-3' } catch { return '4-3-3' } })
@@ -344,6 +358,10 @@ export default function App() {
     }, 350)
     return () => window.clearTimeout(timer)
   }, [account, bookmarkedIds, compareIds])
+
+  useEffect(() => {
+    try { localStorage.setItem(VIEW_STATE_KEY, JSON.stringify({ page, showBookmarked: page === 'players' && showBookmarked })) } catch { /* Current view still works for this session. */ }
+  }, [page, showBookmarked])
 
   useEffect(() => {
     try { localStorage.setItem('uflmb.bookmarks.v1', JSON.stringify(bookmarkedIds)) } catch { /* session-only fallback */ }
