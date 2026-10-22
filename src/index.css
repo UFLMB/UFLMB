@@ -4283,3 +4283,81 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .topbar .brand .brand-word span {
   color: #c5f467 !important;
 }
+
+
+/* Final UCL-inspired unified dark public header in both theme modes. */
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) {
+  box-sizing: border-box !important;
+  width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  padding-left: max(24px, calc((100vw - 1120px) / 2)) !important;
+  padding-right: max(24px, calc((100vw - 1120px) / 2)) !important;
+  color: #f5f7fb !important;
+  background: #0d1117 !important;
+  border-bottom: 1px solid rgba(255,255,255,.1) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.12) !important;
+}
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .brand {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .brand .brand-logo-image,
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .brand .brand-mark {
+  filter: none !important;
+}
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .brand-word,
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .brand-word span {
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .brand-word span {
+  color: #c5f467 !important;
+}
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .nav-page {
+  color: #cbd5e1 !important;
+  border-color: transparent !important;
+  background: transparent !important;
+}
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .nav-page:hover,
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .nav-page.active {
+  color: #c5f467 !important;
+  border-color: rgba(197,244,103,.2) !important;
+  background: rgba(197,244,103,.09) !important;
+}
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .auth-trigger {
+  color: #c5f467 !important;
+  background: linear-gradient(115deg,rgba(197,244,103,.13),rgba(197,244,103,.04)) !important;
+  border-color: rgba(197,244,103,.38) !important;
+}
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .auth-trigger.account-trigger {
+  color: #f5f7fb !important;
+  background: rgba(255,255,255,.06) !important;
+  border-color: rgba(255,255,255,.16) !important;
+}
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .public-theme-toggle,
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .menu-toggle {
+  color: #e5e7eb !important;
+  background: rgba(255,255,255,.055) !important;
+  border-color: rgba(255,255,255,.16) !important;
+}
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .public-theme-toggle:hover,
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .menu-toggle:hover {
+  color: #c5f467 !important;
+  background: rgba(197,244,103,.09) !important;
+  border-color: rgba(197,244,103,.35) !important;
+}
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .status-pill {
+  color: #cbd5e1 !important;
+  background: rgba(255,255,255,.045) !important;
+  border-color: rgba(255,255,255,.12) !important;
+}
+@media (max-width: 650px) {
+  :root[data-ui-theme="light"] .topbar:not(.admin-topbar) {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
