@@ -5282,3 +5282,16 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="dark"] body.has-background-images .home-page {
   background-image: radial-gradient(ellipse at 50% 0%, rgba(197,244,103,.045), transparent 55%) !important;
 }
+
+
+/* Public pages: the shell itself also had an opaque dark background, so
+   making only its children transparent could not reveal the body photo layer.
+   Keep all public routes transparent in dark mode; admin styling is untouched.
+   Light mode intentionally remains photo-free. */
+:root[data-ui-theme="dark"] body.has-background-images .app-shell:not(.admin-shell) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+:root[data-ui-theme="dark"] body.has-background-images .app-shell:not(.admin-shell) > .app-content-scroll {
+  background-color: transparent !important;
+}
