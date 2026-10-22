@@ -5031,59 +5031,47 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Keep refresh beside the brand and style it as a premium circular header action. */
-.topbar .brand-group {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex: 0 0 auto;
-  min-width: 0;
-}
-.topbar .refresh-button-brand {
-  display: inline-flex;
+/* Public header refresh action: match the theme toggle's dimensions and interaction style. */
+.topbar .public-refresh-toggle {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 32px;
   width: 32px;
   height: 32px;
-  flex: 0 0 32px;
-  align-items: center;
-  justify-content: center;
   padding: 0;
-  border: 1px solid rgba(222,232,245,.14);
-  border-radius: 50%;
-  background: rgba(17,23,34,.88);
-  color: #aeb6c4;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted, #aeb6c4);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: color .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease, transform .16s ease;
+  transition: color .16s ease, border-color .16s ease, background .16s ease, transform .16s ease;
 }
-.topbar .refresh-button-brand:hover,
-.topbar .refresh-button-brand:focus-visible {
+.topbar .public-refresh-toggle svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+  overflow: visible;
+}
+.topbar .public-refresh-toggle:hover,
+.topbar .public-refresh-toggle:focus-visible {
   color: var(--lime, #c5f467);
-  border-color: rgba(197,244,103,.32);
-  background: rgba(197,244,103,.09);
-  box-shadow: 0 0 0 3px rgba(197,244,103,.045);
+  border-color: rgba(197,244,103,.24);
+  background: rgba(197,244,103,.07);
   outline: none;
 }
-.topbar .refresh-button-brand:active {
-  transform: scale(.95);
-  background: rgba(197,244,103,.14);
+.topbar .public-refresh-toggle:active {
+  transform: scale(.96);
+  background: rgba(197,244,103,.11);
 }
-.topbar .refresh-button-brand svg {
-  display: block;
-  width: 16px;
-  height: 16px;
-}
-:root[data-ui-theme="light"] .topbar .refresh-button-brand {
+:root[data-ui-theme="light"] .topbar .public-refresh-toggle {
   color: #344054;
-  border-color: rgba(24,32,43,.16);
-  background: rgba(255,255,255,.92);
+  border-color: transparent;
+  background: transparent;
 }
-:root[data-ui-theme="light"] .topbar .refresh-button-brand:hover,
-:root[data-ui-theme="light"] .topbar .refresh-button-brand:focus-visible {
+:root[data-ui-theme="light"] .topbar .public-refresh-toggle:hover,
+:root[data-ui-theme="light"] .topbar .public-refresh-toggle:focus-visible {
   color: #526f1f;
-  border-color: rgba(101,133,42,.38);
-  background: rgba(197,244,103,.18);
-}
-@media (max-width: 380px) {
-  .topbar .brand-group { gap: 4px; }
-  .topbar .refresh-button-brand { width: 30px; height: 30px; flex-basis: 30px; }
+  border-color: rgba(101,133,42,.34);
+  background: rgba(197,244,103,.16);
 }
