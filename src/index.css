@@ -4487,7 +4487,59 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     line-height: 1 !important;
     pointer-events: none !important;
   }
+  /* App-shell layout: the document stays still; only the content pane scrolls. */
+  html,
   body {
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+  }
+  body {
+    position: fixed !important;
+    inset: 0 !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  #root {
+    width: 100% !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .app-shell:not(.admin-shell) {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+  }
+  .app-shell:not(.admin-shell) > .topbar {
+    flex: 0 0 auto !important;
+  }
+  .app-content-scroll {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
     padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
+    box-sizing: border-box !important;
+  }
+  /* Admin has its own full-height scroll surface, rather than the public content pane. */
+  .app-shell.admin-shell {
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-height: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain !important;
   }
 }
