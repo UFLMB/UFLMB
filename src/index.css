@@ -5591,3 +5591,97 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   -webkit-appearance: none;
   appearance: none;
 }
+
+
+/* Compact, premium disclosure for the public filter controls. The closed state
+   stays a single tidy row; the control grid appears only when expanded. */
+.app-shell:not(.admin-shell) .filter-disclosure {
+  margin-top: 14px;
+  border: 1px solid var(--arena-border, rgba(197, 244, 103, .16));
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+  box-shadow: 0 5px 18px rgba(0,0,0,.08);
+  overflow: clip;
+}
+.app-shell:not(.admin-shell) .filter-disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 10px 14px;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  color: var(--text-color, #f3f5f8);
+  transition: background .18s ease, border-color .18s ease;
+}
+.app-shell:not(.admin-shell) .filter-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.app-shell:not(.admin-shell) .filter-disclosure > summary::marker {
+  content: "";
+}
+.app-shell:not(.admin-shell) .filter-disclosure > summary:hover {
+  background: rgba(197,244,103,.045);
+}
+.app-shell:not(.admin-shell) .filter-disclosure-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+.app-shell:not(.admin-shell) .filter-disclosure-hint {
+  margin-left: auto;
+  color: var(--muted, #9299a5);
+  font-size: 10px;
+  line-height: 1.35;
+  text-align: right;
+}
+.app-shell:not(.admin-shell) .filter-disclosure-chevron {
+  flex: 0 0 auto;
+  color: var(--accent, #c5f467);
+  font-size: 18px;
+  line-height: 1;
+  transition: transform .18s ease;
+}
+.app-shell:not(.admin-shell) .filter-disclosure[open] > summary {
+  border-bottom: 1px solid var(--arena-border, rgba(197,244,103,.16));
+  background: rgba(197,244,103,.035);
+}
+.app-shell:not(.admin-shell) .filter-disclosure[open] .filter-disclosure-chevron {
+  transform: rotate(180deg);
+}
+.app-shell:not(.admin-shell) .filter-disclosure > .browse-controls {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .filter-disclosure {
+  background: linear-gradient(135deg, rgba(255,255,255,.74), rgba(225,232,216,.64));
+  border-color: rgba(104,126,81,.26);
+  box-shadow: 0 5px 16px rgba(52,73,37,.06);
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .filter-disclosure > summary {
+  color: #2f3928;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .filter-disclosure-hint {
+  color: #68745f;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .filter-disclosure[open] > summary {
+  background: rgba(132,164,98,.10);
+  border-bottom-color: rgba(104,126,81,.20);
+}
+@media (max-width: 420px) {
+  .app-shell:not(.admin-shell) .filter-disclosure > summary {
+    min-height: 44px;
+    gap: 7px;
+    padding: 9px 11px;
+  }
+  .app-shell:not(.admin-shell) .filter-disclosure-title {
+    font-size: 11px;
+  }
+  .app-shell:not(.admin-shell) .filter-disclosure-hint {
+    font-size: 9px;
+  }
+}
