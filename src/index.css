@@ -5364,3 +5364,52 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .squad-panel {
   background-color: rgba(255, 255, 255, .66) !important;
 }
+
+
+/* Light theme refinement: replace stark white surfaces with a muted sage/stone palette,
+   staying within the existing lime-accent UFLMB identity. */
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .player-card,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .featured-player,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-overview article,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-featured,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .compare-panel,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .squad-panel {
+  background-color: rgba(222, 231, 211, .70) !important;
+  border-color: rgba(104, 126, 81, .22) !important;
+  color: #263021 !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-hero,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .analytics-panel,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .theme-live-preview {
+  background-color: rgba(226, 233, 219, .78) !important;
+  border-color: rgba(104, 126, 81, .20) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .stats-grid span,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .snapshot-grid > div,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .quality-tile,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .category,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .status-pill,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .count-label {
+  background-color: rgba(211, 222, 199, .58) !important;
+  border-color: rgba(104, 126, 81, .20) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .search-wrap,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .browse-controls select,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .comparison-table-wrap {
+  background-color: rgba(232, 237, 226, .88) !important;
+  border-color: rgba(104, 126, 81, .24) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .comparison-table thead th {
+  background-color: rgba(204, 218, 188, .86) !important;
+  color: #40552b !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .player-card,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .featured-player,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-overview article,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-featured,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .compare-panel,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .squad-panel,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .analytics-panel {
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
