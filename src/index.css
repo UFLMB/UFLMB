@@ -4439,7 +4439,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     align-items: stretch !important;
     gap: 3px !important;
-    padding: 7px 8px max(6px, env(safe-area-inset-bottom, 0px)) !important;
+    padding: 7px 8px 8px !important;
     border-radius: 16px 16px 0 0 !important;
     z-index: 9999 !important;
   }
@@ -4535,10 +4535,11 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     width: 100% !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
-    overscroll-behavior-y: contain !important;
+    /* Keep vertical overscroll available so the browser can handle pull-to-refresh at scrollTop === 0. */
+    overscroll-behavior-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-y !important;
-    padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: 82px !important;
     box-sizing: border-box !important;
   }
   /* Admin has its own full-height scroll surface, rather than the public content pane. */
