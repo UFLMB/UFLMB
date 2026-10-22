@@ -5413,3 +5413,36 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
 }
+
+
+/* Harmonize the light-theme hero and mobile navigation with the sage/stone surfaces.
+   Keep the rotating photo subtly visible behind the hero, while the dock stays clean and readable. */
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-hero {
+  background:
+    radial-gradient(ellipse at 82% 8%, rgba(163, 230, 53, .12), transparent 44%),
+    linear-gradient(135deg, rgba(232, 239, 223, .91), rgba(215, 226, 203, .88)) !important;
+  color: #263021 !important;
+  border-color: rgba(104, 126, 81, .24) !important;
+  box-shadow: 0 10px 28px rgba(52, 73, 37, .08) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-hero .hero-copy {
+  color: #58664d !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .mobile-bottom-nav {
+  background: rgba(232, 237, 226, .96) !important;
+  color: #263021 !important;
+  border-top: 1px solid rgba(104, 126, 81, .24) !important;
+  box-shadow: 0 -6px 22px rgba(52, 73, 37, .09) !important;
+  backdrop-filter: blur(14px) saturate(1.05) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.05) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .mobile-bottom-nav .mobile-nav-item {
+  background: transparent !important;
+  color: #58664d !important;
+  border-color: transparent !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .mobile-bottom-nav .mobile-nav-item.active {
+  background: rgba(197, 220, 166, .62) !important;
+  color: #365314 !important;
+  border-color: rgba(104, 126, 81, .15) !important;
+}
