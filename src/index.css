@@ -5685,3 +5685,40 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     font-size: 9px;
   }
 }
+
+
+/* Final filter-disclosure cleanup: remove any native/button-like chip styling
+   behind the chevron and tighten the closed row's vertical footprint. */
+.app-shell:not(.admin-shell) .filter-disclosure > summary {
+  min-height: 0 !important;
+  padding: 8px 12px !important;
+  line-height: 1.2;
+}
+.app-shell:not(.admin-shell) .filter-disclosure-chevron {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.app-shell:not(.admin-shell) .filter-disclosure-chevron::before,
+.app-shell:not(.admin-shell) .filter-disclosure-chevron::after {
+  content: none !important;
+  display: none !important;
+}
+@media (max-width: 420px) {
+  .app-shell:not(.admin-shell) .filter-disclosure > summary {
+    padding: 7px 10px !important;
+  }
+}
