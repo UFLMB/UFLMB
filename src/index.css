@@ -5960,3 +5960,12 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card.compare-selected.card-click-selected {
   border-width: 3px !important;
 }
+
+
+/* Light-mode override: the older aria-pressed :has() selector is more specific
+   than the base Compare rule, so explicitly keep Compare-only cards at 2px. */
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card.compare-selected:has(.compare-toggle[aria-pressed="true"]):not(.card-click-selected) {
+  border: 2px solid #84b927 !important;
+  box-shadow: 0 0 0 1px rgba(101, 133, 42, .30),
+              0 0 12px rgba(132, 185, 39, .22) !important;
+}
