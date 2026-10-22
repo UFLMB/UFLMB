@@ -2142,7 +2142,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 /* Mobile app-style bottom navigation. Desktop keeps its regular top navigation. */
 .mobile-bottom-nav { display: none; }
 @media (max-width: 760px) {
-  body { padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px)); }
+  body { padding-bottom: 78px; }
   .mobile-bottom-nav {
     position: fixed;
     z-index: 1000;
@@ -2220,7 +2220,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     transform: translateZ(0) !important;
     will-change: transform !important;
     border-radius: 16px 16px 0 0;
-    padding-bottom: calc(7px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 8px;
   }
   body:has(.auth-backdrop) .mobile-bottom-nav {
     display: none !important;
@@ -4690,4 +4690,43 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   background-color: rgba(255,255,255,.94);
   color: #18202b;
   border-color: rgba(31,41,55,.15);
+}
+
+
+/* Compact manual refresh action beside sign-in/theme controls. */
+@media (max-width: 760px) {
+  .top-actions { gap: 7px; }
+  .refresh-button {
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid rgba(197,244,103,.24);
+    border-radius: 10px;
+    background: rgba(197,244,103,.07);
+    color: var(--text-color, #edf1f7);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .refresh-button svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .refresh-button:active { transform: scale(.96); }
+}
+@media (min-width: 761px) {
+  .refresh-button {
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid rgba(197,244,103,.24);
+    border-radius: 10px;
+    background: rgba(197,244,103,.07);
+    color: var(--text-color, #edf1f7);
+    cursor: pointer;
+  }
+  .refresh-button svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 }
