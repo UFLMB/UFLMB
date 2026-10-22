@@ -356,7 +356,16 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem(THEME_MODE_KEY, themeMode) } catch { /* theme still applies for this session */ }
     const root = document.documentElement
-    const applyTheme = () => { root.dataset.uiTheme = themeMode === 'system' ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') : themeMode }
+    const applyTheme = () => {
+      const resolvedTheme = themeMode === 'system'
+        ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+        : themeMode
+      root.dataset.uiTheme = resolvedTheme
+      // Mirror the active theme onto the new scroll/content structure as well as <html>.
+      document.querySelectorAll<HTMLElement>('.app-shell, .app-content-scroll, .home-page').forEach(element => {
+        element.dataset.uiTheme = resolvedTheme
+      })
+    }
     applyTheme()
     const media = window.matchMedia('(prefers-color-scheme: light)')
     if (themeMode === 'system') media.addEventListener('change', applyTheme)
@@ -365,14 +374,16 @@ export default function App() {
 
   useEffect(() => {
     const root = document.documentElement
+    const resolvedTheme = root.dataset.uiTheme || 'dark'
     root.style.setProperty('--accent', siteTheme.accent)
-    root.style.setProperty('--page-bg', siteTheme.background)
-    root.style.setProperty('--panel-bg', siteTheme.panel)
-    root.style.setProperty('--text-color', siteTheme.text)
+    // Keep the appearance preset from overriding the user's explicit light/dark selection.
+    root.style.setProperty('--page-bg', resolvedTheme === 'light' ? '#eef1f5' : siteTheme.background)
+    root.style.setProperty('--panel-bg', resolvedTheme === 'light' ? '#ffffff' : siteTheme.panel)
+    root.style.setProperty('--text-color', resolvedTheme === 'light' ? '#18202b' : siteTheme.text)
     root.style.setProperty('--card-radius', `${siteTheme.radius}px`)
     root.dataset.themeMode = siteTheme.mode
     try { localStorage.setItem(THEME_KEY, JSON.stringify(siteTheme)) } catch { /* theme still applies for this session */ }
-  }, [siteTheme])
+  }, [siteTheme, themeMode])
 
   useEffect(() => {
     const images = siteBranding.backgroundImageUrls
