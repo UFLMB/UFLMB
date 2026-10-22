@@ -5319,3 +5319,29 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   background-color: transparent !important;
   background-image: none !important;
 }
+
+
+/* Let a little more of the rotating background show through public cards in BOTH themes.
+   Keep text contrast and borders; only soften the main card surfaces when a photo is active. */
+:root[data-ui-theme="dark"] body.has-background-images .app-shell:not(.admin-shell) .player-card,
+:root[data-ui-theme="dark"] body.has-background-images .app-shell:not(.admin-shell) .featured-player,
+:root[data-ui-theme="dark"] body.has-background-images .app-shell:not(.admin-shell) .home-overview article,
+:root[data-ui-theme="dark"] body.has-background-images .app-shell:not(.admin-shell) .home-featured,
+:root[data-ui-theme="dark"] body.has-background-images .app-shell:not(.admin-shell) .compare-panel,
+:root[data-ui-theme="dark"] body.has-background-images .app-shell:not(.admin-shell) .squad-panel {
+  background-color: rgba(17, 23, 34, .76) !important;
+  background-image: none !important;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .player-card,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .featured-player,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-overview article,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-featured,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .compare-panel,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .squad-panel {
+  background-color: rgba(255, 255, 255, .78) !important;
+  background-image: none !important;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
