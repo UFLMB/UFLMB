@@ -5905,3 +5905,23 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
               0 0 0 2px rgba(163, 230, 53, .20) !important;
   font-weight: 800 !important;
 }
+
+
+/* Independent card-tap selection: visual only, never adds the card to Compare.
+   Keep the selected outline persistent after the tap and make it clearly visible
+   in both themes. */
+.app-shell:not(.admin-shell) .player-card.card-click-selected {
+  border: 3px solid var(--accent, #c5f467) !important;
+  box-shadow:
+    0 0 0 2px rgba(197, 244, 103, .22),
+    0 0 16px rgba(197, 244, 103, .20) !important;
+  transform: none !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card.card-click-selected {
+  border: 3px solid #65852a !important;
+  background: #fafff0 !important;
+  box-shadow:
+    0 0 0 2px rgba(163, 230, 53, .58),
+    0 0 16px rgba(101, 133, 42, .26) !important;
+  transform: none !important;
+}
