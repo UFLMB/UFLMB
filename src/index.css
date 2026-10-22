@@ -4361,3 +4361,12 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     padding-right: 16px !important;
   }
 }
+
+
+/* Theme-aware sign-in silhouette contrast: dark on light surfaces, lime on dark surfaces. */
+:root[data-ui-theme="light"] .button.primary.auth-trigger .auth-trigger-icon {
+  color: #0f172a !important;
+}
+:root[data-ui-theme="dark"] .button.primary.auth-trigger .auth-trigger-icon {
+  color: #c5f467 !important;
+}
