@@ -3,10 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        var key = 'uflmb.ui-theme-mode.v4';
+        var mode = 'dark';
+        try {
+          var saved = window.localStorage.getItem(key);
+          if (saved === 'dark' || saved === 'light' || saved === 'system') mode = saved;
+        } catch (error) {}
+        var resolved = mode === 'system'
+          ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+          : mode;
+        document.documentElement.setAttribute('data-ui-theme', resolved);
+        document.documentElement.style.colorScheme = resolved;
+        var colorScheme = document.querySelector('meta[name="color-scheme"]');
+        if (colorScheme) colorScheme.setAttribute('content', resolved);
+        var themeColor = document.querySelector('meta[name="theme-color"]');
+        if (themeColor) themeColor.setAttribute('content', resolved === 'light' ? '#f4f6f8' : '#0b0d12');
+      })();
+    </script>
     <meta name="theme-color" content="#0b0d12" />
     <meta name="description" content="Explore the UFL Mobile card reference: searchable player cards, OVR ratings, positions, stats, perks and verified sources." />
     <meta name="application-name" content="UFLMB" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark light" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="UFLMB" />
     <meta property="og:title" content="UFLMB — UFL Mobile Card Database" />
