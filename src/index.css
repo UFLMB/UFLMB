@@ -5254,3 +5254,20 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .topbar:not(.admin-topbar) .public-theme-toggle {
   color: #a3e635 !important;
 }
+
+
+/* Restore rotating branding photos in dark mode: the opaque dark-theme content
+   surface was covering the fixed body background layers. Light mode stays photo-free. */
+:root[data-ui-theme="dark"] body.has-background-images .app-content-scroll,
+:root[data-ui-theme="dark"] body.has-background-images .home-page {
+  background-color: transparent !important;
+}
+:root[data-ui-theme="dark"] body.has-background-images::after {
+  display: block !important;
+  content: "" !important;
+  background-image: var(--site-background-image) !important;
+}
+:root[data-ui-theme="dark"] body.has-background-images::before {
+  display: block !important;
+  content: "" !important;
+}
