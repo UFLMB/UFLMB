@@ -5549,3 +5549,30 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     letter-spacing: .2px;
   }
 }
+
+
+/* Final light-theme search fix: neutralize the generic white input fill and any
+   background-image-specific wrapper override that can recreate the pale box. */
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .search-wrap,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .search-wrap {
+  background: rgba(91, 104, 81, .10) !important;
+  background-color: rgba(91, 104, 81, .10) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .search-wrap input,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .search-wrap input[type="search"],
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .search-wrap input[type="search"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .search-wrap input[type="search"]::-webkit-search-decoration,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .search-wrap input[type="search"]::-webkit-search-cancel-button,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .search-wrap input[type="search"]::-webkit-search-results-button,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .search-wrap input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
