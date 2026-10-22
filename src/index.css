@@ -4259,3 +4259,27 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .topbar .brand .brand-word span {
   color: #527b13 !important;
 }
+
+
+/* Final logo treatment: premium dark tile in light mode, original artwork retained. */
+:root[data-ui-theme="light"] .topbar .brand {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 12px !important;
+  border: 1px solid rgba(197, 244, 103, .3) !important;
+  border-radius: 12px !important;
+  background: linear-gradient(145deg, #111827 0%, #0b1220 100%) !important;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, .22), inset 0 1px 0 rgba(255, 255, 255, .07) !important;
+}
+:root[data-ui-theme="light"] .topbar .brand .brand-logo-image,
+:root[data-ui-theme="light"] .topbar .brand .brand-mark {
+  filter: none !important;
+}
+:root[data-ui-theme="light"] .topbar .brand .brand-word {
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+:root[data-ui-theme="light"] .topbar .brand .brand-word span {
+  color: #c5f467 !important;
+}
