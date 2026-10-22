@@ -5950,3 +5950,13 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card.card-click-selected {
   border-width: 3px !important;
 }
+
+
+/* If the same card is both tap-selected and compared, the single-card selection
+   keeps the stronger 3px outline; cards only in Compare keep the 2px outline. */
+.app-shell:not(.admin-shell) .player-card.compare-selected.card-click-selected {
+  border-width: 3px !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card.compare-selected.card-click-selected {
+  border-width: 3px !important;
+}
