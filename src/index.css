@@ -4493,7 +4493,8 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     width: 100% !important;
     height: 100% !important;
     overflow: hidden !important;
-    overscroll-behavior: none !important;
+    overscroll-behavior-x: none !important;
+    overscroll-behavior-y: auto !important;
   }
   body {
     position: fixed !important;
