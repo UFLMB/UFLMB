@@ -5031,7 +5031,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Public header refresh action: clean by default, with a stable UFLMB lime accent. */
+/* Public header refresh action: discreet in dark mode, clearly visible in light mode. */
 .topbar .public-refresh-toggle {
   display: inline-grid;
   place-items: center;
@@ -5042,7 +5042,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
-  color: #a3e635;
+  color: #a3aab6;
   box-shadow: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -5055,16 +5055,12 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   overflow: visible;
   stroke: currentColor;
 }
-.topbar .public-refresh-toggle:hover,
-.topbar .public-refresh-toggle:focus-visible {
-  color: #a3e635;
+.topbar .public-refresh-toggle:hover {
   border-color: transparent;
   background: transparent;
   box-shadow: none;
-  outline: none;
 }
 .topbar .public-refresh-toggle:active {
-  color: #a3e635;
   border-color: rgba(163,230,53,.24);
   background: rgba(163,230,53,.12);
   box-shadow: 0 0 0 2px rgba(163,230,53,.08);
@@ -5072,19 +5068,25 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 .topbar .public-refresh-toggle:focus-visible {
   border-color: rgba(163,230,53,.4);
+  background: rgba(163,230,53,.06);
   box-shadow: 0 0 0 2px rgba(163,230,53,.12);
+  outline: none;
 }
-/* Theme-independent override: the refresh icon must remain lime in every theme. */
-:root[data-ui-theme="light"] .topbar .public-refresh-toggle,
+/* Theme-specific icon colors; both themes remain clean until interaction. */
 :root[data-ui-theme="dark"] .topbar .public-refresh-toggle {
-  color: #a3e635;
+  color: #a3aab6;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+:root[data-ui-theme="light"] .topbar .public-refresh-toggle {
+  color: #657181;
   background: transparent;
   border-color: transparent;
   box-shadow: none;
 }
 :root[data-ui-theme="light"] .topbar .public-refresh-toggle:active,
 :root[data-ui-theme="dark"] .topbar .public-refresh-toggle:active {
-  color: #a3e635;
   border-color: rgba(163,230,53,.24);
   background: rgba(163,230,53,.12);
   box-shadow: 0 0 0 2px rgba(163,230,53,.08);
@@ -5092,5 +5094,6 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .topbar .public-refresh-toggle:focus-visible,
 :root[data-ui-theme="dark"] .topbar .public-refresh-toggle:focus-visible {
   border-color: rgba(163,230,53,.4);
+  background: rgba(163,230,53,.06);
   box-shadow: 0 0 0 2px rgba(163,230,53,.12);
 }
