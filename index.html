@@ -5,29 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <script>
       (function () {
-        var root = document.documentElement;
-        function syncVisibleViewport() {
-          var viewport = window.visualViewport;
-          if (!viewport) {
-            root.style.setProperty('--uflmb-visual-viewport-bottom', '0px');
-            return;
-          }
-          var visibleBottom = viewport.height + viewport.offsetTop;
-          var bottomGap = Math.max(0, window.innerHeight - visibleBottom);
-          root.style.setProperty('--uflmb-visual-viewport-bottom', bottomGap + 'px');
-          root.style.setProperty('--uflmb-visual-viewport-height', viewport.height + 'px');
-        }
-        syncVisibleViewport();
-        if (window.visualViewport) {
-          window.visualViewport.addEventListener('resize', syncVisibleViewport, { passive: true });
-          window.visualViewport.addEventListener('scroll', syncVisibleViewport, { passive: true });
-        }
-        window.addEventListener('resize', syncVisibleViewport, { passive: true });
-        window.addEventListener('orientationchange', syncVisibleViewport, { passive: true });
-      })();
-    </script>
-    <script>
-      (function () {
         var key = 'uflmb.ui-theme-mode.v4';
         var mode = 'dark';
         try {
