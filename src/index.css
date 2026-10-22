@@ -5752,3 +5752,59 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     flex: 0 0 auto;
   }
 }
+
+
+/* Light theme: make selected/active states unmistakable across the public UI. */
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .category.active,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .category[aria-pressed="true"],
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .category[aria-current="true"] {
+  color: #17230a !important;
+  background: #a3e635 !important;
+  border: 1px solid #65852a !important;
+  box-shadow: inset 0 0 0 1px rgba(23, 35, 10, .12), 0 2px 8px rgba(101, 133, 42, .18) !important;
+  font-weight: 800 !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .nav-page.active,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .mobile-nav-item.active,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .theme-mode-button.active,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .auth-mode-switch button.active {
+  color: #17230a !important;
+  background: #a3e635 !important;
+  border-color: #65852a !important;
+  box-shadow: inset 0 0 0 1px rgba(23, 35, 10, .12), 0 2px 8px rgba(101, 133, 42, .16) !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card:has(.compare-toggle.selected) {
+  border: 2px solid #65852a !important;
+  box-shadow: 0 0 0 2px rgba(163, 230, 53, .58), 0 8px 24px rgba(101, 133, 42, .2) !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card .card-quick-actions .compare-toggle.selected,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card .card-quick-actions .bookmark-toggle.saved {
+  color: #17230a !important;
+  background: #a3e635 !important;
+  border: 1px solid #65852a !important;
+  box-shadow: 0 0 0 2px rgba(163, 230, 53, .25) !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .filter-disclosure[open] {
+  border: 2px solid #65852a !important;
+  box-shadow: 0 0 0 2px rgba(163, 230, 53, .2) !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .filter-disclosure[open] > summary {
+  background: rgba(163, 230, 53, .22) !important;
+  border-bottom: 1px solid rgba(101, 133, 42, .55) !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) button:focus-visible,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) select:focus-visible,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) input:focus-visible {
+  outline: 3px solid #65852a !important;
+  outline-offset: 2px !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .category:not(.active) {
+  color: #4b5563;
+  background: #fff;
+  border-color: #cbd5e1;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .category:not(.active):hover {
+  color: #17230a;
+  background: #f0f9d9;
+  border-color: #84a83b;
+}
