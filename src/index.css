@@ -5247,3 +5247,10 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     padding: 6px 8px !important;
   }
 }
+
+
+/* Brand refinement: the moon (switch to dark mode) is UFLMB lime.
+   The sun shown in dark mode retains its existing neutral color. */
+:root[data-ui-theme="light"] .topbar:not(.admin-topbar) .public-theme-toggle {
+  color: #a3e635 !important;
+}
