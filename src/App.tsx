@@ -1564,7 +1564,7 @@ export default function App() {
         <p className="eyebrow">{showBookmarked ? 'YOUR COLLECTION' : 'PLAYER DATABASE'}</p>
         <h1>{showBookmarked ? <>Your <span>favorites.</span></> : <>Your UFL Mobile<br /><span>card reference.</span></>}</h1>
         <p className="hero-copy">{showBookmarked ? 'Your starred player cards, collected in one place.' : 'A searchable home for UFL Mobile player cards. Browse verified records, check card details, and help build a reliable community reference.'}</p>
-        <div className="search-wrap"><span className="search-icon" aria-hidden="true">⌕</span><input aria-label="Search the card database" type="search" placeholder="Search players, stats, perks, nations, positions…" value={query} onChange={e => setQuery(e.target.value)} /><kbd>{visibleCards.length} FOUND</kbd></div>
+        <div className="search-wrap"><span className="search-icon" aria-hidden="true">⌕</span><input aria-label="Search the card database" type="search" placeholder="Search database…" value={query} onChange={e => setQuery(e.target.value)} /><kbd>{visibleCards.length} FOUND</kbd></div>
         <div className="category-row" aria-label="Card categories">{categories.map(item => <button className={category === item ? 'category active' : 'category'} key={item} onClick={() => setCategory(item)} type="button">{item}</button>)}</div>
         <details className="filter-disclosure">
           <summary><span className="filter-disclosure-title">Filters &amp; sorting</span><span className="filter-disclosure-hint">Nation, position, OVR, stats</span><span className="filter-disclosure-chevron" aria-hidden="true">⌄</span></summary>
