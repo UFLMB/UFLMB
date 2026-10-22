@@ -11,13 +11,16 @@ const STORAGE_KEY = 'uflmb.cards.v1'
 const DRIVE_CLIENT_KEY = 'uflmb.google.clientId'
 const DRIVE_API_KEY = 'uflmb.google.apiKey'
 const THEME_KEY = 'uflmb.site-theme.v1'
-// v4 deliberately ignores legacy saved light/system modes so first visits start dark.
+// v4 persists the user's selected theme; new/invalid values default to dark.
 const THEME_MODE_KEY = 'uflmb.ui-theme-mode.v4'
 type ThemeMode = 'dark' | 'light' | 'system'
 const loadThemeMode = (): ThemeMode => {
-  // Every fresh page load starts dark, regardless of a previously selected session theme.
-  try { localStorage.setItem(THEME_MODE_KEY, 'dark') } catch { /* dark remains the in-memory fallback */ }
-  return 'dark'
+  try {
+    const saved = localStorage.getItem(THEME_MODE_KEY)
+    return saved === 'light' || saved === 'system' || saved === 'dark' ? saved : 'dark'
+  } catch {
+    return 'dark'
+  }
 }
 const BRANDING_KEY = 'uflmb.site-branding.v1'
 type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[] }
