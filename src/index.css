@@ -5969,3 +5969,30 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   box-shadow: 0 0 0 1px rgba(101, 133, 42, .30),
               0 0 12px rgba(132, 185, 39, .22) !important;
 }
+
+
+/* Mobile-only public footer polish; desktop footer layout remains untouched. */
+@media (max-width: 768px) {
+  .app-shell:not(.admin-shell) .footer {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    text-align: center !important;
+    font-size: 10px !important;
+    line-height: 1.6 !important;
+    color: #a1a8b4 !important;
+    padding: 18px 0 calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .app-shell:not(.admin-shell) .footer > span {
+    display: block;
+    width: 100%;
+    text-align: center !important;
+    overflow-wrap: anywhere;
+  }
+
+  .app-shell:not(.admin-shell) .footer .footer-muted {
+    color: #7f8998 !important;
+  }
+}
