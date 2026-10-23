@@ -6209,25 +6209,26 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   }
 }
 
-
-/* Remove section separator rules so the goalkeeper background remains visually continuous. */
-.app-shell:not(.admin-shell) .database-section,
-.app-shell:not(.admin-shell) .analytics-section,
-.app-shell:not(.admin-shell) .compare-section,
-.app-shell:not(.admin-shell) .squad-section {
+/* Keep useful section dividers everywhere except the unwanted line in Compare. */
+.app-shell:not(.admin-shell) .compare-section {
   border-top: none !important;
   box-shadow: none !important;
 }
-.app-shell:not(.admin-shell) .database-section::before,
-.app-shell:not(.admin-shell) .database-section::after,
-.app-shell:not(.admin-shell) .analytics-section::before,
-.app-shell:not(.admin-shell) .analytics-section::after,
 .app-shell:not(.admin-shell) .compare-section::before,
-.app-shell:not(.admin-shell) .compare-section::after,
-.app-shell:not(.admin-shell) .squad-section::before,
-.app-shell:not(.admin-shell) .squad-section::after {
+.app-shell:not(.admin-shell) .compare-section::after {
   content: none !important;
   display: none !important;
   border: none !important;
   box-shadow: none !important;
+}
+
+/* Consistent breathing room between the Compare empty-state card and its heading. */
+.app-shell:not(.admin-shell) .compare-section > .section-heading {
+  margin-top: 24px !important;
+}
+
+@media (max-width: 768px) {
+  .app-shell:not(.admin-shell) .compare-section > .section-heading {
+    margin-top: 16px !important;
+  }
 }
