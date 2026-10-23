@@ -6005,3 +6005,18 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     color: #7d8795 !important;
   }
 }
+
+
+/* Subtle community signature below the legal footer copy on mobile. */
+@media (max-width: 768px) {
+  .app-shell:not(.admin-shell) .footer .footer-sdg {
+    width: auto;
+    margin-top: 3px;
+    color: #7d8795;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    line-height: 1.4;
+    opacity: .82;
+  }
+}
