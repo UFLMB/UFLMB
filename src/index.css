@@ -6197,3 +6197,14 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     border-color: rgba(197, 244, 103, .2) !important;
   }
 }
+
+
+/* Mobile layout polish across light and dark themes. */
+@media (max-width: 768px) {
+  .app-shell:not(.admin-shell) .compare-section > .section-heading {
+    margin-top: 16px !important;
+  }
+  .app-shell:not(.admin-shell) .footer {
+    border-top: none !important;
+  }
+}
