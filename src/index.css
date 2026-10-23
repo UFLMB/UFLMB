@@ -6029,3 +6029,37 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     opacity: 1;
   }
 }
+
+
+/* Balanced desktop footer: project label left, SDG signature centered, disclaimer right. */
+@media (min-width: 769px) {
+  .app-shell:not(.admin-shell) .footer {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 24px;
+  }
+
+  .app-shell:not(.admin-shell) .footer > span:first-child {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .app-shell:not(.admin-shell) .footer .footer-sdg {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
+    color: var(--lime, #a3e635);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: .12em;
+    white-space: nowrap;
+  }
+
+  .app-shell:not(.admin-shell) .footer > span:nth-child(2) {
+    grid-column: 3;
+    justify-self: end;
+    max-width: 420px;
+    text-align: right;
+  }
+}
