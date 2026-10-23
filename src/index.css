@@ -6232,3 +6232,29 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     margin-top: 16px !important;
   }
 }
+
+
+/* Filter panel polish: readable theme-aware chevron and consistent typography. */
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .filter-disclosure-chevron {
+  color: var(--text-color, #30382d) !important;
+}
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls,
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls *,
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls label,
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls input,
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls select,
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls button {
+  font-family: inherit !important;
+}
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls input,
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls select,
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls button {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
