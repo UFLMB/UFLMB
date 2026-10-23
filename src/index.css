@@ -6149,3 +6149,24 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     color: #333333 !important;
   }
 }
+
+
+/* Final footer polish: tighter mobile bottom spacing and subdued theme-aware SDG label. */
+.app-shell:not(.admin-shell) .footer .footer-sdg {
+  color: #555555 !important;
+}
+:root[data-ui-theme="dark"] .app-shell:not(.admin-shell) .footer .footer-sdg {
+  color: #a1a1aa !important;
+}
+@media (max-width: 768px) {
+  .app-shell:not(.admin-shell) .footer {
+    margin-bottom: 0 !important;
+    padding-bottom: 12px !important;
+  }
+  .app-shell:not(.admin-shell) .footer .footer-sdg {
+    color: #555555 !important;
+  }
+  :root[data-ui-theme="dark"] .app-shell:not(.admin-shell) .footer .footer-sdg {
+    color: #a1a1aa !important;
+  }
+}
