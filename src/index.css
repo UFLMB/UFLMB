@@ -6308,3 +6308,16 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   border-color: var(--accent-border, var(--filter-control-border)) !important;
   outline: none;
 }
+
+
+/* Final light-mode readability fix: all six headline card stats use one dark text color
+   on every viewport, including elite-card overrides. */
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card .stats-grid b,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card.elite-card .stats-grid span:first-child b,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card.elite-card .stats-grid span:nth-child(2) b,
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .player-card .stats-grid small {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
