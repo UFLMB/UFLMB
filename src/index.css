@@ -6124,3 +6124,28 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     color: #82906d !important;
   }
 }
+
+
+/* Compact, high-contrast footer overrides for both desktop and mobile. */
+.app-shell:not(.admin-shell) .footer {
+  gap: 6px !important;
+  margin: 12px auto 0 !important;
+  padding: 16px 0 !important;
+  line-height: 1.45 !important;
+}
+.app-shell:not(.admin-shell) .footer .footer-sdg {
+  color: #333333 !important;
+}
+:root[data-ui-theme="light"] .app-shell:not(.admin-shell) .footer .footer-sdg {
+  color: #333333 !important;
+}
+@media (max-width: 768px) {
+  .app-shell:not(.admin-shell) .footer {
+    gap: 6px !important;
+    margin-top: 10px !important;
+    padding: 12px 8px calc(16px + env(safe-area-inset-bottom)) !important;
+  }
+  .app-shell:not(.admin-shell) .footer .footer-sdg {
+    color: #333333 !important;
+  }
+}
