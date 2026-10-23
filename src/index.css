@@ -6271,3 +6271,40 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .app-shell:not(.admin-shell) .filter-disclosure .browse-controls select option {
   line-height: 1.4;
 }
+
+
+/* Final filter control parity: inputs and selects share identical surfaces in both themes. */
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls select {
+  box-sizing: border-box !important;
+  background: var(--filter-control-bg) !important;
+  background-color: var(--filter-control-bg) !important;
+  border: 1px solid var(--filter-control-border) !important;
+  color: var(--filter-control-text) !important;
+  opacity: 1 !important;
+  box-shadow: none;
+}
+:root[data-ui-theme="dark"] {
+  --filter-control-bg: #171e29;
+  --filter-control-border: rgba(222, 232, 245, .16);
+  --filter-control-text: #edf1f7;
+}
+:root[data-ui-theme="light"] {
+  --filter-control-bg: #e8ede2;
+  --filter-control-border: rgba(104, 126, 81, .30);
+  --filter-control-text: #263021;
+}
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"])::placeholder {
+  color: var(--filter-control-text) !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: var(--filter-control-text) !important;
+}
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls select option {
+  background-color: var(--filter-control-bg) !important;
+  color: var(--filter-control-text) !important;
+}
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
+.app-shell:not(.admin-shell) .filter-disclosure .browse-controls select:focus {
+  border-color: var(--accent-border, var(--filter-control-border)) !important;
+  outline: none;
+}
