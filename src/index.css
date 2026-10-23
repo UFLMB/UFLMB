@@ -6007,16 +6007,25 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Subtle community signature below the legal footer copy on mobile. */
+/* Community signature: slightly stronger contrast and no trailing empty space. */
 @media (max-width: 768px) {
+  .app-shell:not(.admin-shell) .footer {
+    margin-bottom: 0 !important;
+    padding-bottom: 8px !important;
+    gap: 3px !important;
+  }
+
   .app-shell:not(.admin-shell) .footer .footer-sdg {
+    display: block;
     width: auto;
-    margin-top: 3px;
-    color: #7d8795;
+    margin-top: 1px;
+    margin-bottom: 0;
+    padding: 0;
+    color: #596777 !important;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 750;
     letter-spacing: .12em;
-    line-height: 1.4;
-    opacity: .82;
+    line-height: 1.2;
+    opacity: 1;
   }
 }
