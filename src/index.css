@@ -6234,7 +6234,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Filter panel polish: readable theme-aware chevron and consistent typography. */
+/* Filter panel polish: consistent typography and readable theme-aware chevron. */
 :root[data-ui-theme="light"] .app-shell:not(.admin-shell) .filter-disclosure-chevron {
   color: var(--text-color, #30382d) !important;
 }
@@ -6245,16 +6245,14 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .app-shell:not(.admin-shell) .filter-disclosure .browse-controls select,
 .app-shell:not(.admin-shell) .filter-disclosure .browse-controls button {
   font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
 }
 .app-shell:not(.admin-shell) .filter-disclosure .browse-controls label {
-  font-size: 12px;
-  font-weight: 600;
   line-height: 1.45;
 }
 .app-shell:not(.admin-shell) .filter-disclosure .browse-controls input,
 .app-shell:not(.admin-shell) .filter-disclosure .browse-controls select,
 .app-shell:not(.admin-shell) .filter-disclosure .browse-controls button {
-  font-size: 12px;
-  font-weight: 500;
   line-height: 1.4;
 }
