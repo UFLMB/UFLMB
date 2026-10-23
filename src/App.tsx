@@ -296,6 +296,11 @@ export default function App() {
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud'>('cards')
 
+  // Always collapse the public filter panel when switching between public views.
+  useEffect(() => {
+    document.querySelectorAll<HTMLDetailsElement>('.filter-disclosure').forEach(panel => { panel.open = false })
+  }, [page, showBookmarked])
+
   const autoSaveSnapshot = useRef({ allCards, bookmarkedIds, formationId, squadAssignments, siteTheme, siteBranding, googleClientId, googleApiKey })
   autoSaveSnapshot.current = { allCards, bookmarkedIds, formationId, squadAssignments, siteTheme, siteBranding, googleClientId, googleApiKey }
 
