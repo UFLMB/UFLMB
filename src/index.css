@@ -6170,3 +6170,30 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     color: #a1a1aa !important;
   }
 }
+
+
+/* Desktop light-theme navigation: keep the nav integrated with the smoky header. */
+@media (min-width: 769px) {
+  :root[data-ui-theme="light"] .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .site-nav {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+  :root[data-ui-theme="light"] .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .nav-page {
+    color: #e2e8f0 !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+  :root[data-ui-theme="light"] .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .nav-page:hover,
+  :root[data-ui-theme="light"] .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .nav-page:focus-visible {
+    color: #f8fafc !important;
+    background: rgba(197, 244, 103, .08) !important;
+    border-color: rgba(197, 244, 103, .18) !important;
+  }
+  :root[data-ui-theme="light"] .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .nav-page.active {
+    color: #c5f467 !important;
+    background: rgba(197, 244, 103, .09) !important;
+    border-color: rgba(197, 244, 103, .2) !important;
+  }
+}
