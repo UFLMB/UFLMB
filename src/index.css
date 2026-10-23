@@ -6250,11 +6250,17 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   font-weight: 400 !important;
   letter-spacing: normal !important;
 }
-/* Reset the complete font shorthand so native dropdowns match text and number inputs. */
-.app-shell:not(.admin-shell) .filter-disclosure .browse-controls input,
-.app-shell:not(.admin-shell) .filter-disclosure .browse-controls select,
-.app-shell:not(.admin-shell) .filter-disclosure .browse-controls select option {
-  font: normal 400 12px 'Manrope', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+/* Force dropdown text to use the exact same regular font settings as text/number inputs. */
+#root .app-shell:not(.admin-shell) .filter-disclosure .browse-controls input,
+#root .app-shell:not(.admin-shell) .filter-disclosure .browse-controls select,
+#root .app-shell:not(.admin-shell) .filter-disclosure .browse-controls select option {
+  font-family: 'Manrope', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-size: 12px !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  letter-spacing: normal !important;
+  font-synthesis: none !important;
+  -webkit-font-smoothing: antialiased !important;
 }
 .app-shell:not(.admin-shell) .filter-disclosure .browse-controls label {
   line-height: 1.45;
