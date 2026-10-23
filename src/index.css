@@ -5971,28 +5971,37 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Mobile-only public footer polish; desktop footer layout remains untouched. */
+/* Mobile-only public footer refinement; desktop footer remains untouched. */
 @media (max-width: 768px) {
   .app-shell:not(.admin-shell) .footer {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 6px !important;
+    gap: 5px !important;
     text-align: center !important;
-    font-size: 10px !important;
-    line-height: 1.6 !important;
-    color: #a1a8b4 !important;
-    padding: 18px 0 calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+    color: #7d8795 !important;
+    margin-top: 20px !important;
+    padding: 14px 16px 22px !important;
   }
 
   .app-shell:not(.admin-shell) .footer > span {
     display: block;
     width: 100%;
+    max-width: 560px;
     text-align: center !important;
     overflow-wrap: anywhere;
   }
 
+  .app-shell:not(.admin-shell) .footer > span:first-child {
+    order: 0;
+    color: #687383 !important;
+    font-weight: 600;
+    letter-spacing: .01em;
+  }
+
   .app-shell:not(.admin-shell) .footer .footer-muted {
-    color: #7f8998 !important;
+    color: #7d8795 !important;
   }
 }
