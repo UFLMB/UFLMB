@@ -1639,7 +1639,7 @@ export default function App() {
         </nav>,
         document.body,
       )}
-      <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><span className="footer-muted">Independent community project; not affiliated with or endorsed by the game’s publisher.</span><span className="footer-sdg">SDG</span></footer>
+      <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><span className="footer-muted">Independent community project; not affiliated with or endorsed by the game’s publisher.</span><span className="footer-sdg">SDG - 2026</span></footer>
       </div>
     </main>
   )
