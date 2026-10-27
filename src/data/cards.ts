@@ -1,7 +1,7 @@
 import type { PlayerCard } from '../types/card'
 import playersCsv from './players-5.csv?raw'
 
-const sourceUrl = 'https://github.com/uflplayer2026/UFLMB/blob/main/src/data/players-5.csv'
+const sourceUrl = 'https://github.com/UFLMB/UFLMB/blob/main/src/data/players-5.csv'
 const importedAt = '2026-10-20'
 const groupKeys: Record<string, string> = {
   Pace: 'PAC', Shooting: 'SHO', Passing: 'PAS', Dribbling: 'DRI',
