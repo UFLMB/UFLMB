@@ -1,0 +1,6 @@
+# Supabase CLI project configuration for UFLMB.
+project_id = "ujuptqzlpubcdelrjmja"
+
+[functions.username-signin]
+# Username sign-in is called before the user has an access token.
+verify_jwt = false
