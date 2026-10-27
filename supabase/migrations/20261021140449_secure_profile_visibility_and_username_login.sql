@@ -1,7 +1,10 @@
 -- Store a normalized unique username for case-insensitive username sign-in.
-alter table public.profiles add column if not exists username_normalized text;
-update public.profiles set username_normalized = lower(username) where username_normalized is null;
-create unique index if not exists profiles_username_normalized_key on public.profiles(username_normalized);
+-- The generated column always mirrors lower(username), preventing clients from
+-- submitting a normalized value that does not match the visible username.
+alter table public.profiles
+  add column if not exists username_normalized text generated always as (lower(username)) stored;
+alter table public.profiles
+  add constraint profiles_username_normalized_key unique (username_normalized);
 
 revoke all on public.profiles from anon, authenticated;
 grant select, update on public.profiles to authenticated;
