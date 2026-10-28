@@ -6484,6 +6484,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .profile-logo-form > .field-help { color:#9da7b6; font-size:11px; line-height:1.55; }
 .profile-logo-form > .button { justify-self:start; }
 .profile-admin-logo { display:block; width:27px; height:27px; }
+.account-avatar .profile-admin-logo { width:40px; height:40px; }
 .profile-logo-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; margin:0 0 4px; }
 .profile-logo-option { display:flex; min-width:0; min-height:84px; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:10px 5px; border:1px solid rgba(127,127,127,.22); border-radius:13px; background:rgba(127,127,127,.035); color:var(--text-color,#f3f5f8); cursor:pointer; transition:border-color .16s ease,background .16s ease,transform .16s ease; }
 .profile-logo-option>span { display:grid; place-items:center; width:35px; height:35px; border-radius:11px; background:rgba(163,230,53,.12); color:var(--accent,#a3e635); font-size:21px; font-weight:800; }
