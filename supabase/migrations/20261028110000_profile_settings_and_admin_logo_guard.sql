@@ -32,7 +32,7 @@ revoke all on function private.enforce_profile_logo_permissions() from public, a
 
 drop trigger if exists enforce_profile_logo_permissions on public.profiles;
 create trigger enforce_profile_logo_permissions
-before insert or update of profile_logo, username on public.profiles
+before insert or update on public.profiles
 for each row execute function private.enforce_profile_logo_permissions();
 
 -- Reapply safe grants when this migration is run after the existing profile migration.
