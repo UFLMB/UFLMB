@@ -6501,3 +6501,10 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .profile-logo-option { color:#18202b; background:rgba(20,30,45,.025); }
 @media(max-width:760px) { .profile-password-form { grid-template-columns:minmax(0,1fr); } .profile-password-form button { grid-column:auto; justify-self:stretch; } .profile-logo-options { grid-template-columns:repeat(3,minmax(0,1fr)); } }
 @media(prefers-reduced-motion:reduce) { .profile-logo-option { transition:none; } }
+
+
+/* Separate the profile-logo chooser from the theme switch with clear spacing and a divider. */
+.profile-theme-section { margin-top:26px; padding-top:22px; border-top:1px solid rgba(127,127,127,.24); }
+.profile-theme-section > .eyebrow { margin:0 0 9px; color:var(--accent,#a3e635); }
+.profile-theme-section > .account-panel-description { margin:0 0 8px; }
+:root[data-ui-theme="light"] .profile-theme-section { border-top-color:rgba(20,30,45,.15); }
