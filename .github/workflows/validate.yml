@@ -1,0 +1,37 @@
+name: Validate UFLMB
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build production frontend
+        env:
+          VITE_SUPABASE_URL: https://ujuptqzlpubcdelrjmja.supabase.co
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_mI4mGppqhAbG3T2H3b7z3Q_PK09LaD_' }}
+        run: npm run build
+      - name: Check security contracts
+        run: npm run check:security
+      - name: Validate checked-in card dataset
+        run: node scripts/check-card-data.mjs

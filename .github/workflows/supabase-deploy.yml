@@ -63,3 +63,9 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: supabase functions deploy username-signin --project-ref ujuptqzlpubcdelrjmja
+
+      - name: Deploy account moderation Edge Function
+        if: inputs.operation == 'apply'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy account-moderation --project-ref ujuptqzlpubcdelrjmja

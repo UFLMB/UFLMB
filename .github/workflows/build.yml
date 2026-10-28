@@ -18,6 +18,10 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        run: npm install
+        run: npm ci --no-audit --no-fund
+      - name: Check security contracts
+        run: npm run check:security
+      - name: Audit production card data
+        run: node scripts/check-card-data.mjs
       - name: Type-check and build
         run: npm run build

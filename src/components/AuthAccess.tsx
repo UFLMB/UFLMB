@@ -113,18 +113,17 @@ async function getProfileUsername(session: AuthSession): Promise<string> {
 }
 async function isAccountSuspended(session: AuthSession): Promise<boolean> {
   const { url, key } = getConfig()
-  if (!url || !key) return false
-  try {
-    const response = await fetch(`${url}/functions/v1/account-moderation`, {
-      method: 'POST',
-      headers: { apikey: key, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'status' }),
-      cache: 'no-store',
-    })
-    if (!response.ok) return false
-    const result = await response.json() as { suspended?: boolean }
-    return result.suspended === true
-  } catch { return false }
+  if (!url || !key) throw new Error('Account status could not be verified. Please try again later.')
+  const response = await fetch(`${url}/functions/v1/account-moderation`, {
+    method: 'POST',
+    headers: { apikey: key, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'status' }),
+    cache: 'no-store',
+  })
+  if (!response.ok) throw new Error('Account status could not be verified. Please try again later.')
+  const result = await response.json() as { suspended?: boolean }
+  if (typeof result.suspended !== 'boolean') throw new Error('Account status could not be verified. Please try again later.')
+  return result.suspended
 }
 
 async function restoreSession(): Promise<AuthSession | null> {
