@@ -6,13 +6,13 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 
 - Responsive dark card gallery for desktop and mobile
 - Installable progressive web app (PWA) with an app manifest and custom icon
-- Offline app-shell caching for returning visitors; card data remains browser-local until a shared backend is configured
+- Offline app-shell caching for returning visitors; starter card records are bundled locally and the shared cloud database is initialized in Supabase
 - Improved keyboard focus visibility and reduced-motion support
 - Multiple background image URLs with automatic 30-second rotation, dark readability overlay, and backward-compatible migration of the previous single-background setting (saved in the current browser)
 - Search by player name, nation, club, card type and position
 - Search by player name, nation, club, card type, position, stats, perks, and source URL
 - Full player profile modal with complete saved attributes, perk list, verification date and source link
-- Personal saved-card bookmarks and a saved-only browsing filter (stored in the current browser)
+- Personal saved-card bookmarks and a saved-only browsing filter, with browser-local fallback and optional signed-in cloud sync
 - Minimum and maximum OVR range filters alongside position, nation, card type and text search
 - Numeric attribute filtering using each attribute present in the verified card records
 - Local squad builder with 4-3-3, 4-4-2 and 3-5-2 formations, unique player assignments, OVR average and position-fit indicators
@@ -32,7 +32,7 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 - Data-quality dashboard for missing fields, old verification dates, invalid sources and possible duplicates
 - Select and delete multiple records in the admin manager
 - Local spreadsheet and JSON imports work without Google sign-in
-- 480 imported starter records are included in `src/data/players-5.csv`; they are marked `imported-unverified` and must not be presented as independently verified
+- 480 imported starter records are included in `src/data/players-5.csv` and the Supabase shared table; all are marked `imported-unverified`, retain their 59-column source data, and must not be presented as independently verified
 - Optional two-team test fixture: 22 explicitly fictional demo records, split into two editable 11-player squads and visibly labelled as synthetic test data
 
 ## Run locally
