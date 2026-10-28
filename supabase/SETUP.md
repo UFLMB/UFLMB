@@ -1,6 +1,6 @@
 # UFLMB shared backend setup
 
-> **Current status (2026-10-27):** The UFLMB Supabase project is active and healthy. The current frontend includes account registration/sign-in, a trusted-admin workspace, shared-card sync, shared appearance settings and community reviews. The live database has the expected tables and an active `username-signin` Edge Function; its deployed source is tracked at `supabase/functions/username-signin/index.ts`. However, `public.cards` currently contains 0 rows. The checked-in CSV is not automatically imported into that cloud table.
+> **Current status (2026-10-28):** The UFLMB Supabase project is active and healthy. The current frontend includes account registration/sign-in, a trusted-admin workspace, shared-card sync, shared appearance settings and community reviews. The live database has the expected tables and an active `username-signin` Edge Function; its deployed source is tracked at `supabase/functions/username-signin/index.ts`. However, `public.cards` currently contains 0 rows. The checked-in CSV is not automatically imported into that cloud table.
 
 The application uses Supabase as its primary cloud store for shared card records, private non-sensitive app-state (bookmarks and squad assignments), and public shared site appearance (branding and background image URLs), plus community ratings/reviews. Browser local storage remains a fallback cache. Google Picker credentials and the admin session token remain local and are never uploaded.
 
@@ -29,9 +29,9 @@ If the plan reports remote migration versions that are missing locally, unexpect
 
 ## 3. Configure GitHub Pages
 
-The current `.github/workflows/deploy.yml` already supplies the Supabase Project URL and public `sb_publishable_...` key to the build, so no GitHub Actions variables are required for the frontend. The public key is intended for browser use; all admin authorization is enforced by Supabase Auth and row-level security. The service-role/secret key must never be committed or included in a frontend build.
+The current `.github/workflows/deploy.yml` uses `npm ci` from the committed lockfile and supplies the Supabase Project URL and public `sb_publishable_...` key to the build, so no GitHub Actions variables are required for the frontend. The public key is intended for browser use; all admin authorization is enforced by Supabase Auth and row-level security. The service-role/secret key must never be committed or included in a frontend build.
 
-After changing the project or rotating the publishable key, update the public client configuration in both `.github/workflows/deploy.yml` and `.github/workflows/card-data-audit.yml`, then commit the change. A push to `main` triggers the GitHub Pages build and deployment. These values are intentionally public; never add a service-role or secret key.
+After changing the project or rotating the publishable key, update the public client configuration in both `.github/workflows/deploy.yml` and `.github/workflows/card-data-audit.yml`, then commit the change. A push to `main` triggers the GitHub Pages build and deployment after security-contract and source-data checks pass. These values are intentionally public; never add a service-role or secret key.
 
 ## 4. Trusted admin access
 
