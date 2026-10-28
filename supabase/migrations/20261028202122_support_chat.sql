@@ -1,3 +1,22 @@
+-- Shared admin predicate used by support and community moderation policies.
+-- Keep it defined before the first policy references it on a clean database replay.
+CREATE OR REPLACE FUNCTION private.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT (SELECT auth.uid()) IS NOT NULL
+    AND EXISTS (
+      SELECT 1
+      FROM public.admin_users AS au
+      WHERE au.user_id = (SELECT auth.uid())
+    );
+$$;
+REVOKE ALL ON FUNCTION private.is_admin() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated;
+
 -- Private support inbox. Community moderation does not automatically inspect support messages.
 create table if not exists public.support_conversations (
   id uuid primary key default gen_random_uuid(),
