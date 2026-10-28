@@ -9,13 +9,13 @@ import SharedDatabasePanel from './components/SharedDatabasePanel'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
 const VIEW_STATE_KEY = 'uflmb.current-view.v1'
-type PublicPage = 'home' | 'players' | 'compare'
+type PublicPage = 'home' | 'players' | 'compare' | 'profile' | 'settings'
 const loadViewState = (): { page: PublicPage; showBookmarked: boolean } => {
   try {
     const saved: unknown = JSON.parse(localStorage.getItem(VIEW_STATE_KEY) || 'null')
     if (saved && typeof saved === 'object') {
       const value = saved as { page?: unknown; showBookmarked?: unknown }
-      const page: PublicPage = value.page === 'players' || value.page === 'compare' ? value.page : 'home'
+      const page: PublicPage = value.page === 'players' || value.page === 'compare' || value.page === 'profile' || value.page === 'settings' ? value.page : 'home'
       return { page, showBookmarked: page === 'players' && value.showBookmarked === true }
     }
   } catch { /* Start on the home page when saved view state is unavailable. */ }
@@ -255,7 +255,7 @@ export default function App() {
   const [adminDashboardOpen, setAdminDashboardOpen] = useState(false)
   useEffect(() => { if (!isAdminSession) setAdminDashboardOpen(false) }, [isAdminSession])
   const [themeMode, setThemeMode] = useState<ThemeMode>(loadThemeMode)
-  const [account, setAccount] = useState<{ userId: string; username: string; accessToken: string } | null>(null)
+  const [account, setAccount] = useState<{ userId: string; username: string; email?: string; accessToken: string } | null>(null)
   const cloudReadyFor = useRef<string | null>(null)
   const [category, setCategory] = useState<Category>('All cards')
   const [nationFilter, setNationFilter] = useState('All nations')
@@ -1282,7 +1282,7 @@ export default function App() {
     <main className="app-shell admin-shell">
       <header className="topbar admin-topbar">
         <a className="brand" href="/UFLMB/" aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
-        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Admin access verified</span><a className="back-link" href="/UFLMB/">Public database ↗</a><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setAdminDashboardOpen} /></div>
+        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Admin access verified</span><a className="back-link" href="/UFLMB/">Public database ↗</a><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setAdminDashboardOpen} onProfileChange={() => { setPage('profile'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }} /></div>
       </header>
       <section className="admin-intro">
         <p className="eyebrow">CONTENT MANAGEMENT</p>
@@ -1556,6 +1556,36 @@ export default function App() {
         </nav>
         <div className="top-actions"><button type="button" className="public-refresh-toggle" aria-label="Refresh UFLMB" title="Refresh" onClick={() => window.location.reload()}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></button><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setAdminDashboardOpen} /><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
       </header>
+      {page === 'settings' && <section className="settings-page account-page" aria-labelledby="settings-title">
+        <div className="account-page-heading"><p className="eyebrow">PREFERENCES</p><h1 id="settings-title">Settings<span>.</span></h1><p className="hero-copy">Make UFLMB feel right for you. Your theme choice is saved on this device.</p></div>
+        <section className="account-panel settings-appearance"><div className="account-panel-icon" aria-hidden="true">◐</div><div className="account-panel-copy"><p className="eyebrow">APPEARANCE</p><h2>Theme mode</h2><p>Choose the visual style that suits your setup.</p></div><div className="settings-theme-options" role="group" aria-label="Choose theme mode">
+          <button type="button" className={themeMode === 'dark' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'dark'} onClick={() => setThemeMode('dark')}><span aria-hidden="true">☾</span><strong>Dark</strong><small>Focused arena</small></button>
+          <button type="button" className={themeMode === 'light' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'light'} onClick={() => setThemeMode('light')}><span aria-hidden="true">☼</span><strong>Light</strong><small>Bright &amp; clear</small></button>
+          <button type="button" className={themeMode === 'system' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'system'} onClick={() => setThemeMode('system')}><span aria-hidden="true">▣</span><strong>System</strong><small>Follow device</small></button>
+        </div></section>
+        <button type="button" className="account-panel account-profile-link" onClick={() => { setPage('profile'); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="account-panel-icon" aria-hidden="true">♙</span><span className="account-panel-copy"><span className="eyebrow">YOUR ACCOUNT</span><strong>Profile</strong><span>View your community profile and account details.</span></span><span className="account-panel-arrow" aria-hidden="true">→</span></button>
+      </section>}
+      {page === 'profile' && <section className="profile-page account-page" aria-labelledby="account-profile-title">
+        <div className="account-page-heading"><p className="eyebrow">UFLMB COMMUNITY</p><h1 id="account-profile-title">Your <span>profile.</span></h1><p className="hero-copy">Your account space for the UFLMB community.</p></div>
+        <section className="account-profile-hero">
+          <div className="account-avatar" aria-hidden="true">{account?.username?.trim()?.charAt(0)?.toUpperCase() || 'U'}</div>
+          <div className="account-profile-identity"><p className="eyebrow">{account ? 'COMMUNITY MEMBER' : 'VISITOR PROFILE'}</p><h2>{account?.username || 'Welcome to UFLMB'}</h2><p>{account ? 'Your community session is active.' : 'You are browsing as a guest. You can explore the database without signing in.'}</p><span className={account ? 'account-status signed-in' : 'account-status'}><i />{account ? 'Signed in' : 'Guest access'}</span></div>
+        </section>
+        <div className="account-profile-grid">
+          <section className="account-panel account-detail-panel"><p className="eyebrow">ACCOUNT DETAILS</p><h3>Profile information</h3><dl>
+            <div><dt>Username</dt><dd>{account?.username || 'Guest'}</dd></div>
+            <div><dt>Email</dt><dd>{account?.email || (account ? 'Email not available' : 'Sign in to view account details')}</dd></div>
+            <div><dt>Account ID</dt><dd>{account?.userId || 'Not signed in'}</dd></div>
+            <div><dt>Access</dt><dd>{isAdminSession ? 'Administrator' : account ? 'Community member' : 'Public visitor'}</dd></div>
+          </dl></section>
+          <section className="account-panel account-detail-panel"><p className="eyebrow">QUICK PREFERENCES</p><h3>Appearance</h3><p className="account-panel-description">Current theme: <strong>{themeMode === 'system' ? 'System' : themeMode === 'light' ? 'Light' : 'Dark'}</strong></p><div className="settings-theme-options compact" role="group" aria-label="Choose theme mode">
+            <button type="button" className={themeMode === 'dark' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'dark'} onClick={() => setThemeMode('dark')}><span aria-hidden="true">☾</span><strong>Dark</strong></button>
+            <button type="button" className={themeMode === 'light' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'light'} onClick={() => setThemeMode('light')}><span aria-hidden="true">☼</span><strong>Light</strong></button>
+            <button type="button" className={themeMode === 'system' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'system'} onClick={() => setThemeMode('system')}><span aria-hidden="true">▣</span><strong>System</strong></button>
+          </div><button type="button" className="button secondary account-settings-button" onClick={() => setPage('settings')}>Open settings <span aria-hidden="true">→</span></button></section>
+        </div>
+        {!account && <div className="account-signin-note"><span aria-hidden="true">✦</span><div><strong>Make yourself at home</strong><p>Create an account or sign in from the account button above to access your community account.</p></div></div>}
+      </section>}
       {page === 'home' && <section className="home-page">
         <section className="home-hero"><p className="eyebrow">UFL MOBILE DATABASE</p><h1>Every card.<br /><span>One arena.</span></h1>
           <p className="hero-copy">Explore the community player-card collection, search player data, and compare attributes in one place.</p>
@@ -1641,6 +1671,7 @@ export default function App() {
         <button type="button" className={!showBookmarked && page === 'players' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={!showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { setPage('players'); setShowBookmarked(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon player-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="7" r="4" fill="currentColor" /><path d="M4.5 21v-2.2a7.5 7.5 0 0 1 15 0V21z" fill="currentColor" /></svg></span><span>Players</span><small>{allCards.length}</small></button>
         <button type="button" className={showBookmarked && page === 'players' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { if (page === 'players' && showBookmarked) { window.location.reload(); return } setPage('players'); setShowBookmarked(true); setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setEventFilter('All events'); setSourceFilter('all'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat(''); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">★</span><span>Favorites</span>{bookmarkedIds.length > 0 && <small>{bookmarkedIds.length}</small>}</button>
         <button type="button" className={page === 'compare' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={page === 'compare' ? 'page' : undefined} onClick={() => { setPage('compare'); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">⇄</span><span>Compare</span>{compareIds.length > 0 && <small>{compareIds.length}</small>}</button>
+        <button type="button" className={page === 'settings' || page === 'profile' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={page === 'settings' || page === 'profile' ? 'page' : undefined} onClick={() => { setPage('settings'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">⚙</span><span>Settings</span></button>
         </nav>,
         document.body,
       )}
