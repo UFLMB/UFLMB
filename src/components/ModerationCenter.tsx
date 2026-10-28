@@ -27,6 +27,7 @@ export default function ModerationCenter({ userId, accessToken, isAdmin, adminVi
   const [note, setNote] = useState('')
   const [warningReason, setWarningReason] = useState('')
   const [warningArea, setWarningArea] = useState('community_review')
+  const [targetUsername, setTargetUsername] = useState('')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -96,6 +97,27 @@ export default function ModerationCenter({ userId, accessToken, isAdmin, adminVi
     finally { setBusy(false) }
   }
 
+  const issueManualWarning = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const username = targetUsername.trim()
+    if (!username || warningReason.trim().length < 3 || !isAdmin || !adminView || !userId) return
+    setBusy(true); setError(''); setMessage('')
+    try {
+      const response = await fetch(endpoint + '/rest/v1/profiles?select=id,username&username=eq.' + encodeURIComponent(username) + '&limit=2', { headers: headers(), cache: 'no-store' })
+      if (!response.ok) throw new Error('Could not verify that username. No warning was issued.')
+      const profiles = await response.json() as Array<{ id: string; username: string }>
+      if (profiles.length !== 1) throw new Error(profiles.length ? 'Username lookup was ambiguous. No warning was issued.' : 'No matching registered username was found. No warning was issued.')
+      const issueResponse = await fetch(endpoint + '/rest/v1/user_warnings', {
+        method: 'POST', headers: { ...headers(), Prefer: 'return=minimal' },
+        body: JSON.stringify({ user_id: profiles[0].id, reason: warningReason.trim(), policy_area: warningArea, issued_by: userId }),
+      })
+      if (!issueResponse.ok) throw new Error('Warning was not issued. Verify administrator permissions.')
+      setMessage('Warning issued to @' + profiles[0].username + '.')
+      setWarningReason('')
+      setTargetUsername('')
+    } catch (err) { setError(err instanceof Error ? err.message : 'Warning was not issued.') }
+    finally { setBusy(false) }
+  }
   const acknowledgeWarning = async (warning: Warning) => {
     if (!userId || !accessToken || warning.acknowledged_at) return
     const response = await fetch(`${endpoint}/rest/v1/user_warnings?id=eq.${encodeURIComponent(warning.id)}&user_id=eq.${encodeURIComponent(userId)}`, {
@@ -115,6 +137,15 @@ export default function ModerationCenter({ userId, accessToken, isAdmin, adminVi
       <p className="muted-copy">Automated flags are review signals, not proof of a violation. Review context before taking action. Content hidden by moderation can be restored by dismissing its flag.</p>
       <div className="moderation-overview"><div><strong>{queue.filter(item => item.status === 'pending').length}</strong><span>Pending review</span></div><div><strong>{queue.filter(item => item.status === 'reviewing').length}</strong><span>In review</span></div><div><strong>{queue.filter(item => item.status === 'actioned').length}</strong><span>Actioned</span></div><div><strong>{queue.filter(item => item.status === 'dismissed').length}</strong><span>Dismissed</span></div></div>
       {error && <p className="moderation-error" role="alert">{error}</p>}{message && <p className="moderation-success" role="status">{message}</p>}
+      <form className="moderation-manual-warning" onSubmit={issueManualWarning}>
+        <h3>Issue a warning to a registered member</h3>
+        <p className="muted-copy">Use an exact registered username after reviewing the context. This does not rely on a public display name.</p>
+        <div className="moderation-manual-warning-fields"><label>Exact username<input value={targetUsername} onChange={event => setTargetUsername(event.target.value)} maxLength={24} minLength={3} pattern="[A-Za-z0-9_]{3,24}" required placeholder="Member username" /></label>
+          <label>Policy area<select value={warningArea} onChange={event => setWarningArea(event.target.value)}><option value="community_review">Community review</option><option value="username">Username</option><option value="harassment">Harassment</option><option value="spam">Spam</option><option value="impersonation">Impersonation</option><option value="other">Other</option></select></label>
+          <label>Reason<textarea value={warningReason} onChange={event => setWarningReason(event.target.value)} minLength={3} maxLength={500} rows={2} required placeholder="Explain the rule and how to correct the issue…" /></label>
+        </div>
+        <button type="submit" className="button primary" disabled={busy || warningReason.trim().length < 3 || targetUsername.trim().length < 3}>Issue warning</button>
+      </form>
       <div className="moderation-workspace"><aside className="moderation-list"><h3>Flagged content</h3>{queue.length === 0 ? <p className="muted-copy">{busy ? 'Loading moderation queue…' : 'No flagged content. New community reviews will be checked automatically.'}</p> : queue.map(item => <button type="button" key={item.id} className={selectedId === item.id ? 'moderation-case active' : 'moderation-case'} onClick={() => { setSelectedId(item.id); setNote(item.admin_note || ''); setMessage(''); setError('') }}><strong>{item.display_name}</strong><span>{item.content_type.replace('_', ' ')} · {item.status.replace('_', ' ')}</span><small>{item.reason_codes.join(', ') || 'Needs manual review'}</small><time>{dateLabel(item.created_at)}</time></button>)}</aside>
         <div className="moderation-detail">{!selected ? <p className="muted-copy">Select a flagged item to review its context.</p> : <><div className="moderation-detail-heading"><div><h3>{selected.display_name}</h3><small>{selected.content_type.replace('_', ' ')} · {selected.status.replace('_', ' ')}</small></div><span className="moderation-status">{selected.status.replace('_', ' ')}</span></div><blockquote>{selected.content_excerpt || '(No text excerpt)'}</blockquote><p className="moderation-reasons">Signals: {selected.reason_codes.join(', ') || 'Manual review'}</p><label>Moderator note<textarea rows={3} maxLength={1000} value={note} onChange={event => setNote(event.target.value)} placeholder="Record the context and reason for your decision…" /></label><div className="moderation-actions"><button type="button" className="button secondary" disabled={busy} onClick={() => void updateQueue('reviewing')}>Mark in review</button><button type="button" className="button secondary" disabled={busy} onClick={() => void updateQueue('dismissed')}>Dismiss flag</button><button type="button" className="button danger" disabled={busy} onClick={() => void updateQueue('actioned')}>Hide content</button></div>
           {selected.user_id ? <form className="moderation-warning-form" onSubmit={issueWarning}><h4>Issue user warning</h4><label>Policy area<select value={warningArea} onChange={event => setWarningArea(event.target.value)}><option value="community_review">Community review</option><option value="username">Username</option><option value="harassment">Harassment</option><option value="spam">Spam</option><option value="impersonation">Impersonation</option><option value="other">Other</option></select></label><label>Reason<textarea value={warningReason} onChange={event => setWarningReason(event.target.value)} minLength={3} maxLength={500} rows={3} required placeholder="Explain the rule and how to correct the issue…" /></label><button type="submit" className="button primary" disabled={busy || warningReason.trim().length < 3}>Issue warning</button></form> : <p className="moderation-note">This report has no linked signed-in account, so an account warning is unavailable. Do not infer identity from a display name.</p>}
