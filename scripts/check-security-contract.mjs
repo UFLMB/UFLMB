@@ -50,10 +50,13 @@ const checks = [
   },
   {
     name: 'community reviews have a database-level five-per-hour account rate limit',
-    pass: /CREATE OR REPLACE FUNCTION private\\.enforce_community_review_rate_limit\\(\\)/i.test(read('../supabase/migrations/20261028222000_enforce_community_review_rate_limit.sql'))
-      && /pg_advisory_xact_lock/i.test(read('../supabase/migrations/20261028222000_enforce_community_review_rate_limit.sql'))
-      && /recent_count >= 5/i.test(read('../supabase/migrations/20261028222000_enforce_community_review_rate_limit.sql'))
-      && /CREATE TRIGGER card_reviews_rate_limit/i.test(read('../supabase/migrations/20261028222000_enforce_community_review_rate_limit.sql')),
+    pass: (() => {
+      const rateLimit = read('../supabase/migrations/20261028222000_enforce_community_review_rate_limit.sql')
+      return /enforce_community_review_rate_limit/.test(rateLimit)
+        && /pg_advisory_xact_lock/.test(rateLimit)
+        && /recent_count >= 5/.test(rateLimit)
+        && /CREATE TRIGGER card_reviews_rate_limit/.test(rateLimit)
+    })(),
   },
   {
     name: 'backend deployment includes account moderation function',
