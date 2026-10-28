@@ -41,7 +41,7 @@ create policy "Admins read all support conversations"
 drop policy if exists "Users create own support conversations" on public.support_conversations;
 create policy "Users create own support conversations"
   on public.support_conversations for insert to authenticated
-  with check ((select auth.uid()) = user_id);
+  with check ((select auth.uid()) = user_id and status = 'open');
 
 drop policy if exists "Admins update support conversation status" on public.support_conversations;
 create policy "Admins update support conversation status"
