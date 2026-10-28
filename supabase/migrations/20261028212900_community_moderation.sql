@@ -140,3 +140,18 @@ create policy "Public can read approved reviews" on public.card_reviews
   for select to anon, authenticated using (moderation_status = 'approved');
 
 -- User-facing warnings are only issued by an authorized administrator after review.
+
+-- Only verified administrators may inspect flagged rows and change visibility.
+drop policy if exists "Admins read all community reviews" on public.card_reviews;
+create policy "Admins read all community reviews" on public.card_reviews
+  for select to authenticated using (private.is_admin());
+drop policy if exists "Admins moderate community reviews" on public.card_reviews;
+create policy "Admins moderate community reviews" on public.card_reviews
+  for update to authenticated using (private.is_admin()) with check (private.is_admin());
+grant update (moderation_status) on public.card_reviews to authenticated;
+
+-- Members may acknowledge a warning but cannot rewrite its reason or target.
+grant select, insert on public.user_warnings to authenticated;
+grant update (acknowledged_at) on public.user_warnings to authenticated;
+revoke all on public.moderation_queue from anon;
+revoke all on public.user_warnings from anon;
