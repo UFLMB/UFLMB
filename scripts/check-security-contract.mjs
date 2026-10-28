@@ -51,7 +51,7 @@ const checks = [
   {
     name: 'community reviews have a database-level five-per-hour account rate limit',
     pass: (() => {
-      const rateLimit = read('../supabase/migrations/20261028222000_enforce_community_review_rate_limit.sql')
+      const rateLimit = read('../supabase/migrations/20261028221614_enforce_community_review_rate_limit.sql')
       return /enforce_community_review_rate_limit/.test(rateLimit)
         && /pg_advisory_xact_lock/.test(rateLimit)
         && /recent_count >= 5/.test(rateLimit)
