@@ -39,13 +39,26 @@ const loadThemeMode = (): ThemeMode => {
 const BRANDING_KEY = 'uflmb.site-branding.v1'
 type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[] }
 const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrls: [] }
-type ProfileLogo = 'default' | 'star' | 'ball' | 'bolt' | 'shield' | 'admin'
+type ProfileLogo = 'default' | 'star' | 'ball' | 'bolt' | 'shield' | 'admin' | 'striker' | 'keeper' | 'defender' | 'playmaker' | 'boots' | 'jersey' | 'stadium' | 'trophy' | 'goal'
 const profileLogoOptions: Array<{ value: ProfileLogo; label: string; glyph: string; adminOnly?: boolean }> = [
-  { value: 'default', label: 'Initial', glyph: 'U' }, { value: 'star', label: 'Star', glyph: '★' },
-  { value: 'ball', label: 'Football', glyph: '⚽' }, { value: 'bolt', label: 'Lightning', glyph: 'ϟ' },
-  { value: 'shield', label: 'Shield', glyph: '⬟' }, { value: 'admin', label: 'Admin logo', glyph: '✓', adminOnly: true },
+  // Keep legacy database values valid, but give every option a football-related identity.
+  { value: 'default', label: 'Player', glyph: '⚽' },
+  { value: 'ball', label: 'Match ball', glyph: '⚽' },
+  { value: 'star', label: 'Trophy', glyph: '🏆' },
+  { value: 'bolt', label: 'Football boots', glyph: '👟' },
+  { value: 'shield', label: 'Goalkeeper', glyph: '🧤' },
+  { value: 'striker', label: 'Striker', glyph: '🥅' },
+  { value: 'keeper', label: 'Keeper gloves', glyph: '🧤' },
+  { value: 'defender', label: 'Defender', glyph: '🛡️' },
+  { value: 'playmaker', label: 'Playmaker', glyph: '🎯' },
+  { value: 'boots', label: 'Boots', glyph: '👟' },
+  { value: 'jersey', label: 'Football shirt', glyph: '👕' },
+  { value: 'stadium', label: 'Stadium', glyph: '🏟️' },
+  { value: 'trophy', label: 'Champion', glyph: '🏆' },
+  { value: 'goal', label: 'Goal', glyph: '🥅' },
+  { value: 'admin', label: 'Admin logo', glyph: '', adminOnly: true },
 ]
-const isProfileLogo = (value: unknown): value is ProfileLogo => ['default', 'star', 'ball', 'bolt', 'shield', 'admin'].includes(String(value))
+const isProfileLogo = (value: unknown): value is ProfileLogo => ['default', 'star', 'ball', 'bolt', 'shield', 'admin', 'striker', 'keeper', 'defender', 'playmaker', 'boots', 'jersey', 'stadium', 'trophy', 'goal'].includes(String(value))
 const parseBackgroundUrls = (value: string) => Array.from(new Set(
   value.split(/[\n,]+/).map(url => url.trim()).filter(url => {
     try {
@@ -1596,7 +1609,7 @@ export default function App() {
   }
 
 
-  const saveProfileDetails = async (event: FormEvent<HTMLFormElement>) => {
+  const saveProfileUsername = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!account || profileBusy) return
     const username = profileUsernameDraft.trim()
@@ -1606,6 +1619,51 @@ export default function App() {
       setProfileMessageType('error')
       return
     }
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    if (!endpoint || !anonKey) {
+      setProfileMessage('Profile settings are not configured on the server yet.')
+      setProfileMessageType('error')
+      return
+    }
+    setProfileBusy(true)
+    setProfileMessage('')
+    try {
+      const response = await fetch(endpoint + '/rest/v1/profiles?id=eq.' + encodeURIComponent(account.userId), {
+        method: 'PATCH',
+        headers: {
+          apikey: anonKey,
+          Authorization: 'Bearer ' + account.accessToken,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify({ username, updated_at: new Date().toISOString() }),
+      })
+      if (!response.ok) {
+        const detail = await response.text().catch(() => '')
+        const lower = detail.toLowerCase()
+        if (lower.includes('profiles_username_normalized_key') || lower.includes('duplicate key')) throw new Error('That username is already in use. Please choose another.')
+        if (lower.includes('username_policy') || lower.includes('username policy') || lower.includes('offensive') || lower.includes('official, admin')) throw new Error('That username is not allowed. Choose a non-offensive name that does not imply official or staff status.')
+        throw new Error(detail || ('Could not save username (HTTP ' + response.status + ').'))
+      }
+      const rows = await response.json() as Array<{ username?: string }>
+      if (!rows.length || rows[0].username !== username) throw new Error('The server did not confirm the saved username.')
+      setAccount(current => current?.userId === account.userId ? { ...current, username } : current)
+      setProfileUsernameDraft(username)
+      setProfileMessage('Username updated successfully.')
+      setProfileMessageType('success')
+      window.dispatchEvent(new CustomEvent('uflmb:profile-username-updated', { detail: { username } }))
+    } catch (error) {
+      setProfileMessage(error instanceof Error ? error.message : 'Could not save username. Please try again.')
+      setProfileMessageType('error')
+    } finally {
+      setProfileBusy(false)
+    }
+  }
+
+  const saveProfileLogo = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!account || profileBusy) return
     if (!isProfileLogo(profileLogoDraft) || (profileLogoDraft === 'admin' && !isAdminSession)) {
       setProfileMessage('That user logo is not available for this account.')
       setProfileMessageType('error')
@@ -1629,25 +1687,20 @@ export default function App() {
           'Content-Type': 'application/json',
           Prefer: 'return=representation',
         },
-        body: JSON.stringify({ username, profile_logo: profileLogoDraft, updated_at: new Date().toISOString() }),
+        body: JSON.stringify({ profile_logo: profileLogoDraft, updated_at: new Date().toISOString() }),
       })
       if (!response.ok) {
         const detail = await response.text().catch(() => '')
-        const lower = detail.toLowerCase()
-        if (lower.includes('profiles_username_normalized_key') || lower.includes('duplicate key')) throw new Error('That username is already in use. Please choose another.')
-        if (lower.includes('username_policy') || lower.includes('username policy') || lower.includes('offensive') || lower.includes('official, admin')) throw new Error('That username is not allowed. Choose a non-offensive name that does not imply official or staff status.')
-        if (lower.includes('administrator logo') || lower.includes('profile_logo')) throw new Error('The selected logo is not permitted for this account.')
-        throw new Error(detail || ('Could not save profile (HTTP ' + response.status + ').'))
+        if (detail.toLowerCase().includes('administrator logo') || detail.toLowerCase().includes('profile_logo')) throw new Error('The selected logo is not permitted for this account.')
+        throw new Error(detail || ('Could not save profile icon (HTTP ' + response.status + ').'))
       }
-      const rows = await response.json() as Array<{ username?: string; profile_logo?: string }>
-      if (!rows.length || rows[0].username !== username || rows[0].profile_logo !== profileLogoDraft) throw new Error('The server did not confirm the saved profile values.')
-      setAccount(current => current?.userId === account.userId ? { ...current, username } : current)
+      const rows = await response.json() as Array<{ profile_logo?: string }>
+      if (!rows.length || rows[0].profile_logo !== profileLogoDraft) throw new Error('The server did not confirm the saved profile icon.')
       setProfileLogo(profileLogoDraft)
-      setProfileMessage('Profile updated successfully.')
+      setProfileMessage('Profile icon updated successfully.')
       setProfileMessageType('success')
-      window.dispatchEvent(new CustomEvent('uflmb:profile-username-updated', { detail: { username } }))
     } catch (error) {
-      setProfileMessage(error instanceof Error ? error.message : 'Could not save profile settings. Please try again.')
+      setProfileMessage(error instanceof Error ? error.message : 'Could not save profile icon. Please try again.')
       setProfileMessageType('error')
     } finally {
       setProfileBusy(false)
@@ -1742,16 +1795,16 @@ export default function App() {
               {isAdminSession && <div><dt>Account ID</dt><dd>{account.userId}</dd></div>}
               {isAdminSession && <div className="account-access-highlight"><dt>Access</dt><dd><span className="account-access-badge">Administrator</span></dd></div>}
             </dl>
-              <form className="profile-edit-form" onSubmit={saveProfileDetails}>
-                <label className="full-field">New username<input autoComplete="username" minLength={3} maxLength={24} pattern="[A-Za-z0-9_]{3,24}" required value={profileUsernameDraft} onChange={event => setProfileUsernameDraft(event.target.value)} /><span className="field-help">3–24 characters. Use letters, numbers or underscores.</span></label>
-                <button className="button primary" type="submit" disabled={profileBusy || (profileUsernameDraft.trim() === account.username && profileLogoDraft === profileLogo)}>{profileBusy ? 'Saving…' : 'Save profile changes'}</button>
-              </form>
+
             </section>
             <section className="account-panel account-detail-panel"><p className="eyebrow">PERSONALIZATION</p><h3>Your user logo</h3><p className="account-panel-description">Choose the icon shown on your profile. Your choice is saved to your account.</p>
-              <div className="profile-logo-options" role="group" aria-label="Choose your user logo">
-                {profileLogoOptions.filter(option => !option.adminOnly || isAdminSession).map(option => <button key={option.value} type="button" className={profileLogoDraft === option.value ? 'profile-logo-option active' : 'profile-logo-option'} aria-pressed={profileLogoDraft === option.value} onClick={() => setProfileLogoDraft(option.value)}><span aria-hidden="true">{option.value === 'default' ? (account.username.trim().charAt(0).toUpperCase() || 'U') : option.glyph}</span><strong>{option.label}</strong></button>)}
-              </div>
-              <p className="field-help">The administrator logo is available only to verified administrators.</p>
+              <form className="profile-logo-form" onSubmit={saveProfileLogo}>
+                <div className="profile-logo-options" role="group" aria-label="Choose your football profile icon">
+                  {profileLogoOptions.filter(option => !option.adminOnly || isAdminSession).map(option => <button key={option.value} type="button" className={profileLogoDraft === option.value ? 'profile-logo-option active' : 'profile-logo-option'} aria-pressed={profileLogoDraft === option.value} onClick={() => setProfileLogoDraft(option.value)}><span aria-hidden="true">{option.value === 'admin' ? <svg className="profile-admin-logo" viewBox="0 0 24 24"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor" stroke="none"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : option.glyph}</span><strong>{option.label}</strong></button>)}
+                </div>
+                <p className="field-help">The administrator logo is available only to verified administrators.</p>
+                <button className="button primary" type="submit" disabled={profileBusy || profileLogoDraft === profileLogo}>{profileBusy ? 'Saving…' : 'Save profile icon'}</button>
+              </form>
               <p className="account-panel-description">Current theme: <strong>{themeMode === 'system' ? 'System' : themeMode === 'light' ? 'Light' : 'Dark'}</strong></p>
               <div className="settings-theme-options compact" role="group" aria-label="Choose theme mode">
                 <button type="button" className={themeMode === 'dark' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'dark'} onClick={() => setThemeMode('dark')}><span aria-hidden="true">☾</span><strong>Dark</strong></button>
@@ -1760,6 +1813,12 @@ export default function App() {
               </div><button type="button" className="button secondary account-settings-button" onClick={() => setPage('settings')}>Open settings <span aria-hidden="true">→</span></button>
             </section>
           </div>
+          <section className="account-panel profile-password-panel profile-username-panel"><p className="eyebrow">ACCOUNT</p><h3>Change username</h3><p className="account-panel-description">Choose a unique username. Usernames must follow the community naming and safety rules.</p>
+            <form className="profile-edit-form profile-username-form" onSubmit={saveProfileUsername}>
+              <label className="full-field">New username<input autoComplete="username" minLength={3} maxLength={24} pattern="[A-Za-z0-9_]{3,24}" required value={profileUsernameDraft} onChange={event => setProfileUsernameDraft(event.target.value)} /><span className="field-help">3–24 characters. Use letters, numbers or underscores.</span></label>
+              <button className="button primary" type="submit" disabled={profileBusy || profileUsernameDraft.trim() === account.username}>{profileBusy ? 'Saving…' : 'Update username'}</button>
+            </form>
+          </section>
           <section className="account-panel profile-password-panel"><p className="eyebrow">SECURITY</p><h3>Change password</h3><p className="account-panel-description">Use at least 12 characters, including uppercase and lowercase letters, a number and a symbol. Avoid common passwords, repeated characters, and your username.</p>
             <form className="profile-edit-form profile-password-form" onSubmit={changeProfilePassword}>
               <label className="full-field">New password<input type="password" autoComplete="new-password" minLength={12} required value={profilePassword} onChange={event => setProfilePassword(event.target.value)} /><span className="field-help">12+ characters · uppercase · lowercase · number · symbol</span></label>
