@@ -1783,9 +1783,9 @@ export default function App() {
       </section>}
       {page === 'profile' && <section className="profile-page account-page" aria-labelledby="account-profile-title">
         <div className="account-page-heading"><p className="eyebrow">UFLMB COMMUNITY</p><h1 id="account-profile-title">Your <span>profile.</span></h1><p className="hero-copy">Manage your UFLMB username, password and personal logo.</p></div>
-        <section className="account-profile-hero">
+        <section className={`account-profile-hero${isAdminSession && account ? ' account-profile-hero-admin' : ''}`}>
           <div className="account-avatar" aria-hidden="true">{profileLogo === 'admin' && isAdminSession ? <svg className="profile-admin-logo" viewBox="0 0 24 24"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor" stroke="none"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : profileLogoOptions.find(option => option.value === profileLogo && (!option.adminOnly || isAdminSession))?.glyph || account?.username?.trim()?.charAt(0)?.toUpperCase() || 'U'}</div>
-          <div className="account-profile-identity"><p className="eyebrow">{account ? (isAdminSession ? 'ADMINISTRATOR' : 'COMMUNITY MEMBER') : 'VISITOR PROFILE'}</p><h2>{account?.username || 'Welcome to UFLMB'}</h2><p>{account ? 'Your community session is active.' : 'You are browsing as a guest. Sign in to manage your profile.'}</p><span className={account ? 'account-status signed-in' : 'account-status'}><i />{account ? 'Signed in' : 'Guest access'}</span></div>
+          <div className="account-profile-identity">{isAdminSession && account ? <><p className="eyebrow">ADMINISTRATOR</p><h2>Welcome back, <span className="account-welcome-username">{account.username}</span></h2></> : <><p className="eyebrow">{account ? 'COMMUNITY MEMBER' : 'VISITOR PROFILE'}</p><h2>{account?.username || 'Welcome to UFLMB'}</h2><p>{account ? 'Your community session is active.' : 'You are browsing as a guest. Sign in to manage your profile.'}</p><span className={account ? 'account-status signed-in' : 'account-status'}><i />{account ? 'Signed in' : 'Guest access'}</span></>}</div>
         </section>
         {account ? <>
           <div className="account-profile-grid profile-edit-grid">
