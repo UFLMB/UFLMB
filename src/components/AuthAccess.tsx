@@ -334,7 +334,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
       if (mode === 'signin') {
         setRedirecting(true)
         showMessage(admin ? 'Administrator access verified.' : 'Sign-in successful.', 'success')
-        await new Promise(resolve => window.setTimeout(resolve, 850))
+        await new Promise(resolve => window.setTimeout(resolve, 1350))
         setOpen(false)
         setRedirecting(false)
       }

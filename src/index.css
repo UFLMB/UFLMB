@@ -6333,7 +6333,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .auth-redirect-state h2{padding:0;margin:0;font-size:clamp(24px,5vw,29px);letter-spacing:-.8px}
 .auth-redirect-copy{margin:11px 0 23px;color:var(--muted,#a5adba);font-size:12px;line-height:1.65}
 .auth-redirect-progress{width:min(220px,75%);height:3px;overflow:hidden;border-radius:99px;background:rgba(150,160,175,.2)}
-.auth-redirect-progress span{display:block;width:42%;height:100%;border-radius:inherit;background:var(--lime,#c5f467);box-shadow:0 0 12px rgba(197,244,103,.45);animation:auth-redirect-progress 850ms ease-out forwards}
+.auth-redirect-progress span{display:block;width:42%;height:100%;border-radius:inherit;background:var(--lime,#c5f467);box-shadow:0 0 12px rgba(197,244,103,.45);animation:auth-redirect-progress 1350ms ease-out forwards}
 .auth-redirect-caption{display:flex;align-items:center;gap:8px;margin:16px 0 0;color:var(--muted,#a5adba);font-size:11px;letter-spacing:.02em}
 .auth-redirect-spinner{width:12px;height:12px;border:1.5px solid rgba(197,244,103,.25);border-top-color:var(--lime,#c5f467);border-radius:50%;animation:auth-redirect-spin .7s linear infinite}
 @keyframes auth-redirect-spin{to{transform:rotate(360deg)}}
