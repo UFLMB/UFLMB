@@ -111,6 +111,22 @@ async function getProfileUsername(session: AuthSession): Promise<string> {
     return rows[0]?.username || session.user.email?.split('@')[0] || 'Account'
   } catch { return session.user.email?.split('@')[0] || 'Account' }
 }
+async function isAccountSuspended(session: AuthSession): Promise<boolean> {
+  const { url, key } = getConfig()
+  if (!url || !key) return false
+  try {
+    const response = await fetch(`${url}/functions/v1/account-moderation`, {
+      method: 'POST',
+      headers: { apikey: key, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'status' }),
+      cache: 'no-store',
+    })
+    if (!response.ok) return false
+    const result = await response.json() as { suspended?: boolean }
+    return result.suspended === true
+  } catch { return false }
+}
+
 async function restoreSession(): Promise<AuthSession | null> {
   const { url, key } = getConfig()
   try {
@@ -131,6 +147,7 @@ async function restoreSession(): Promise<AuthSession | null> {
         expires_at: Math.floor(Date.now() / 1000) + expiresIn,
         user,
       }
+      if (await isAccountSuspended(session)) throw new Error('This account is suspended.')
       saveSession(session)
       window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
       return session
@@ -157,6 +174,7 @@ async function restoreSession(): Promise<AuthSession | null> {
       session = { ...session, user: await response.json() as AuthUser }
       saveSession(session)
     }
+    if (await isAccountSuspended(session)) throw new Error('This account is suspended.')
     return session
   } catch {
     sessionStorage.removeItem(SESSION_KEY)
