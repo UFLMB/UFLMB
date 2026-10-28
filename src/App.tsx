@@ -1805,7 +1805,6 @@ export default function App() {
                 <button className="button primary" type="submit" disabled={profileBusy || profileLogoDraft === profileLogo}>{profileBusy ? 'Saving…' : 'Save profile icon'}</button>
               </form>
               <div className="profile-theme-section">
-                <p className="eyebrow">THEME SWITCH</p>
                 <p className="account-panel-description">Current theme: <strong>{themeMode === 'system' ? 'System' : themeMode === 'light' ? 'Light' : 'Dark'}</strong></p>
                 <div className="settings-theme-options compact" role="group" aria-label="Choose theme mode">
                   <button type="button" className={themeMode === 'dark' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'dark'} onClick={() => setThemeMode('dark')}><span aria-hidden="true">☾</span><strong>Dark</strong></button>
