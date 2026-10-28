@@ -41,15 +41,15 @@ type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; bac
 const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrls: [] }
 type ProfileLogo = 'default' | 'star' | 'ball' | 'bolt' | 'shield' | 'admin' | 'striker' | 'keeper' | 'defender' | 'playmaker' | 'boots' | 'jersey' | 'stadium' | 'trophy' | 'goal'
 const profileLogoOptions: Array<{ value: ProfileLogo; label: string; glyph: string; adminOnly?: boolean }> = [
-  // Keep legacy database values valid, but give every option a football-related identity.
-  { value: 'default', label: 'Player', glyph: '⚽' },
+  // Keep legacy database values valid, while ensuring every named option has a distinct symbol.
+  { value: 'default', label: 'Player', glyph: '👤' },
   { value: 'ball', label: 'Match ball', glyph: '⚽' },
-  { value: 'star', label: 'Trophy', glyph: '🏆' },
-  { value: 'bolt', label: 'Football boots', glyph: '👟' },
-  { value: 'shield', label: 'Goalkeeper', glyph: '🧤' },
+  { value: 'star', label: 'Star', glyph: '⭐' },
+  { value: 'bolt', label: 'Speed', glyph: '⚡' },
+  { value: 'shield', label: 'Captain', glyph: '🛡️' },
   { value: 'striker', label: 'Striker', glyph: '🥅' },
   { value: 'keeper', label: 'Keeper gloves', glyph: '🧤' },
-  { value: 'defender', label: 'Defender', glyph: '🛡️' },
+  { value: 'defender', label: 'Defender', glyph: '🧱' },
   { value: 'playmaker', label: 'Playmaker', glyph: '🎯' },
   { value: 'boots', label: 'Boots', glyph: '👟' },
   { value: 'jersey', label: 'Football shirt', glyph: '👕' },
@@ -1784,7 +1784,7 @@ export default function App() {
       {page === 'profile' && <section className="profile-page account-page" aria-labelledby="account-profile-title">
         <div className="account-page-heading"><p className="eyebrow">UFLMB COMMUNITY</p><h1 id="account-profile-title">Your <span>profile.</span></h1><p className="hero-copy">Manage your UFLMB username, password and personal logo.</p></div>
         <section className="account-profile-hero">
-          <div className="account-avatar" aria-hidden="true">{profileLogo === 'admin' && isAdminSession ? '✓' : profileLogoOptions.find(option => option.value === profileLogo && (!option.adminOnly || isAdminSession))?.glyph || account?.username?.trim()?.charAt(0)?.toUpperCase() || 'U'}</div>
+          <div className="account-avatar" aria-hidden="true">{profileLogo === 'admin' && isAdminSession ? <svg className="profile-admin-logo" viewBox="0 0 24 24"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor" stroke="none"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : profileLogoOptions.find(option => option.value === profileLogo && (!option.adminOnly || isAdminSession))?.glyph || account?.username?.trim()?.charAt(0)?.toUpperCase() || 'U'}</div>
           <div className="account-profile-identity"><p className="eyebrow">{account ? (isAdminSession ? 'ADMINISTRATOR' : 'COMMUNITY MEMBER') : 'VISITOR PROFILE'}</p><h2>{account?.username || 'Welcome to UFLMB'}</h2><p>{account ? 'Your community session is active.' : 'You are browsing as a guest. Sign in to manage your profile.'}</p><span className={account ? 'account-status signed-in' : 'account-status'}><i />{account ? 'Signed in' : 'Guest access'}</span></div>
         </section>
         {account ? <>
