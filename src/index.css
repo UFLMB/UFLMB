@@ -6415,7 +6415,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
  .settings-appearance>.settings-theme-options { grid-column:1/-1; }
  .settings-theme-option { min-height:82px; padding:10px; }
  .account-detail-panel dl div { grid-template-columns:minmax(72px,.6fr) minmax(0,1fr); gap:10px; }
- .mobile-bottom-nav { grid-template-columns:repeat(5,minmax(0,1fr)) !important; gap:2px !important; }
+ .mobile-bottom-nav.public-mobile-bottom-nav { grid-template-columns:repeat(5,minmax(0,1fr)) !important; gap:2px !important; }
  .mobile-nav-item { font-size:9px; }
  .mobile-nav-icon { font-size:19px; }
 }
