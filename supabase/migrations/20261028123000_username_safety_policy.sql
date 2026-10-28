@@ -25,8 +25,46 @@ begin
 
   -- Do not ban the brands themselves: only reject combinations that imply privileged affiliation.
   if v_normalized ~ '(uflmb|ufl|strikerz)'
-     and v_normalized ~ '(administrator|admin|moderator|modteam|staff|employee|official|verified|developer|devteam|security|representative|owner|support$)' 
-     and v_normalized !~ 'supporter' then
+     and (v_normalized ~ '(administrator|admin|moderator|modteam|staff|employee|official|verified|developer|devteam|security|representative|owner)'
+          or (v_normalized ~ 'support
+    return 'USERNAME_POLICY: Fan names are allowed, but usernames must not imply official, admin, staff, or employee status.';
+  end if;
+
+  -- Role-only names (including a numeric suffix) can also impersonate site staff without naming a brand.
+  if v_normalized ~ '^(administrator|admin|moderator|modteam|staff|employee|official|verified|developer|devteam|security|representative|owner)[0-9]*$' then
+    return 'USERNAME_POLICY: Usernames that imply administrator, official, staff, or employee status are not allowed.';
+  end if;
+
+  return null;
+end;
+$$;
+
+revoke all on function private.username_policy_error(text) from public, anon, authenticated;
+
+create or replace function public.enforce_profile_username_policy()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_error text;
+begin
+  v_error := private.username_policy_error(new.username);
+  if v_error is not null then
+    raise exception '%', v_error using errcode = '23514';
+  end if;
+  return new;
+end;
+$$;
+
+revoke all on function public.enforce_profile_username_policy() from public, anon, authenticated;
+
+drop trigger if exists enforce_profile_username_policy on public.profiles;
+create trigger enforce_profile_username_policy
+before insert or update of username on public.profiles
+for each row execute function public.enforce_profile_username_policy();
+ and v_normalized !~ 'supporter')) then
     return 'USERNAME_POLICY: Fan names are allowed, but usernames must not imply official, admin, staff, or employee status.';
   end if;
 
