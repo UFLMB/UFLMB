@@ -40,7 +40,7 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 Requires a current Node.js LTS release.
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -85,7 +85,7 @@ Guest users are read-only: they can browse public content but cannot submit revi
 
 ## Deployment
 
-The GitHub Actions workflow in `.github/workflows/deploy.yml` builds the app and deploys `dist` to GitHub Pages on pushes to `main`. The repository's Pages source should be **GitHub Actions**. The site is served under `/UFLMB/`; the admin workspace is reached after signing in with a trusted admin account, not through a public `/admin` URL. The `public/_redirects` file is a fallback for compatible static hosts such as Cloudflare Pages.
+The GitHub Actions workflows use the committed npm lockfile (`npm ci`), run security-contract and source-data checks, build the app, and deploy `dist` to GitHub Pages on pushes to `main`. The repository's Pages source should be **GitHub Actions**. The site is served under `/UFLMB/`; the admin workspace is reached after signing in with a trusted admin account, not through a public `/admin` URL. The `public/_redirects` file is a fallback for compatible static hosts such as Cloudflare Pages.
 
 ## Project structure
 
