@@ -6369,11 +6369,11 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .account-detail-panel dl div { display:grid; grid-template-columns:minmax(90px,.65fr) minmax(0,1fr); gap:14px; padding:12px 0; border-top:1px solid rgba(127,127,127,.16); }
 .account-detail-panel dt { color:#9da7b6; font-size:12px; }
 .account-detail-panel dd { margin:0; text-align:right; overflow-wrap:anywhere; font-size:12px; font-weight:700; }
-.account-detail-panel dl .account-access-highlight { margin:8px 0 0; padding:12px; border:1px solid rgba(163,230,53,.52); border-radius:12px; background:linear-gradient(105deg,rgba(163,230,53,.16),rgba(163,230,53,.055)); box-shadow:inset 3px 0 0 #a3e635,0 5px 18px rgba(163,230,53,.06); align-items:center; }
-.account-access-highlight dt { color:var(--accent,#a3e635); font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.account-detail-panel dl .account-access-highlight { margin:8px 0 0; padding:0; border:0; border-radius:0; background:none; box-shadow:none; align-items:center; }
+.account-access-highlight dt { color:inherit; font-weight:inherit; letter-spacing:normal; text-transform:none; }
 .account-access-highlight dd { display:flex; justify-content:flex-end; }
-.account-access-badge { display:inline-flex; align-items:center; gap:7px; padding:6px 10px; border:1px solid rgba(163,230,53,.42); border-radius:999px; background:rgba(163,230,53,.13); color:var(--accent,#a3e635); font-size:11px; font-weight:850; letter-spacing:.015em; }
-.account-access-badge::before { content:""; width:6px; height:6px; border-radius:50%; background:#a3e635; box-shadow:0 0 0 3px rgba(163,230,53,.12); }
+.account-access-badge { display:inline; padding:0; border:0; border-radius:0; background:none; color:var(--accent,#a3e635); font-size:inherit; font-weight:700; letter-spacing:normal; }
+.account-access-badge::before { content:none; }
 .account-panel-description,.account-panel-copy p:not(.eyebrow),.account-panel-copy>span:not(.eyebrow) { color:#9da7b6; font-size:12px; line-height:1.6; }
 .settings-appearance { display:grid; grid-template-columns:48px minmax(180px,.8fr) minmax(0,1.2fr); align-items:center; gap:18px; }
 .account-panel-icon { display:grid; place-items:center; flex:0 0 46px; width:46px; height:46px; border:1px solid rgba(163,230,53,.2); border-radius:14px; background:rgba(163,230,53,.08); color:var(--accent,#a3e635); font-size:23px; }
