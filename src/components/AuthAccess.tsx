@@ -327,10 +327,10 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
       onAdminChange(admin)
       if (admin) {
         showMessage('Administrator access verified.', 'success')
-        setOpen(false)
       } else {
         showMessage('You are signed in. Community account access is active.', 'success')
       }
+      if (mode === 'signin') setOpen(false)
     } catch (error) {
       const raw = error instanceof Error ? error.message : 'Authentication failed. Please try again.'
       const lower = raw.toLowerCase()
