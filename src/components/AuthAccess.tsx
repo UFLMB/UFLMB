@@ -161,6 +161,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [busy, setBusy] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info')
   const [sessionEmail, setSessionEmail] = useState('')
@@ -330,7 +331,13 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
       } else {
         showMessage('You are signed in. Community account access is active.', 'success')
       }
-      if (mode === 'signin') setOpen(false)
+      if (mode === 'signin') {
+        setRedirecting(true)
+        showMessage(admin ? 'Administrator access verified.' : 'Sign-in successful.', 'success')
+        await new Promise(resolve => window.setTimeout(resolve, 850))
+        setOpen(false)
+        setRedirecting(false)
+      }
     } catch (error) {
       const raw = error instanceof Error ? error.message : 'Authentication failed. Please try again.'
       const lower = raw.toLowerCase()
@@ -398,9 +405,17 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
           </button>
         </div>}
       </div>
-      {open && !isAdmin && createPortal(<div className="auth-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
-        <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+      {open && (!isAdmin || redirecting) && createPortal(<div className="auth-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
+        <section className={`auth-modal${redirecting ? ' is-redirecting' : ''}`} role="dialog" aria-modal="true" aria-labelledby="auth-title">
           <button className="auth-close" type="button" aria-label="Close sign-in window" onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); setOpen(false) }}>×</button>
+          {redirecting && <div className="auth-redirect-state" role="status" aria-live="polite">
+            <div className="auth-redirect-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
+            <p className="eyebrow">UFLMB COMMUNITY</p>
+            <h2>Sign-in successful</h2>
+            <p className="auth-redirect-copy">{isAdmin ? 'Administrator access verified.' : 'Your community account is ready.'}</p>
+            <div className="auth-redirect-progress" aria-hidden="true"><span /></div>
+            <p className="auth-redirect-caption"><span className="auth-redirect-spinner" aria-hidden="true" /> Returning to UFLMB…</p>
+          </div>}
           <p className="eyebrow">UFLMB COMMUNITY</p>
           <h2 id="auth-title">{title}</h2>
           <p className="auth-copy">{description}</p>

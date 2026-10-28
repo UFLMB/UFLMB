@@ -6321,3 +6321,29 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   opacity: 1 !important;
   text-shadow: none !important;
 }
+
+
+/* Polished confirmation shown briefly after a successful sign-in. */
+.auth-modal.is-redirecting{display:flex;flex-direction:column;justify-content:center;min-height:330px;overflow:hidden}
+.auth-modal.is-redirecting>:not(.auth-close):not(.auth-redirect-state){display:none!important}
+.auth-redirect-state{display:flex;flex-direction:column;align-items:center;text-align:center;padding:14px 4px 6px;animation:auth-redirect-enter .24s ease-out both}
+.auth-redirect-mark{display:grid;place-items:center;width:58px;height:58px;margin-bottom:22px;border:1px solid rgba(197,244,103,.32);border-radius:19px;background:linear-gradient(145deg,rgba(197,244,103,.18),rgba(197,244,103,.055));color:var(--lime,#c5f467);box-shadow:0 0 35px rgba(197,244,103,.09)}
+.auth-redirect-mark svg{width:29px;height:29px}
+.auth-redirect-state .eyebrow{margin:0 0 12px;color:var(--lime,#c5f467);font-size:9px;letter-spacing:.19em}
+.auth-redirect-state h2{padding:0;margin:0;font-size:clamp(24px,5vw,29px);letter-spacing:-.8px}
+.auth-redirect-copy{margin:11px 0 23px;color:var(--muted,#a5adba);font-size:12px;line-height:1.65}
+.auth-redirect-progress{width:min(220px,75%);height:3px;overflow:hidden;border-radius:99px;background:rgba(150,160,175,.2)}
+.auth-redirect-progress span{display:block;width:42%;height:100%;border-radius:inherit;background:var(--lime,#c5f467);box-shadow:0 0 12px rgba(197,244,103,.45);animation:auth-redirect-progress 850ms ease-out forwards}
+.auth-redirect-caption{display:flex;align-items:center;gap:8px;margin:16px 0 0;color:var(--muted,#a5adba);font-size:11px;letter-spacing:.02em}
+.auth-redirect-spinner{width:12px;height:12px;border:1.5px solid rgba(197,244,103,.25);border-top-color:var(--lime,#c5f467);border-radius:50%;animation:auth-redirect-spin .7s linear infinite}
+@keyframes auth-redirect-spin{to{transform:rotate(360deg)}}
+@keyframes auth-redirect-progress{from{transform:translateX(-110%)}to{transform:translateX(245%)}}
+@keyframes auth-redirect-enter{from{opacity:0;transform:translateY(7px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+:root[data-ui-theme="light"] .auth-modal.is-redirecting{border-color:rgba(113,153,33,.24);background:radial-gradient(ellipse at 50% 0,rgba(163,230,53,.13),transparent 52%),#fff;box-shadow:0 30px 100px rgba(22,32,10,.22)}
+:root[data-ui-theme="light"] .auth-redirect-mark{border-color:rgba(113,153,33,.28);background:linear-gradient(145deg,rgba(163,230,53,.2),rgba(163,230,53,.07));color:#527d0c;box-shadow:0 0 35px rgba(113,153,33,.08)}
+:root[data-ui-theme="light"] .auth-redirect-state .eyebrow{color:#527d0c}
+:root[data-ui-theme="light"] .auth-redirect-copy,:root[data-ui-theme="light"] .auth-redirect-caption{color:#64705a}
+:root[data-ui-theme="light"] .auth-redirect-progress{background:rgba(65,80,45,.16)}
+:root[data-ui-theme="light"] .auth-redirect-progress span{background:#7eaa1b;box-shadow:0 0 12px rgba(126,170,27,.35)}
+:root[data-ui-theme="light"] .auth-redirect-spinner{border-color:rgba(126,170,27,.22);border-top-color:#7eaa1b}
+@media(prefers-reduced-motion:reduce){.auth-redirect-state,.auth-redirect-progress span,.auth-redirect-spinner{animation:none}.auth-redirect-progress span{width:100%;transform:none}}
