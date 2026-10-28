@@ -61,6 +61,7 @@ create policy "Users acknowledge own warnings" on public.user_warnings
 
 grant select, update on public.moderation_queue to authenticated;
 grant select, insert on public.user_warnings to authenticated;
+revoke update on public.user_warnings from authenticated;
 grant update (acknowledged_at) on public.user_warnings to authenticated;
 revoke all on public.moderation_queue from anon;
 revoke all on public.user_warnings from anon;
