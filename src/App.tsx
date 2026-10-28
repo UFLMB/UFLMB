@@ -1489,14 +1489,14 @@ export default function App() {
           <div className="profile-management-stat"><span className="profile-management-stat-icon recent">↻</span><div><small>Recently updated</small><strong>{adminProfiles.filter(profile => { const date = new Date(profile.updated_at || profile.created_at).getTime(); return Number.isFinite(date) && date >= Date.now() - 30 * 24 * 60 * 60 * 1000 }).length}</strong><span>Last 30 days</span></div></div>
         </div>
         <div className="profile-management-toolbar">
-          <label className="profile-management-search"><span aria-hidden="true">⌕</span><input className="admin-search" value={adminProfilesSearch} onChange={event => setAdminProfilesSearch(event.target.value)} placeholder="Search by username…" aria-label="Search profiles by username" />
+          <label className="profile-management-search"><span aria-hidden="true">⌕</span><input className="admin-search" value={adminProfilesSearch} onChange={event => setAdminProfilesSearch(event.target.value)} placeholder="Search by username…" aria-label="Search profiles by username" /></label>
           <button className="button secondary" type="button" onClick={() => setAdminProfilesRefreshKey(value => value + 1)} disabled={adminProfilesBusy}>{adminProfilesBusy ? 'Refreshing…' : '↻ Refresh profiles'}</button>
         </div>
         {adminProfilesMessage && <p className={/could not|rejected|unavailable|already be in use|did not confirm/i.test(adminProfilesMessage) ? 'profile-management-message error' : 'profile-management-message'} role="status" aria-live="polite">{adminProfilesMessage}</p>}
         <div className="profile-management-layout">
           <div className="profile-management-list" aria-label="Registered profiles">
             {adminProfilesBusy && adminProfiles.length === 0 ? <div className="profile-management-empty"><span className="profile-management-spinner" />Loading profiles securely…</div> :
-              adminProfiles.filter(profile => profile.username.toLowerCase().includes(adminProfilesSearch.trim().toLowerCase())).length === 0 ? <div className="profile-management-empty"><span className="profile-management-empty-icon">⌕</span><strong>No matching profiles</strong><span>Try a different username or user ID.</span></div> :
+              adminProfiles.filter(profile => profile.username.toLowerCase().includes(adminProfilesSearch.trim().toLowerCase())).length === 0 ? <div className="profile-management-empty"><span className="profile-management-empty-icon">⌕</span><strong>No matching profiles</strong><span>Try a different username.</span></div> :
               adminProfiles.filter(profile => profile.username.toLowerCase().includes(adminProfilesSearch.trim().toLowerCase())).map(profile => {
                 const isAdminProfile = adminUserIds.includes(profile.id)
                 const selected = selectedAdminProfileId === profile.id
