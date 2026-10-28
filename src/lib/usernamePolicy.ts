@@ -8,7 +8,7 @@ const prohibitedTerms = [
   'tranny', 'dyke', 'kurva', 'fasz', 'geci', 'picsa', 'kocsog', 'buzi', 'bazd', 'baszd', 'szar',
   'scheisse', 'arschloch', 'hurensohn', 'mierda', 'puta', 'cabron', 'joder', 'putain', 'connard',
   'blyat', 'suka', 'khuy', 'pizda', 'heilhitler', 'whitepower', 'whitepride', 'aryannation',
-  'isis', 'isil', 'daesh', 'alqaeda', 'alqaida', 'kkk',
+  'isil', 'daesh', 'alqaeda', 'alqaida',
 ]
 const roleTerms = [
   'administrator', 'admin', 'moderator', 'modteam', 'staff', 'employee', 'official', 'verified',
@@ -25,6 +25,9 @@ export function validateUsernamePolicy(value: string): UsernamePolicyResult {
   const normalized = compactUsername(username)
   if (prohibitedTerms.some(term => normalized.includes(term))) {
     return { valid: false, reason: 'This username contains a prohibited offensive, hateful, or extremist term.' }
+  }
+  if (normalized.startsWith('isis') || normalized === 'kkk') {
+    return { valid: false, reason: 'This username contains a prohibited extremist organization reference.' }
   }
   const brand = /(uflmb|ufl|strikerz)/.test(normalized)
   const role = roleTerms.some(term => normalized.includes(term))
