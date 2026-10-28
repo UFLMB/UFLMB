@@ -6,6 +6,7 @@ import { cards as starterCards } from './data/cards'
 import CommunityReviews from './components/CommunityReviews'
 import AuthAccess from './components/AuthAccess'
 import SharedDatabasePanel from './components/SharedDatabasePanel'
+import SupportChat from './components/SupportChat'
 import { validateUsernamePolicy } from './lib/usernamePolicy'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
@@ -1708,6 +1709,7 @@ export default function App() {
               </nav>,
         document.body,
       )}
+      <SupportChat />
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href="/UFLMB/">Back to home</a></footer>
     </main>
   )
