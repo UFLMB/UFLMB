@@ -15,7 +15,7 @@ type Mode = 'signin' | 'signup' | 'recovery' | 'updatePassword'
 type Props = {
   isAdmin: boolean
   onAdminChange: (value: boolean) => void
-  onAccountChange: (value: { userId: string; username: string; accessToken: string } | null) => void
+  onAccountChange: (value: { userId: string; username: string; email?: string; accessToken: string } | null) => void
   themeMode: 'dark' | 'light' | 'system'
   onThemeModeChange: (value: 'dark' | 'light' | 'system') => void
   onDashboardChange: (value: boolean) => void
