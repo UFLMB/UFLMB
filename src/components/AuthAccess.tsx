@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { FormEvent } from 'react'
+import { validateUsernamePolicy } from '../lib/usernamePolicy'
 
 type AuthUser = { id: string; email?: string }
 type AuthSession = {
@@ -313,9 +314,12 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
         return
       }
 
-      if (mode === 'signup' && !/^[A-Za-z0-9_]{3,24}$/.test(username.trim())) {
-        showMessage('Username must be 3–24 characters and use only letters, numbers, or underscores.', 'error')
-        return
+      if (mode === 'signup') {
+        const usernamePolicy = validateUsernamePolicy(username)
+        if (!usernamePolicy.valid) {
+          showMessage(usernamePolicy.reason, 'error')
+          return
+        }
       }
       if (mode === 'signup' && !isStrongPassword(password, username)) {
         showMessage('Use at least 12 characters with uppercase and lowercase letters, a number and a symbol. Avoid common passwords, repeated characters, and your username.', 'error')
@@ -372,6 +376,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
       const friendly = lower.includes('invalid login credentials') ? 'The email or password is incorrect.'
         : lower.includes('email not confirmed') ? 'Please confirm your email using the link we sent you.'
         : lower.includes('user already registered') ? 'An account with this email already exists. Try signing in instead.'
+        : lower.includes('username_policy') || lower.includes('username policy') || lower.includes('offensive') || lower.includes('official, admin') ? 'That username is not allowed. Choose a non-offensive name that does not imply official or staff status.'
         : lower.includes('password should be') ? raw
         : lower.includes('rate limit') ? 'Too many attempts. Please wait a little before trying again.'
         : raw
