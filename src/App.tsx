@@ -1654,8 +1654,16 @@ export default function App() {
   const changeProfilePassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!account || profileBusy) return
-    if (profilePassword.length < 6) {
-      setProfileMessage('Your new password must contain at least 6 characters.')
+    const passwordRulesMet =
+      profilePassword.length >= 12 &&
+      /[a-z]/.test(profilePassword) &&
+      /[A-Z]/.test(profilePassword) &&
+      /[0-9]/.test(profilePassword) &&
+      /[^A-Za-z0-9]/.test(profilePassword) &&
+      !/(.)\\1{3,}/.test(profilePassword)
+    const commonPasswords = new Set(['password123!', 'password1234!', 'qwerty1234!', 'welcome1234!', 'admin123456!'])
+    if (!passwordRulesMet || commonPasswords.has(profilePassword.toLowerCase()) || (account.username && profilePassword.toLowerCase().includes(account.username.toLowerCase()))) {
+      setProfileMessage('Use at least 12 characters with uppercase and lowercase letters, a number and a symbol. Avoid repeated characters, common passwords, and your username.')
       setProfileMessageType('error')
       return
     }
@@ -1749,10 +1757,10 @@ export default function App() {
               </div><button type="button" className="button secondary account-settings-button" onClick={() => setPage('settings')}>Open settings <span aria-hidden="true">→</span></button>
             </section>
           </div>
-          <section className="account-panel profile-password-panel"><p className="eyebrow">SECURITY</p><h3>Change password</h3><p className="account-panel-description">Choose a new password for your account. Use at least 6 characters.</p>
+          <section className="account-panel profile-password-panel"><p className="eyebrow">SECURITY</p><h3>Change password</h3><p className="account-panel-description">Use at least 12 characters, including uppercase and lowercase letters, a number and a symbol. Avoid common passwords, repeated characters, and your username.</p>
             <form className="profile-edit-form profile-password-form" onSubmit={changeProfilePassword}>
-              <label className="full-field">New password<input type="password" autoComplete="new-password" minLength={6} required value={profilePassword} onChange={event => setProfilePassword(event.target.value)} /></label>
-              <label className="full-field">Confirm new password<input type="password" autoComplete="new-password" minLength={6} required value={profilePasswordConfirm} onChange={event => setProfilePasswordConfirm(event.target.value)} /></label>
+              <label className="full-field">New password<input type="password" autoComplete="new-password" minLength={12} required value={profilePassword} onChange={event => setProfilePassword(event.target.value)} /><span className="field-help">12+ characters · uppercase · lowercase · number · symbol</span></label>
+              <label className="full-field">Confirm new password<input type="password" autoComplete="new-password" minLength={12} required value={profilePasswordConfirm} onChange={event => setProfilePasswordConfirm(event.target.value)} /></label>
               <button className="button primary" type="submit" disabled={profileBusy || !profilePassword || !profilePasswordConfirm}>{profileBusy ? 'Updating…' : 'Update password'}</button>
             </form>
           </section>
