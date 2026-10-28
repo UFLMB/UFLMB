@@ -6425,3 +6425,49 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
  .mobile-nav-icon { font-size:19px; }
 }
 @media(prefers-reduced-motion:reduce) { .settings-theme-option { transition:none; } }
+
+
+/* Accessible show/hide password controls in the sign-in and sign-up modal. */
+.auth-password-field {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+.auth-form .auth-password-field input {
+  width: 100%;
+  padding-right: 48px;
+}
+.auth-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted, #9299a8);
+  cursor: pointer;
+}
+.auth-password-toggle:hover,
+.auth-password-toggle:focus-visible {
+  color: var(--accent, #a3e635);
+  background: color-mix(in srgb, var(--accent, #a3e635) 10%, transparent);
+}
+.auth-password-toggle:focus-visible {
+  outline: 2px solid var(--accent, #a3e635);
+  outline-offset: 1px;
+}
+.auth-password-toggle svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
