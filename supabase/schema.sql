@@ -170,3 +170,8 @@ drop policy if exists "UFLMB admins can update shared branding" on public.site_s
 create policy "UFLMB admins can update shared branding" on public.site_settings
   for update to authenticated using (private.is_uflmb_admin()) with check (private.is_uflmb_admin());
 
+-- Defense in depth: guests are read-only across all exposed public tables.
+-- Only the public catalogue, approved reviews, and shared branding are readable.
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM anon;
+GRANT SELECT ON public.cards, public.card_reviews, public.site_settings TO anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon;
