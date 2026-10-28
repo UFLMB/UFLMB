@@ -6370,7 +6370,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .account-detail-panel dt { color:#9da7b6; font-size:12px; }
 .account-detail-panel dd { margin:0; text-align:right; overflow-wrap:anywhere; font-size:12px; font-weight:700; }
 .account-detail-panel dl .account-access-highlight { margin:8px 0 0; padding:0; border:0; border-radius:0; background:none; box-shadow:none; align-items:center; }
-.account-access-highlight dt { color:inherit; font-weight:inherit; letter-spacing:normal; text-transform:none; }
+.account-access-highlight dt { color:var(--accent,#a3e635); font-weight:700; letter-spacing:normal; text-transform:none; }
 .account-access-highlight dd { display:flex; justify-content:flex-end; }
 .account-access-badge { display:inline; padding:0; border:0; border-radius:0; background:none; color:var(--accent,#a3e635); font-size:inherit; font-weight:700; letter-spacing:normal; }
 .account-access-badge::before { content:none; }
