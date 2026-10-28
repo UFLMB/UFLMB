@@ -47,7 +47,7 @@ const profileLogoOptions: Array<{ value: ProfileLogo; label: string; glyph: stri
   { value: 'star', label: 'Star', glyph: '⭐' },
   { value: 'bolt', label: 'Speed', glyph: '⚡' },
   { value: 'shield', label: 'Captain', glyph: '🛡️' },
-  { value: 'striker', label: 'Striker', glyph: '🥅' },
+  { value: 'striker', label: 'Striker', glyph: '🏃' },
   { value: 'keeper', label: 'Keeper gloves', glyph: '🧤' },
   { value: 'defender', label: 'Defender', glyph: '🧱' },
   { value: 'playmaker', label: 'Playmaker', glyph: '🎯' },
