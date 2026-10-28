@@ -18,7 +18,7 @@ export default function CommunityReviews({ cardId }: { cardId: string }) {
   const load = async () => {
     if (!configured) return
     try {
-      const response = await fetch(`${endpoint}/rest/v1/card_reviews?select=id,card_id,reviewer_name,rating,review_text,created_at&card_id=eq.${encodeURIComponent(cardId)}&order=created_at.desc&limit=50`, {
+      const response = await fetch(`${endpoint}/rest/v1/card_reviews?select=id,card_id,reviewer_name,rating,review_text,created_at&card_id=eq.${encodeURIComponent(cardId)}&moderation_status=eq.approved&order=created_at.desc&limit=50`, {
         headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
       })
       if (!response.ok) throw new Error('Review service is not available.')
@@ -32,6 +32,15 @@ export default function CommunityReviews({ cardId }: { cardId: string }) {
     event.preventDefault()
     if (!configured) { setMessage('Shared reviews are not connected yet. The shared database setup is required first.'); return }
     if (!name.trim() || !reviewText.trim()) { setMessage('Enter a display name and a short review.'); return }
+    const normalizedContent = (name.trim() + ' ' + reviewText.trim()).normalize('NFKD').toLowerCase().replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9]+/g, '')
+    const warningTerms = ['motherfucker','asshole','arsehole','bullshit','fuck','shit','bitch','bastard','cunt','faggot','nigger','nigga','kike','chink','spic','wetback','kurva','fasz','geci','picsa','kocsog','buzi','bazd','baszd','heilhitler','whitepower','alqaeda','alqaida','daesh']
+    const possibleViolation = warningTerms.some(term => normalizedContent.includes(term))
+      || /(uflmb|strikerz).*(admin|moderator|official|staff|support)/i.test(name.trim())
+      || /https?:\\/\\/|www\\.|buy now|free money|crypto giveaway/i.test(reviewText.trim())
+    if (possibleViolation) {
+      setMessage('Please review the community rules and edit this content before submitting. Offensive language, impersonation, and spam may be hidden for moderator review.')
+      return
+    }
     setBusy(true); setMessage('')
     try {
       const response = await fetch(`${endpoint}/rest/v1/card_reviews`, {
