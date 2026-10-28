@@ -40,6 +40,7 @@ const BRANDING_KEY = 'uflmb.site-branding.v1'
 type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[] }
 const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrls: [] }
 type ProfileLogo = 'default' | 'star' | 'ball' | 'bolt' | 'shield' | 'admin' | 'striker' | 'keeper' | 'defender' | 'playmaker' | 'boots' | 'jersey' | 'stadium' | 'trophy' | 'goal'
+type AdminProfile = { id: string; username: string; profile_logo: string; created_at: string; updated_at: string }
 const profileLogoOptions: Array<{ value: ProfileLogo; label: string; glyph: string; adminOnly?: boolean }> = [
   // Keep legacy database values valid, while ensuring every named option has a distinct symbol.
   { value: 'default', label: 'Player', glyph: '👤' },
@@ -329,7 +330,18 @@ export default function App() {
   const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
-  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud'>('cards')
+  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud' | 'profiles'>('cards')
+  const [adminProfiles, setAdminProfiles] = useState<AdminProfile[]>([])
+  const [adminUserIds, setAdminUserIds] = useState<string[]>([])
+  const [adminProfilesBusy, setAdminProfilesBusy] = useState(false)
+  const [adminProfilesMessage, setAdminProfilesMessage] = useState('')
+  const [adminProfilesSearch, setAdminProfilesSearch] = useState('')
+  const [adminProfilesRefreshKey, setAdminProfilesRefreshKey] = useState(0)
+  const [selectedAdminProfileId, setSelectedAdminProfileId] = useState<string | null>(null)
+  const [adminProfileUsernameDraft, setAdminProfileUsernameDraft] = useState('')
+  const [adminProfileLogoDraft, setAdminProfileLogoDraft] = useState<ProfileLogo>('default')
+  const [adminProfileSaveBusy, setAdminProfileSaveBusy] = useState(false)
+  const selectedAdminProfile = adminProfiles.find(profile => profile.id === selectedAdminProfileId) ?? null
 
   useEffect(() => {
     if (!account) {
@@ -367,6 +379,97 @@ export default function App() {
     })()
     return () => { cancelled = true }
   }, [account?.userId, account?.accessToken, isAdminSession])
+
+  useEffect(() => {
+    if (!isAdminSession || !adminDashboardOpen || adminTab !== 'profiles' || !account) return
+    let cancelled = false
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    if (!endpoint || !anonKey) {
+      setAdminProfilesMessage('Profile management is unavailable because the database connection is not configured.')
+      return
+    }
+    setAdminProfilesBusy(true)
+    setAdminProfilesMessage('Loading registered profiles…')
+    void (async () => {
+      try {
+        const headers = { apikey: anonKey, Authorization: 'Bearer ' + account.accessToken }
+        const [profilesResponse, adminsResponse] = await Promise.all([
+          fetch(endpoint + '/rest/v1/profiles?select=id,username,profile_logo,created_at,updated_at&order=created_at.desc', { headers, cache: 'no-store' }),
+          fetch(endpoint + '/rest/v1/admin_users?select=user_id', { headers, cache: 'no-store' }),
+        ])
+        if (!profilesResponse.ok || !adminsResponse.ok) throw new Error('The database rejected the profile request.')
+        const profiles = await profilesResponse.json() as AdminProfile[]
+        const admins = await adminsResponse.json() as Array<{ user_id?: string }>
+        if (cancelled) return
+        const validProfiles = profiles.filter(profile => typeof profile.id === 'string' && typeof profile.username === 'string')
+        const adminIds = admins.map(item => item.user_id).filter((id): id is string => typeof id === 'string')
+        setAdminUserIds(adminIds)
+        setAdminProfiles(validProfiles)
+        setSelectedAdminProfileId(current => current && validProfiles.some(profile => profile.id === current) ? current : null)
+        setAdminProfilesMessage(validProfiles.length ? `Loaded ${validProfiles.length} profiles securely.` : 'No registered profiles were found.')
+      } catch {
+        if (!cancelled) setAdminProfilesMessage('Could not load profiles. Confirm that your admin session is active, then refresh.')
+      } finally {
+        if (!cancelled) setAdminProfilesBusy(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [isAdminSession, adminDashboardOpen, adminTab, account?.userId, account?.accessToken, adminProfilesRefreshKey])
+
+  const selectAdminProfile = (profile: AdminProfile) => {
+    setSelectedAdminProfileId(profile.id)
+    setAdminProfileUsernameDraft(profile.username)
+    const isAdminProfile = adminUserIds.includes(profile.id)
+    setAdminProfileLogoDraft(isAdminProfile ? 'admin' : isProfileLogo(profile.profile_logo) && profile.profile_logo !== 'admin' ? profile.profile_logo : 'default')
+    setAdminProfilesMessage('')
+  }
+
+  const saveAdminProfile = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!isAdminSession || !account || !selectedAdminProfile || adminProfileSaveBusy) return
+    const username = adminProfileUsernameDraft.trim()
+    const usernamePolicy = validateUsernamePolicy(username)
+    if (!usernamePolicy.valid) {
+      setAdminProfilesMessage(usernamePolicy.reason)
+      return
+    }
+    const isAdminProfile = adminUserIds.includes(selectedAdminProfile.id)
+    const profileLogo = isAdminProfile ? 'admin' : isProfileLogo(adminProfileLogoDraft) && adminProfileLogoDraft !== 'admin' ? adminProfileLogoDraft : 'default'
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    if (!endpoint || !anonKey) {
+      setAdminProfilesMessage('Database connection is not configured.')
+      return
+    }
+    setAdminProfileSaveBusy(true)
+    setAdminProfilesMessage('Saving profile changes…')
+    try {
+      const response = await fetch(endpoint + '/rest/v1/profiles?id=eq.' + encodeURIComponent(selectedAdminProfile.id) + '&select=id,username,profile_logo,created_at,updated_at', {
+        method: 'PATCH',
+        headers: {
+          apikey: anonKey,
+          Authorization: 'Bearer ' + account.accessToken,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify({ username, profile_logo: profileLogo, updated_at: new Date().toISOString() }),
+      })
+      if (!response.ok) throw new Error('The username may already be in use, or the database rejected this change.')
+      const rows = await response.json() as AdminProfile[]
+      if (!rows[0] || rows[0].id !== selectedAdminProfile.id || rows[0].username !== username || rows[0].profile_logo !== profileLogo) {
+        throw new Error('The database did not confirm the saved profile values.')
+      }
+      setAdminProfiles(current => current.map(profile => profile.id === rows[0].id ? rows[0] : profile))
+      setAdminProfileUsernameDraft(rows[0].username)
+      setAdminProfileLogoDraft(profileLogo)
+      setAdminProfilesMessage('Profile saved and verified.')
+    } catch (error) {
+      setAdminProfilesMessage(error instanceof Error ? error.message : 'Could not save this profile. Please try again.')
+    } finally {
+      setAdminProfileSaveBusy(false)
+    }
+  }
 
   // Always collapse the public filter panel when switching between public views.
   useEffect(() => {
@@ -1369,13 +1472,63 @@ export default function App() {
           ['imports', '⇅', 'Import / Export', 'Files, backups and data transfer'],
           ['appearance', '◈', 'Branding', 'Logo, icon and background'],
           ['cloud', '☁', 'Cloud sync', 'Admin sign-in and shared records'],
+          ['profiles', '♙', 'Profile management', 'Manage registered accounts'],
         ] as const).map(([id, icon, label, description]) => (
           <button key={id} type="button" className={adminTab === id ? 'admin-tab active' : 'admin-tab'} onClick={() => setAdminTab(id)}>
             <span className="admin-tab-icon">{icon}</span><span className="admin-tab-copy"><strong>{label}</strong><small>{description}</small></span><span className="admin-tab-arrow">›</span>
           </button>
         ))}
       </nav>
-            {adminTab === 'appearance' && <>
+            {adminTab === 'profiles' && <section className="admin-panel profile-management-panel">
+        <div className="section-heading"><div><p className="eyebrow">ACCOUNT CONTROL</p><h2>Profile management</h2></div><span className="count-label">{adminProfiles.length} profiles</span></div>
+        <p className="muted-copy">Browse every registered profile, update usernames and profile icons, and verify each save. Administrator accounts are identified by the trusted database allowlist; their Admin shield logo is locked. Account permissions, passwords and authentication records are not changed here.</p>
+        <div className="profile-management-toolbar">
+          <input className="admin-search" value={adminProfilesSearch} onChange={event => setAdminProfilesSearch(event.target.value)} placeholder="Search username or ID…" aria-label="Search user profiles" />
+          <button className="button secondary" type="button" onClick={() => setAdminProfilesRefreshKey(value => value + 1)} disabled={adminProfilesBusy}>{adminProfilesBusy ? 'Refreshing…' : '↻ Refresh profiles'}</button>
+        </div>
+        {adminProfilesMessage && <p className={/could not|rejected|unavailable|already be in use|did not confirm/i.test(adminProfilesMessage) ? 'profile-management-message error' : 'profile-management-message'} role="status" aria-live="polite">{adminProfilesMessage}</p>}
+        <div className="profile-management-layout">
+          <div className="profile-management-list" aria-label="Registered profiles">
+            {adminProfilesBusy && adminProfiles.length === 0 ? <div className="profile-management-empty"><span className="profile-management-spinner" />Loading profiles securely…</div> :
+              adminProfiles.filter(profile => (profile.username + ' ' + profile.id).toLowerCase().includes(adminProfilesSearch.trim().toLowerCase())).length === 0 ? <div className="profile-management-empty"><span className="profile-management-empty-icon">⌕</span><strong>No matching profiles</strong><span>Try a different username or user ID.</span></div> :
+              adminProfiles.filter(profile => (profile.username + ' ' + profile.id).toLowerCase().includes(adminProfilesSearch.trim().toLowerCase())).map(profile => {
+                const isAdminProfile = adminUserIds.includes(profile.id)
+                const selected = selectedAdminProfileId === profile.id
+                const logoOption = profileLogoOptions.find(option => option.value === profile.profile_logo)
+                return <button key={profile.id} type="button" className={selected ? 'profile-management-user active' : 'profile-management-user'} onClick={() => selectAdminProfile(profile)} aria-pressed={selected}>
+                  <span className={isAdminProfile ? 'profile-management-avatar admin' : 'profile-management-avatar'}>{isAdminProfile ? <svg className="profile-admin-logo" viewBox="0 0 24 24" aria-label="Admin logo"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : logoOption?.glyph || '👤'}</span>
+                  <span className="profile-management-user-copy"><strong>{profile.username}</strong><small>{new Date(profile.created_at).toLocaleDateString()} · {profile.id.slice(0, 8)}…</small></span>
+                  <span className={isAdminProfile ? 'profile-management-role admin' : 'profile-management-role'}>{isAdminProfile ? 'ADMIN' : 'MEMBER'}</span>
+                </button>
+              })}
+          </div>
+          <div className="profile-management-editor">
+            {selectedAdminProfile ? <form onSubmit={saveAdminProfile}>
+              <div className="profile-management-editor-heading">
+                <span className={adminUserIds.includes(selectedAdminProfile.id) ? 'profile-management-avatar large admin' : 'profile-management-avatar large'}>{adminUserIds.includes(selectedAdminProfile.id) ? <svg className="profile-admin-logo" viewBox="0 0 24 24" aria-label="Admin logo"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : profileLogoOptions.find(option => option.value === selectedAdminProfile.profile_logo)?.glyph || '👤'}</span>
+                <div><p className="eyebrow">{adminUserIds.includes(selectedAdminProfile.id) ? 'TRUSTED ADMIN ACCOUNT' : 'REGISTERED MEMBER'}</p><h3>{selectedAdminProfile.username}</h3><span>{adminUserIds.includes(selectedAdminProfile.id) ? 'Administrator access is managed separately.' : 'Profile details and public identity'}</span></div>
+              </div>
+              <label className="profile-management-field">Username
+                <input value={adminProfileUsernameDraft} onChange={event => setAdminProfileUsernameDraft(event.target.value)} minLength={3} maxLength={24} pattern="[A-Za-z0-9_]{3,24}" required autoComplete="off" />
+                <small>3–24 characters; letters, numbers and underscores. Must be unique.</small>
+              </label>
+              <div className="profile-management-field"><span className="profile-management-field-label">Profile logo</span>
+                <div className="profile-logo-options profile-management-logo-options">
+                  {profileLogoOptions.filter(option => adminUserIds.includes(selectedAdminProfile.id) ? option.value === 'admin' : !option.adminOnly).map(option => <button key={option.value} type="button" className={adminProfileLogoDraft === option.value ? 'profile-logo-option active' : 'profile-logo-option'} aria-pressed={adminProfileLogoDraft === option.value} onClick={() => setAdminProfileLogoDraft(adminUserIds.includes(selectedAdminProfile.id) ? 'admin' : option.value)}>
+                    <span aria-hidden="true">{option.value === 'admin' ? <svg className="profile-admin-logo" viewBox="0 0 24 24"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : option.glyph}</span><strong>{option.label}</strong>
+                  </button>)}
+                </div>
+                {adminUserIds.includes(selectedAdminProfile.id) && <small className="profile-management-help">The Admin shield is mandatory for trusted administrators and cannot be changed here.</small>}
+              </div>
+              <div className="profile-management-meta"><span>Profile ID</span><code>{selectedAdminProfile.id}</code></div>
+              <div className="profile-management-meta"><span>Created</span><strong>{new Date(selectedAdminProfile.created_at).toLocaleString()}</strong></div>
+              <div className="profile-management-meta"><span>Last updated</span><strong>{new Date(selectedAdminProfile.updated_at).toLocaleString()}</strong></div>
+              <div className="form-actions profile-management-actions"><button className="button primary" type="submit" disabled={adminProfileSaveBusy || (adminProfileUsernameDraft.trim() === selectedAdminProfile.username && adminProfileLogoDraft === (adminUserIds.includes(selectedAdminProfile.id) ? 'admin' : selectedAdminProfile.profile_logo))}>{adminProfileSaveBusy ? 'Saving…' : 'Save profile changes'}</button><button className="button secondary" type="button" onClick={() => selectAdminProfile(selectedAdminProfile)} disabled={adminProfileSaveBusy}>Reset</button></div>
+            </form> : <div className="profile-management-empty profile-management-editor-empty"><span className="profile-management-empty-icon">◎</span><strong>Select a profile</strong><span>Choose an account from the list to review and manage its public profile.</span></div>}
+          </div>
+        </div>
+      </section>}
+      {adminTab === 'appearance' && <>
       <section className="admin-panel theme-editor">
         <div className="section-heading"><div><p className="eyebrow">SITE APPEARANCE</p><h2>UFL Arena theme</h2></div><span className="count-label">Fixed theme</span></div>
         <p className="muted-copy">The site uses one fixed UFL-inspired visual style: dark arena backgrounds, lime-green accents, high-contrast text and rounded panels. Theme colors and styling cannot be changed from the admin panel.</p>
