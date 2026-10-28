@@ -44,6 +44,11 @@ const checks = [
       && /if \(targetAdmin\)/i.test(read('../supabase/functions/account-moderation/index.ts')),
   },
   {
+    name: 'guest database role has read-only grants',
+    pass: /REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM anon/i.test(read('../supabase/migrations/20261028214513_make_public_schema_read_only_for_guests.sql'))
+      && /GRANT SELECT ON public\.cards, public\.card_reviews, public\.site_settings TO anon/i.test(read('../supabase/migrations/20261028214513_make_public_schema_read_only_for_guests.sql')),
+  },
+  {
     name: 'backend deployment includes account moderation function',
     pass: /functions deploy account-moderation/i.test(read('../.github/workflows/supabase-deploy.yml')),
   },
