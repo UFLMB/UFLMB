@@ -90,6 +90,16 @@ export default function SupportChat() {
   }, [adminView, isAdmin, requestHeaders, token, userId])
 
   useEffect(() => {
+    setIsAdmin(false)
+    setAdminView(false)
+    setConversations([])
+    setSelectedId('')
+    setMessages([])
+    setError('')
+    setNotice('')
+  }, [token, userId])
+
+  useEffect(() => {
     if (!open || !token || !userId || !endpoint || !anonKey) return
     let cancelled = false
     void (async () => {
@@ -116,6 +126,7 @@ export default function SupportChat() {
       setMessages([])
       return
     }
+    setMessages([])
     let cancelled = false
     void (async () => {
       try {
