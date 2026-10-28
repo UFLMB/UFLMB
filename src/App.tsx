@@ -296,6 +296,43 @@ export default function App() {
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud'>('cards')
 
+  useEffect(() => {
+    if (!account) {
+      setProfileUsernameDraft('')
+      setProfileLogo('default')
+      setProfileLogoDraft('default')
+      return
+    }
+    setProfileUsernameDraft(account.username)
+    let cancelled = false
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    if (!endpoint || !anonKey) return
+    void (async () => {
+      try {
+        const response = await fetch(endpoint + '/rest/v1/profiles?select=username,profile_logo&id=eq.' + encodeURIComponent(account.userId) + '&limit=1', {
+          headers: { apikey: anonKey, Authorization: 'Bearer ' + account.accessToken },
+        })
+        if (!response.ok) throw new Error('Could not load profile')
+        const rows = await response.json() as Array<{ username?: string; profile_logo?: string }>
+        if (cancelled || !rows[0]) return
+        const username = rows[0].username || account.username
+        const logo = isProfileLogo(rows[0].profile_logo) ? rows[0].profile_logo : 'default'
+        const safeLogo: ProfileLogo = logo === 'admin' && !isAdminSession ? 'default' : logo
+        setProfileUsernameDraft(username)
+        setProfileLogo(safeLogo)
+        setProfileLogoDraft(safeLogo)
+        setAccount(current => current?.userId === account.userId ? { ...current, username } : current)
+      } catch {
+        if (!cancelled) {
+          setProfileMessage('Could not load your saved profile settings. Please try again.')
+          setProfileMessageType('error')
+        }
+      }
+    })()
+    return () => { cancelled = true }
+  }, [account?.userId, account?.accessToken, isAdminSession])
+
   // Always collapse the public filter panel when switching between public views.
   useEffect(() => {
     document.querySelectorAll<HTMLDetailsElement>('.filter-disclosure').forEach(panel => { panel.open = false })
@@ -1542,6 +1579,106 @@ export default function App() {
     }
   }
 
+
+  const saveProfileDetails = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!account || profileBusy) return
+    const username = profileUsernameDraft.trim()
+    if (!/^[A-Za-z0-9_]{3,24}$/.test(username)) {
+      setProfileMessage('Username must be 3–24 characters and use only letters, numbers or underscores.')
+      setProfileMessageType('error')
+      return
+    }
+    if (!isProfileLogo(profileLogoDraft) || (profileLogoDraft === 'admin' && !isAdminSession)) {
+      setProfileMessage('That user logo is not available for this account.')
+      setProfileMessageType('error')
+      return
+    }
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    if (!endpoint || !anonKey) {
+      setProfileMessage('Profile settings are not configured on the server yet.')
+      setProfileMessageType('error')
+      return
+    }
+    setProfileBusy(true)
+    setProfileMessage('')
+    try {
+      const response = await fetch(endpoint + '/rest/v1/profiles?id=eq.' + encodeURIComponent(account.userId), {
+        method: 'PATCH',
+        headers: {
+          apikey: anonKey,
+          Authorization: 'Bearer ' + account.accessToken,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify({ username, profile_logo: profileLogoDraft, updated_at: new Date().toISOString() }),
+      })
+      if (!response.ok) {
+        const detail = await response.text().catch(() => '')
+        const lower = detail.toLowerCase()
+        if (lower.includes('profiles_username_normalized_key') || lower.includes('duplicate key')) throw new Error('That username is already in use. Please choose another.')
+        if (lower.includes('administrator logo') || lower.includes('profile_logo')) throw new Error('The selected logo is not permitted for this account.')
+        throw new Error(detail || ('Could not save profile (HTTP ' + response.status + ').'))
+      }
+      const rows = await response.json() as Array<{ username?: string; profile_logo?: string }>
+      if (!rows.length || rows[0].username !== username || rows[0].profile_logo !== profileLogoDraft) throw new Error('The server did not confirm the saved profile values.')
+      setAccount(current => current?.userId === account.userId ? { ...current, username } : current)
+      setProfileLogo(profileLogoDraft)
+      setProfileMessage('Profile updated successfully.')
+      setProfileMessageType('success')
+      window.dispatchEvent(new CustomEvent('uflmb:profile-username-updated', { detail: { username } }))
+    } catch (error) {
+      setProfileMessage(error instanceof Error ? error.message : 'Could not save profile settings. Please try again.')
+      setProfileMessageType('error')
+    } finally {
+      setProfileBusy(false)
+    }
+  }
+
+  const changeProfilePassword = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!account || profileBusy) return
+    if (profilePassword.length < 6) {
+      setProfileMessage('Your new password must contain at least 6 characters.')
+      setProfileMessageType('error')
+      return
+    }
+    if (profilePassword !== profilePasswordConfirm) {
+      setProfileMessage('The passwords do not match.')
+      setProfileMessageType('error')
+      return
+    }
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    if (!endpoint || !anonKey) {
+      setProfileMessage('Password updates are not configured on the server yet.')
+      setProfileMessageType('error')
+      return
+    }
+    setProfileBusy(true)
+    setProfileMessage('')
+    try {
+      const response = await fetch(endpoint + '/auth/v1/user', {
+        method: 'PUT',
+        headers: { apikey: anonKey, Authorization: 'Bearer ' + account.accessToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: profilePassword }),
+      })
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({})) as { message?: string; msg?: string; error_description?: string }
+        throw new Error(result.message || result.msg || result.error_description || ('Could not update password (HTTP ' + response.status + ').'))
+      }
+      setProfilePassword('')
+      setProfilePasswordConfirm('')
+      setProfileMessage('Password updated successfully.')
+      setProfileMessageType('success')
+    } catch (error) {
+      setProfileMessage(error instanceof Error ? error.message : 'Could not update password. Please try again.')
+      setProfileMessageType('error')
+    } finally {
+      setProfileBusy(false)
+    }
+  }
 
   return (
     <main className="app-shell">
