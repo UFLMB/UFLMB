@@ -19,6 +19,7 @@ type Props = {
   themeMode: 'dark' | 'light' | 'system'
   onThemeModeChange: (value: 'dark' | 'light' | 'system') => void
   onDashboardChange: (value: boolean) => void
+  onProfileChange: () => void
 }
 
 const SESSION_KEY = 'uflmb.auth.session.v1'
@@ -150,7 +151,7 @@ async function restoreSession(): Promise<AuthSession | null> {
   }
 }
 
-export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, themeMode, onThemeModeChange, onDashboardChange }: Props) {
+export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, themeMode, onThemeModeChange, onDashboardChange, onProfileChange }: Props) {
   const [open, setOpen] = useState(false)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const accountMenuRef = useRef<HTMLDivElement>(null)
@@ -220,7 +221,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
       setSessionEmail(restored.user.email || '')
       const restoredUsername = await getProfileUsername(restored)
       setSessionUsername(restoredUsername)
-      if (!cancelled) onAccountChange({ userId: restored.user.id, username: restoredUsername, accessToken: restored.access_token })
+      if (!cancelled) onAccountChange({ userId: restored.user.id, username: restoredUsername, email: restored.user.email || '', accessToken: restored.access_token })
       const admin = await checkAdmin(restored)
       if (!cancelled) onAdminChange(admin)
       if (!cancelled && fragmentType === 'recovery') showMessage('Choose a new password for your account.', 'info')
@@ -321,7 +322,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
       setSessionEmail(nextSession.user.email || email.trim())
       const nextUsername = mode === 'signup' ? username.trim() : await getProfileUsername(nextSession)
       setSessionUsername(nextUsername)
-      onAccountChange({ userId: nextSession.user.id, username: nextUsername, accessToken: nextSession.access_token })
+      onAccountChange({ userId: nextSession.user.id, username: nextUsername, email: nextSession.user.email || '', accessToken: nextSession.access_token })
       setPassword('')
       setConfirmPassword('')
       const admin = await checkAdmin(nextSession)
@@ -394,6 +395,10 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2" fill="none" stroke="currentColor" strokeWidth="1.8"/><path d="M8 21h8m-4-4v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
             </button>
           </div>
+          <button className="account-menu-item" type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); onProfileChange() }}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" strokeWidth="1.8"/><path d="M4 21v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+            <span>Profile</span>
+          </button>
           {isAdmin && <button className="account-menu-item" type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); onDashboardChange(true) }}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8"/><rect x="13" y="3" width="8" height="5" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8"/><rect x="13" y="10" width="8" height="11" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8"/></svg>
             <span>Dashboard</span>
