@@ -38,6 +38,13 @@ const loadThemeMode = (): ThemeMode => {
 const BRANDING_KEY = 'uflmb.site-branding.v1'
 type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[] }
 const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrls: [] }
+type ProfileLogo = 'default' | 'star' | 'ball' | 'bolt' | 'shield' | 'admin'
+const profileLogoOptions: Array<{ value: ProfileLogo; label: string; glyph: string; adminOnly?: boolean }> = [
+  { value: 'default', label: 'Initial', glyph: 'U' }, { value: 'star', label: 'Star', glyph: '★' },
+  { value: 'ball', label: 'Football', glyph: '⚽' }, { value: 'bolt', label: 'Lightning', glyph: 'ϟ' },
+  { value: 'shield', label: 'Shield', glyph: '⬟' }, { value: 'admin', label: 'Admin logo', glyph: '✓', adminOnly: true },
+]
+const isProfileLogo = (value: unknown): value is ProfileLogo => ['default', 'star', 'ball', 'bolt', 'shield', 'admin'].includes(String(value))
 const parseBackgroundUrls = (value: string) => Array.from(new Set(
   value.split(/[\n,]+/).map(url => url.trim()).filter(url => {
     try {
@@ -1703,25 +1710,46 @@ export default function App() {
         <button type="button" className="account-panel account-profile-link" onClick={() => { setPage('profile'); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="account-panel-icon" aria-hidden="true">♙</span><span className="account-panel-copy"><span className="eyebrow">YOUR ACCOUNT</span><strong>Profile</strong><span>View your community profile and account details.</span></span><span className="account-panel-arrow" aria-hidden="true">→</span></button>
       </section>}
       {page === 'profile' && <section className="profile-page account-page" aria-labelledby="account-profile-title">
-        <div className="account-page-heading"><p className="eyebrow">UFLMB COMMUNITY</p><h1 id="account-profile-title">Your <span>profile.</span></h1><p className="hero-copy">Your account space for the UFLMB community.</p></div>
+        <div className="account-page-heading"><p className="eyebrow">UFLMB COMMUNITY</p><h1 id="account-profile-title">Your <span>profile.</span></h1><p className="hero-copy">Manage your UFLMB username, password and personal logo.</p></div>
         <section className="account-profile-hero">
-          <div className="account-avatar" aria-hidden="true">{account?.username?.trim()?.charAt(0)?.toUpperCase() || 'U'}</div>
-          <div className="account-profile-identity"><p className="eyebrow">{account ? 'COMMUNITY MEMBER' : 'VISITOR PROFILE'}</p><h2>{account?.username || 'Welcome to UFLMB'}</h2><p>{account ? 'Your community session is active.' : 'You are browsing as a guest. You can explore the database without signing in.'}</p><span className={account ? 'account-status signed-in' : 'account-status'}><i />{account ? 'Signed in' : 'Guest access'}</span></div>
+          <div className="account-avatar" aria-hidden="true">{profileLogo === 'admin' && isAdminSession ? '✓' : profileLogoOptions.find(option => option.value === profileLogo && (!option.adminOnly || isAdminSession))?.glyph || account?.username?.trim()?.charAt(0)?.toUpperCase() || 'U'}</div>
+          <div className="account-profile-identity"><p className="eyebrow">{account ? (isAdminSession ? 'ADMINISTRATOR' : 'COMMUNITY MEMBER') : 'VISITOR PROFILE'}</p><h2>{account?.username || 'Welcome to UFLMB'}</h2><p>{account ? 'Your community session is active.' : 'You are browsing as a guest. Sign in to manage your profile.'}</p><span className={account ? 'account-status signed-in' : 'account-status'}><i />{account ? 'Signed in' : 'Guest access'}</span></div>
         </section>
-        <div className="account-profile-grid">
-          <section className="account-panel account-detail-panel"><p className="eyebrow">ACCOUNT DETAILS</p><h3>Profile information</h3><dl>
-            <div><dt>Username</dt><dd>{account?.username || 'Guest'}</dd></div>
-            <div><dt>Email</dt><dd>{account?.email || (account ? 'Email not available' : 'Sign in to view account details')}</dd></div>
-            {isAdminSession && <div><dt>Account ID</dt><dd>{account?.userId || 'Unavailable'}</dd></div>}
-            {isAdminSession && <div className="account-access-highlight"><dt>Access</dt><dd><span className="account-access-badge">Administrator</span></dd></div>}
-          </dl></section>
-          <section className="account-panel account-detail-panel"><p className="eyebrow">QUICK PREFERENCES</p><h3>Appearance</h3><p className="account-panel-description">Current theme: <strong>{themeMode === 'system' ? 'System' : themeMode === 'light' ? 'Light' : 'Dark'}</strong></p><div className="settings-theme-options compact" role="group" aria-label="Choose theme mode">
-            <button type="button" className={themeMode === 'dark' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'dark'} onClick={() => setThemeMode('dark')}><span aria-hidden="true">☾</span><strong>Dark</strong></button>
-            <button type="button" className={themeMode === 'light' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'light'} onClick={() => setThemeMode('light')}><span aria-hidden="true">☼</span><strong>Light</strong></button>
-            <button type="button" className={themeMode === 'system' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'system'} onClick={() => setThemeMode('system')}><span aria-hidden="true">▣</span><strong>System</strong></button>
-          </div><button type="button" className="button secondary account-settings-button" onClick={() => setPage('settings')}>Open settings <span aria-hidden="true">→</span></button></section>
-        </div>
-        {!account && <div className="account-signin-note"><span aria-hidden="true">✦</span><div><strong>Make yourself at home</strong><p>Create an account or sign in from the account button above to access your community account.</p></div></div>}
+        {account ? <>
+          <div className="account-profile-grid profile-edit-grid">
+            <section className="account-panel account-detail-panel"><p className="eyebrow">ACCOUNT DETAILS</p><h3>Profile information</h3><dl>
+              <div><dt>Username</dt><dd>{account.username}</dd></div>
+              <div><dt>Email</dt><dd>{account.email || 'Email not available'}</dd></div>
+              {isAdminSession && <div><dt>Account ID</dt><dd>{account.userId}</dd></div>}
+              {isAdminSession && <div className="account-access-highlight"><dt>Access</dt><dd><span className="account-access-badge">Administrator</span></dd></div>}
+            </dl>
+              <form className="profile-edit-form" onSubmit={saveProfileDetails}>
+                <label className="full-field">New username<input autoComplete="username" minLength={3} maxLength={24} pattern="[A-Za-z0-9_]{3,24}" required value={profileUsernameDraft} onChange={event => setProfileUsernameDraft(event.target.value)} /><span className="field-help">3–24 characters. Use letters, numbers or underscores.</span></label>
+                <button className="button primary" type="submit" disabled={profileBusy || (profileUsernameDraft.trim() === account.username && profileLogoDraft === profileLogo)}>{profileBusy ? 'Saving…' : 'Save profile changes'}</button>
+              </form>
+            </section>
+            <section className="account-panel account-detail-panel"><p className="eyebrow">PERSONALIZATION</p><h3>Your user logo</h3><p className="account-panel-description">Choose the icon shown on your profile. Your choice is saved to your account.</p>
+              <div className="profile-logo-options" role="group" aria-label="Choose your user logo">
+                {profileLogoOptions.filter(option => !option.adminOnly || isAdminSession).map(option => <button key={option.value} type="button" className={profileLogoDraft === option.value ? 'profile-logo-option active' : 'profile-logo-option'} aria-pressed={profileLogoDraft === option.value} onClick={() => setProfileLogoDraft(option.value)}><span aria-hidden="true">{option.value === 'default' ? (account.username.trim().charAt(0).toUpperCase() || 'U') : option.glyph}</span><strong>{option.label}</strong></button>)}
+              </div>
+              <p className="field-help">The administrator logo is available only to verified administrators.</p>
+              <p className="account-panel-description">Current theme: <strong>{themeMode === 'system' ? 'System' : themeMode === 'light' ? 'Light' : 'Dark'}</strong></p>
+              <div className="settings-theme-options compact" role="group" aria-label="Choose theme mode">
+                <button type="button" className={themeMode === 'dark' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'dark'} onClick={() => setThemeMode('dark')}><span aria-hidden="true">☾</span><strong>Dark</strong></button>
+                <button type="button" className={themeMode === 'light' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'light'} onClick={() => setThemeMode('light')}><span aria-hidden="true">☼</span><strong>Light</strong></button>
+                <button type="button" className={themeMode === 'system' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'system'} onClick={() => setThemeMode('system')}><span aria-hidden="true">▣</span><strong>System</strong></button>
+              </div><button type="button" className="button secondary account-settings-button" onClick={() => setPage('settings')}>Open settings <span aria-hidden="true">→</span></button>
+            </section>
+          </div>
+          <section className="account-panel profile-password-panel"><p className="eyebrow">SECURITY</p><h3>Change password</h3><p className="account-panel-description">Choose a new password for your account. Use at least 6 characters.</p>
+            <form className="profile-edit-form profile-password-form" onSubmit={changeProfilePassword}>
+              <label className="full-field">New password<input type="password" autoComplete="new-password" minLength={6} required value={profilePassword} onChange={event => setProfilePassword(event.target.value)} /></label>
+              <label className="full-field">Confirm new password<input type="password" autoComplete="new-password" minLength={6} required value={profilePasswordConfirm} onChange={event => setProfilePasswordConfirm(event.target.value)} /></label>
+              <button className="button primary" type="submit" disabled={profileBusy || !profilePassword || !profilePasswordConfirm}>{profileBusy ? 'Updating…' : 'Update password'}</button>
+            </form>
+          </section>
+          {profileMessage && <p className={profileMessageType === 'error' ? 'profile-feedback error' : 'profile-feedback success'} role="status" aria-live="polite">{profileMessage}</p>}
+        </> : <div className="account-signin-note"><span aria-hidden="true">✦</span><div><strong>Make yourself at home</strong><p>Create an account or sign in from the account button above to change your username, password and user logo.</p></div></div>}
       </section>}
       {page === 'home' && <section className="home-page">
         <section className="home-hero"><p className="eyebrow">UFL MOBILE DATABASE</p><h1>Every card.<br /><span>One arena.</span></h1>
