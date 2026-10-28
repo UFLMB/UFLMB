@@ -347,7 +347,7 @@ export default function App() {
         if (cancelled || !rows[0]) return
         const username = rows[0].username || account.username
         const logo = isProfileLogo(rows[0].profile_logo) ? rows[0].profile_logo : 'default'
-        const safeLogo: ProfileLogo = logo === 'admin' && !isAdminSession ? 'default' : logo
+        const safeLogo: ProfileLogo = isAdminSession ? 'admin' : logo === 'admin' ? 'default' : logo
         setProfileUsernameDraft(username)
         setProfileLogo(safeLogo)
         setProfileLogoDraft(safeLogo)
@@ -1664,7 +1664,8 @@ export default function App() {
   const saveProfileLogo = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!account || profileBusy) return
-    if (!isProfileLogo(profileLogoDraft) || (profileLogoDraft === 'admin' && !isAdminSession)) {
+    const logoToSave: ProfileLogo = isAdminSession ? 'admin' : profileLogoDraft
+    if (!isProfileLogo(logoToSave) || (logoToSave === 'admin' && !isAdminSession)) {
       setProfileMessage('That user logo is not available for this account.')
       setProfileMessageType('error')
       return
@@ -1687,7 +1688,7 @@ export default function App() {
           'Content-Type': 'application/json',
           Prefer: 'return=representation',
         },
-        body: JSON.stringify({ profile_logo: profileLogoDraft, updated_at: new Date().toISOString() }),
+        body: JSON.stringify({ profile_logo: logoToSave, updated_at: new Date().toISOString() }),
       })
       if (!response.ok) {
         const detail = await response.text().catch(() => '')
@@ -1695,8 +1696,9 @@ export default function App() {
         throw new Error(detail || ('Could not save profile icon (HTTP ' + response.status + ').'))
       }
       const rows = await response.json() as Array<{ profile_logo?: string }>
-      if (!rows.length || rows[0].profile_logo !== profileLogoDraft) throw new Error('The server did not confirm the saved profile icon.')
-      setProfileLogo(profileLogoDraft)
+      if (!rows.length || rows[0].profile_logo !== logoToSave) throw new Error('The server did not confirm the saved profile icon.')
+      setProfileLogo(logoToSave)
+      setProfileLogoDraft(logoToSave)
       setProfileMessage('Profile icon updated successfully.')
       setProfileMessageType('success')
     } catch (error) {
@@ -1800,7 +1802,7 @@ export default function App() {
             <section className="account-panel account-detail-panel"><p className="eyebrow">PERSONALIZATION</p><h3>Your user logo</h3><p className="account-panel-description">Choose the icon shown on your profile. Your choice is saved to your account.</p>
               <form className="profile-logo-form" onSubmit={saveProfileLogo}>
                 <div className="profile-logo-options" role="group" aria-label="Choose your football profile icon">
-                  {profileLogoOptions.filter(option => !option.adminOnly || isAdminSession).map(option => <button key={option.value} type="button" className={profileLogoDraft === option.value ? 'profile-logo-option active' : 'profile-logo-option'} aria-pressed={profileLogoDraft === option.value} onClick={() => setProfileLogoDraft(option.value)}><span aria-hidden="true">{option.value === 'admin' ? <svg className="profile-admin-logo" viewBox="0 0 24 24"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor" stroke="none"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : option.glyph}</span><strong>{option.label}</strong></button>)}
+                  {profileLogoOptions.filter(option => isAdminSession ? option.value === 'admin' : !option.adminOnly).map(option => <button key={option.value} type="button" className={profileLogoDraft === option.value ? 'profile-logo-option active' : 'profile-logo-option'} aria-pressed={profileLogoDraft === option.value} onClick={() => setProfileLogoDraft(isAdminSession ? 'admin' : option.value)}><span aria-hidden="true">{option.value === 'admin' ? <svg className="profile-admin-logo" viewBox="0 0 24 24"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor" stroke="none"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : option.glyph}</span><strong>{option.label}</strong></button>)}
                 </div>
                 <button className="button primary" type="submit" disabled={profileBusy || profileLogoDraft === profileLogo}>{profileBusy ? 'Saving…' : 'Save profile icon'}</button>
               </form>
