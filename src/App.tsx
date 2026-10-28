@@ -7,7 +7,6 @@ import CommunityReviews from './components/CommunityReviews'
 import AuthAccess from './components/AuthAccess'
 import SharedDatabasePanel from './components/SharedDatabasePanel'
 import SupportChat from './components/SupportChat'
-import ModerationCenter from './components/ModerationCenter'
 import { validateUsernamePolicy } from './lib/usernamePolicy'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
@@ -332,7 +331,7 @@ export default function App() {
   const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
   const [compareIds, setCompareIds] = useState<string[]>([])
   const [showCompare, setShowCompare] = useState(false)
-  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud' | 'profiles' | 'moderation'>('cards')
+  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud' | 'profiles'>('cards')
   const [adminProfiles, setAdminProfiles] = useState<AdminProfile[]>([])
   const [adminUserIds, setAdminUserIds] = useState<string[]>([])
   const [adminProfilesBusy, setAdminProfilesBusy] = useState(false)
@@ -1485,7 +1484,6 @@ export default function App() {
           ['appearance', '◈', 'Branding', 'Logo, icon and background'],
           ['cloud', '☁', 'Cloud sync', 'Admin sign-in and shared records'],
           ['profiles', '♙', 'Profile management', 'Manage registered accounts'],
-          ['moderation', '⚑', 'Moderation & warnings', 'Review flags and issue warnings'],
         ] as const).map(([id, icon, label, description]) => (
           <button key={id} type="button" className={adminTab === id ? 'admin-tab active' : 'admin-tab'} onClick={() => setAdminTab(id)}>
             <span className="admin-tab-icon">{icon}</span><span className="admin-tab-copy"><strong>{label}</strong><small>{description}</small></span><span className="admin-tab-arrow">›</span>
@@ -1712,7 +1710,6 @@ export default function App() {
         document.body,
       )}
       <SupportChat />
-      <ModerationCenter userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'moderation')} />
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href="/UFLMB/">Back to home</a></footer>
     </main>
   )
