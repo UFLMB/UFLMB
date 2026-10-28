@@ -1802,7 +1802,6 @@ export default function App() {
                 <div className="profile-logo-options" role="group" aria-label="Choose your football profile icon">
                   {profileLogoOptions.filter(option => !option.adminOnly || isAdminSession).map(option => <button key={option.value} type="button" className={profileLogoDraft === option.value ? 'profile-logo-option active' : 'profile-logo-option'} aria-pressed={profileLogoDraft === option.value} onClick={() => setProfileLogoDraft(option.value)}><span aria-hidden="true">{option.value === 'admin' ? <svg className="profile-admin-logo" viewBox="0 0 24 24"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor" stroke="none"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : option.glyph}</span><strong>{option.label}</strong></button>)}
                 </div>
-                <p className="field-help">The administrator logo is available only to verified administrators.</p>
                 <button className="button primary" type="submit" disabled={profileBusy || profileLogoDraft === profileLogo}>{profileBusy ? 'Saving…' : 'Save profile icon'}</button>
               </form>
               <p className="account-panel-description">Current theme: <strong>{themeMode === 'system' ? 'System' : themeMode === 'light' ? 'Light' : 'Dark'}</strong></p>
