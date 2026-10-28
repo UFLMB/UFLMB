@@ -1,5 +1,9 @@
+const leetMap: Record<string, string> = {
+  '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '@': 'a', '$': 's',
+}
+
 const compactUsername = (value: string) => value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-  .replace(/[0134578@$]/g, char => ({ '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '8': 'b', '@': 'a', '$': 's' }[char] || char))
+  .replace(/[0134578@$]/g, char => leetMap[char] || char)
   .replace(/[^a-z0-9]/g, '')
 
 const prohibitedTerms = [
