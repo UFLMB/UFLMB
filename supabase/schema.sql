@@ -37,12 +37,14 @@ create table if not exists public.card_reviews (
   id uuid primary key default gen_random_uuid(),
   card_id text not null references public.cards(id) on delete cascade,
   reviewer_name text not null check (length(trim(reviewer_name)) between 1 and 40),
+  user_id uuid references auth.users(id) on delete set null,
   rating smallint not null check (rating between 1 and 5),
   review_text text not null default '' check (length(review_text) <= 1000),
   created_at timestamptz not null default now()
 );
 
 create index if not exists card_reviews_card_id_idx on public.card_reviews(card_id);
+create index if not exists card_reviews_user_created_idx on public.card_reviews(user_id, created_at desc);
 create index if not exists cards_verified_at_idx on public.cards(verified_at desc);
 
 -- Admin allowlist. Add only trusted Supabase auth user IDs here.
@@ -128,20 +130,24 @@ drop policy if exists "UFLMB admins can update app state" on public.app_state;
 create policy "UFLMB admins can update app state" on public.app_state
   for update to authenticated using (private.is_uflmb_admin()) with check (private.is_uflmb_admin());
 
--- Public reviews are still open for initial community testing. Apply anti-spam
--- controls (captcha, rate limits, moderation) before promoting this widely.
+-- Guests may read approved reviews but cannot submit content.
+-- Authenticated reviews must be linked to the signed-in account.
 drop policy if exists "Public can submit reviews" on public.card_reviews;
-create policy "Public can submit reviews" on public.card_reviews
-  for insert to anon, authenticated
+drop policy if exists "Authenticated members can submit reviews" on public.card_reviews;
+create policy "Authenticated members can submit reviews" on public.card_reviews
+  for insert to authenticated
   with check (
-    length(trim(reviewer_name)) between 1 and 40
+    user_id = (select auth.uid())
+    and length(trim(reviewer_name)) between 1 and 40
     and rating between 1 and 5
     and length(review_text) <= 1000
   );
 
 grant select on public.cards to anon, authenticated;
 grant insert, update, delete on public.cards to authenticated;
-grant select, insert on public.card_reviews to anon, authenticated;
+revoke insert on public.card_reviews from anon;
+grant select on public.card_reviews to anon, authenticated;
+grant insert on public.card_reviews to authenticated;
 
 -- Shared site appearance is public-readable so every visitor gets the same branding.
 -- Only allowlisted admins may publish or update the shared settings.
