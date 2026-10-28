@@ -1804,12 +1804,16 @@ export default function App() {
                 </div>
                 <button className="button primary" type="submit" disabled={profileBusy || profileLogoDraft === profileLogo}>{profileBusy ? 'Saving…' : 'Save profile icon'}</button>
               </form>
-              <p className="account-panel-description">Current theme: <strong>{themeMode === 'system' ? 'System' : themeMode === 'light' ? 'Light' : 'Dark'}</strong></p>
-              <div className="settings-theme-options compact" role="group" aria-label="Choose theme mode">
-                <button type="button" className={themeMode === 'dark' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'dark'} onClick={() => setThemeMode('dark')}><span aria-hidden="true">☾</span><strong>Dark</strong></button>
-                <button type="button" className={themeMode === 'light' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'light'} onClick={() => setThemeMode('light')}><span aria-hidden="true">☼</span><strong>Light</strong></button>
-                <button type="button" className={themeMode === 'system' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'system'} onClick={() => setThemeMode('system')}><span aria-hidden="true">▣</span><strong>System</strong></button>
-              </div><button type="button" className="button secondary account-settings-button" onClick={() => setPage('settings')}>Open settings <span aria-hidden="true">→</span></button>
+              <div className="profile-theme-section">
+                <p className="eyebrow">THEME SWITCH</p>
+                <p className="account-panel-description">Current theme: <strong>{themeMode === 'system' ? 'System' : themeMode === 'light' ? 'Light' : 'Dark'}</strong></p>
+                <div className="settings-theme-options compact" role="group" aria-label="Choose theme mode">
+                  <button type="button" className={themeMode === 'dark' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'dark'} onClick={() => setThemeMode('dark')}><span aria-hidden="true">☾</span><strong>Dark</strong></button>
+                  <button type="button" className={themeMode === 'light' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'light'} onClick={() => setThemeMode('light')}><span aria-hidden="true">☼</span><strong>Light</strong></button>
+                  <button type="button" className={themeMode === 'system' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'system'} onClick={() => setThemeMode('system')}><span aria-hidden="true">▣</span><strong>System</strong></button>
+                </div>
+                <button type="button" className="button secondary account-settings-button" onClick={() => setPage('settings')}>Open settings <span aria-hidden="true">→</span></button>
+              </div>
             </section>
           </div>
           <section className="account-panel profile-password-panel profile-username-panel"><p className="eyebrow">ACCOUNT</p><h3>Change username</h3><p className="account-panel-description">Choose a unique username. Usernames must follow the community naming and safety rules.</p>
