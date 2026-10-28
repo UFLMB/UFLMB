@@ -36,7 +36,7 @@ export default function CommunityReviews({ cardId }: { cardId: string }) {
     const warningTerms = ['motherfucker','asshole','arsehole','bullshit','fuck','shit','bitch','bastard','cunt','faggot','nigger','nigga','kike','chink','spic','wetback','kurva','fasz','geci','picsa','kocsog','buzi','bazd','baszd','heilhitler','whitepower','alqaeda','alqaida','daesh']
     const possibleViolation = warningTerms.some(term => normalizedContent.includes(term))
       || /(uflmb|strikerz).*(admin|moderator|official|staff|support)/i.test(name.trim())
-      || /https?:\\/\\/|www\\.|buy now|free money|crypto giveaway/i.test(reviewText.trim())
+      || /https?:\/\/|www\.|buy now|free money|crypto giveaway/i.test(reviewText.trim())
     if (possibleViolation) {
       setMessage('Please review the community rules and edit this content before submitting. Offensive language, impersonation, and spam may be hidden for moderator review.')
       return
