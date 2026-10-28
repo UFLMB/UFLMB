@@ -28,7 +28,8 @@ export function validateUsernamePolicy(value: string): UsernamePolicyResult {
   }
   const brand = /(uflmb|ufl|strikerz)/.test(normalized)
   const role = roleTerms.some(term => normalized.includes(term))
-  if (brand && role) {
+  const supportRole = normalized.endsWith('support') && !normalized.includes('supporter')
+  if (brand && (role || supportRole)) {
     return { valid: false, reason: 'Fan names are allowed, but usernames must not imply official, admin, staff, or employee status.' }
   }
   if (/^(administrator|admin|moderator|modteam|staff|employee|official|verified|developer|devteam|security|representative|owner)[0-9]*$/.test(normalized)) {
