@@ -307,10 +307,22 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
           return
         }
         await requestAuth('user', { password }, { method: 'PUT', accessToken: activeSession.access_token })
+        // End the recovery session so the user must authenticate with the new password.
+        try {
+          await requestAuth('logout', undefined, { method: 'POST', accessToken: activeSession.access_token })
+        } catch { /* The password is already updated; clear the local session regardless. */ }
+        sessionStorage.removeItem(SESSION_KEY)
+        setSession(null)
+        setSessionEmail('')
+        setSessionUsername('')
+        onAccountChange(null)
+        onAdminChange(false)
+        onDashboardChange(false)
+        setAccountMenuOpen(false)
         setPassword('')
         setConfirmPassword('')
         setMode('signin')
-        showMessage('Password updated. You can now sign in with your new password.', 'success')
+        showMessage('Password updated successfully. Sign in with your new password.', 'success')
         return
       }
 
@@ -442,7 +454,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
           </button>
         </div>}
       </div>
-      {open && (!isAdmin || redirecting) && createPortal(<div className="auth-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
+      {open && (!isAdmin || redirecting || mode === 'recovery' || mode === 'updatePassword') && createPortal(<div className="auth-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
         <section className={`auth-modal${redirecting ? ' is-redirecting' : ''}`} role="dialog" aria-modal="true" aria-labelledby="auth-title">
           <button className="auth-close" type="button" aria-label="Close sign-in window" onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); setOpen(false) }}>×</button>
           {redirecting && <div className="auth-redirect-state" role="status" aria-live="polite">
