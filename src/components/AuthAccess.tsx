@@ -405,7 +405,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
           </button>
         </div>}
       </div>
-      {open && !isAdmin && createPortal(<div className="auth-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
+      {open && (!isAdmin || redirecting) && createPortal(<div className="auth-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false) }}>
         <section className={`auth-modal${redirecting ? ' is-redirecting' : ''}`} role="dialog" aria-modal="true" aria-labelledby="auth-title">
           <button className="auth-close" type="button" aria-label="Close sign-in window" onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); setOpen(false) }}>×</button>
           {redirecting && <div className="auth-redirect-state" role="status" aria-live="polite">
