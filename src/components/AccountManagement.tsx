@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { FormEvent } from 'react'
 import './AccountManagement.css'
 
 type Props = { userId?: string; accessToken?: string; isAdmin: boolean; adminView: boolean }
@@ -32,7 +33,7 @@ export default function AccountManagement({ userId, accessToken, isAdmin, adminV
     return result
   }
 
-  const lookup = async (event: React.FormEvent<HTMLFormElement>) => {
+  const lookup = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setBusy(true); setError(''); setMessage(''); setAccount(null); setConfirmation('')
     try {
