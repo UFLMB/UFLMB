@@ -6,6 +6,7 @@ import { cards as starterCards } from './data/cards'
 import CommunityReviews from './components/CommunityReviews'
 import AuthAccess from './components/AuthAccess'
 import SharedDatabasePanel from './components/SharedDatabasePanel'
+import { validateUsernamePolicy } from './lib/usernamePolicy'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
 const VIEW_STATE_KEY = 'uflmb.current-view.v1'
@@ -1599,8 +1600,9 @@ export default function App() {
     event.preventDefault()
     if (!account || profileBusy) return
     const username = profileUsernameDraft.trim()
-    if (!/^[A-Za-z0-9_]{3,24}$/.test(username)) {
-      setProfileMessage('Username must be 3–24 characters and use only letters, numbers or underscores.')
+    const usernamePolicy = validateUsernamePolicy(username)
+    if (!usernamePolicy.valid) {
+      setProfileMessage(usernamePolicy.reason)
       setProfileMessageType('error')
       return
     }
@@ -1633,6 +1635,7 @@ export default function App() {
         const detail = await response.text().catch(() => '')
         const lower = detail.toLowerCase()
         if (lower.includes('profiles_username_normalized_key') || lower.includes('duplicate key')) throw new Error('That username is already in use. Please choose another.')
+        if (lower.includes('username_policy') || lower.includes('username policy') || lower.includes('offensive') || lower.includes('official, admin')) throw new Error('That username is not allowed. Choose a non-offensive name that does not imply official or staff status.')
         if (lower.includes('administrator logo') || lower.includes('profile_logo')) throw new Error('The selected logo is not permitted for this account.')
         throw new Error(detail || ('Could not save profile (HTTP ' + response.status + ').'))
       }
