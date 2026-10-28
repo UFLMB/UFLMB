@@ -49,6 +49,13 @@ const checks = [
       && /GRANT SELECT ON public\.cards, public\.card_reviews, public\.site_settings TO anon/i.test(read('../supabase/migrations/20261028214513_make_public_schema_read_only_for_guests.sql')),
   },
   {
+    name: 'community reviews have a database-level five-per-hour account rate limit',
+    pass: /CREATE OR REPLACE FUNCTION private\\.enforce_community_review_rate_limit\\(\\)/i.test(read('../supabase/migrations/20261028222000_enforce_community_review_rate_limit.sql'))
+      && /pg_advisory_xact_lock/i.test(read('../supabase/migrations/20261028222000_enforce_community_review_rate_limit.sql'))
+      && /recent_count >= 5/i.test(read('../supabase/migrations/20261028222000_enforce_community_review_rate_limit.sql'))
+      && /CREATE TRIGGER card_reviews_rate_limit/i.test(read('../supabase/migrations/20261028222000_enforce_community_review_rate_limit.sql')),
+  },
+  {
     name: 'backend deployment includes account moderation function',
     pass: /functions deploy account-moderation/i.test(read('../.github/workflows/supabase-deploy.yml')),
   },
