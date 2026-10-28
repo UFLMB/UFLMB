@@ -1481,23 +1481,29 @@ export default function App() {
       </nav>
             {adminTab === 'profiles' && <section className="admin-panel profile-management-panel">
         <div className="section-heading"><div><p className="eyebrow">ACCOUNT CONTROL</p><h2>Profile management</h2></div><span className="count-label">{adminProfiles.length} profiles</span></div>
-        <p className="muted-copy">Browse every registered profile, update usernames and profile icons, and verify each save. Administrator accounts are identified by the trusted database allowlist; their Admin shield logo is locked. Account permissions, passwords and authentication records are not changed here.</p>
+        <p className="muted-copy">A clear overview of registered members and trusted administrators. Update public usernames and profile icons, with administrator branding protected by the trusted database allowlist. Account permissions, passwords and authentication records are not changed here.</p>
+        <div className="profile-management-overview" aria-label="Profile overview">
+          <div className="profile-management-stat"><span className="profile-management-stat-icon">◎</span><div><small>Total profiles</small><strong>{adminProfiles.length}</strong><span>Registered accounts</span></div></div>
+          <div className="profile-management-stat"><span className="profile-management-stat-icon admin">♜</span><div><small>Administrators</small><strong>{adminUserIds.filter(id => adminProfiles.some(profile => profile.id === id)).length}</strong><span>Trusted access</span></div></div>
+          <div className="profile-management-stat"><span className="profile-management-stat-icon member">⚽</span><div><small>Members</small><strong>{adminProfiles.filter(profile => !adminUserIds.includes(profile.id)).length}</strong><span>Standard profiles</span></div></div>
+          <div className="profile-management-stat"><span className="profile-management-stat-icon recent">↻</span><div><small>Recently updated</small><strong>{adminProfiles.filter(profile => { const date = new Date(profile.updated_at || profile.created_at).getTime(); return Number.isFinite(date) && date >= Date.now() - 30 * 24 * 60 * 60 * 1000 }).length}</strong><span>Last 30 days</span></div></div>
+        </div>
         <div className="profile-management-toolbar">
-          <input className="admin-search" value={adminProfilesSearch} onChange={event => setAdminProfilesSearch(event.target.value)} placeholder="Search username or ID…" aria-label="Search user profiles" />
+          <label className="profile-management-search"><span aria-hidden="true">⌕</span><input className="admin-search" value={adminProfilesSearch} onChange={event => setAdminProfilesSearch(event.target.value)} placeholder="Search by username…" aria-label="Search profiles by username" />
           <button className="button secondary" type="button" onClick={() => setAdminProfilesRefreshKey(value => value + 1)} disabled={adminProfilesBusy}>{adminProfilesBusy ? 'Refreshing…' : '↻ Refresh profiles'}</button>
         </div>
         {adminProfilesMessage && <p className={/could not|rejected|unavailable|already be in use|did not confirm/i.test(adminProfilesMessage) ? 'profile-management-message error' : 'profile-management-message'} role="status" aria-live="polite">{adminProfilesMessage}</p>}
         <div className="profile-management-layout">
           <div className="profile-management-list" aria-label="Registered profiles">
             {adminProfilesBusy && adminProfiles.length === 0 ? <div className="profile-management-empty"><span className="profile-management-spinner" />Loading profiles securely…</div> :
-              adminProfiles.filter(profile => (profile.username + ' ' + profile.id).toLowerCase().includes(adminProfilesSearch.trim().toLowerCase())).length === 0 ? <div className="profile-management-empty"><span className="profile-management-empty-icon">⌕</span><strong>No matching profiles</strong><span>Try a different username or user ID.</span></div> :
-              adminProfiles.filter(profile => (profile.username + ' ' + profile.id).toLowerCase().includes(adminProfilesSearch.trim().toLowerCase())).map(profile => {
+              adminProfiles.filter(profile => profile.username.toLowerCase().includes(adminProfilesSearch.trim().toLowerCase())).length === 0 ? <div className="profile-management-empty"><span className="profile-management-empty-icon">⌕</span><strong>No matching profiles</strong><span>Try a different username or user ID.</span></div> :
+              adminProfiles.filter(profile => profile.username.toLowerCase().includes(adminProfilesSearch.trim().toLowerCase())).map(profile => {
                 const isAdminProfile = adminUserIds.includes(profile.id)
                 const selected = selectedAdminProfileId === profile.id
                 const logoOption = profileLogoOptions.find(option => option.value === profile.profile_logo)
                 return <button key={profile.id} type="button" className={selected ? 'profile-management-user active' : 'profile-management-user'} onClick={() => selectAdminProfile(profile)} aria-pressed={selected}>
                   <span className={isAdminProfile ? 'profile-management-avatar admin' : 'profile-management-avatar'}>{isAdminProfile ? <svg className="profile-admin-logo" viewBox="0 0 24 24" aria-label="Admin logo"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : logoOption?.glyph || '👤'}</span>
-                  <span className="profile-management-user-copy"><strong>{profile.username}</strong><small>{new Date(profile.created_at).toLocaleDateString()} · {profile.id.slice(0, 8)}…</small></span>
+                  <span className="profile-management-user-copy"><strong>{profile.username}</strong><small>Joined {new Date(profile.created_at).toLocaleDateString()}</small></span>
                   <span className={isAdminProfile ? 'profile-management-role admin' : 'profile-management-role'}>{isAdminProfile ? 'ADMIN' : 'MEMBER'}</span>
                 </button>
               })}
@@ -1520,7 +1526,6 @@ export default function App() {
                 </div>
                 {adminUserIds.includes(selectedAdminProfile.id) && <small className="profile-management-help">The Admin shield is mandatory for trusted administrators and cannot be changed here.</small>}
               </div>
-              <div className="profile-management-meta"><span>Profile ID</span><code>{selectedAdminProfile.id}</code></div>
               <div className="profile-management-meta"><span>Created</span><strong>{new Date(selectedAdminProfile.created_at).toLocaleString()}</strong></div>
               <div className="profile-management-meta"><span>Last updated</span><strong>{new Date(selectedAdminProfile.updated_at).toLocaleString()}</strong></div>
               <div className="form-actions profile-management-actions"><button className="button primary" type="submit" disabled={adminProfileSaveBusy || (adminProfileUsernameDraft.trim() === selectedAdminProfile.username && adminProfileLogoDraft === (adminUserIds.includes(selectedAdminProfile.id) ? 'admin' : selectedAdminProfile.profile_logo))}>{adminProfileSaveBusy ? 'Saving…' : 'Save profile changes'}</button><button className="button secondary" type="button" onClick={() => selectAdminProfile(selectedAdminProfile)} disabled={adminProfileSaveBusy}>Reset</button></div>
