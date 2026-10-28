@@ -60,7 +60,8 @@ create policy "Users acknowledge own warnings" on public.user_warnings
   with check ((select auth.uid()) = user_id);
 
 grant select, update on public.moderation_queue to authenticated;
-grant select, insert, update on public.user_warnings to authenticated;
+grant select, insert on public.user_warnings to authenticated;
+grant update (acknowledged_at) on public.user_warnings to authenticated;
 revoke all on public.moderation_queue from anon;
 revoke all on public.user_warnings from anon;
 
