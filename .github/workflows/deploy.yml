@@ -31,6 +31,8 @@ jobs:
         run: npm run check:security
       - name: Audit production card data
         run: node scripts/check-card-data.mjs
+      - name: Syntax-check shared source audit
+        run: node --check scripts/audit-shared-sources.mjs
       - name: Build production site
         env:
           VITE_SUPABASE_URL: https://ujuptqzlpubcdelrjmja.supabase.co
