@@ -171,6 +171,15 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
   const [session, setSession] = useState<AuthSession | null>(null)
 
   useEffect(() => {
+    const updateUsername = (event: Event) => {
+      const username = (event as CustomEvent<{ username?: string }>).detail?.username
+      if (typeof username === 'string') setSessionUsername(username)
+    }
+    window.addEventListener('uflmb:profile-username-updated', updateUsername)
+    return () => window.removeEventListener('uflmb:profile-username-updated', updateUsername)
+  }, [])
+
+  useEffect(() => {
     if (!accountMenuOpen) return
     const closeOnOutside = (event: PointerEvent) => {
       if (event.target instanceof Node && !accountMenuRef.current?.contains(event.target)) setAccountMenuOpen(false)
