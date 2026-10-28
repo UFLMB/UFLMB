@@ -12,6 +12,18 @@ type AuthSession = {
 type AuthResponse = Partial<AuthSession> & { expires_in?: number; msg?: string; message?: string; error_description?: string; error?: string }
 type Mode = 'signin' | 'signup' | 'recovery' | 'updatePassword'
 
+const isStrongPassword = (value: string, username = '') => {
+  const commonPasswords = new Set(['password123!', 'password1234!', 'qwerty1234!', 'welcome1234!', 'admin123456!'])
+  return value.length >= 12 &&
+    /[a-z]/.test(value) &&
+    /[A-Z]/.test(value) &&
+    /[0-9]/.test(value) &&
+    /[^A-Za-z0-9]/.test(value) &&
+    !/(.)\\1{3,}/.test(value) &&
+    !commonPasswords.has(value.toLowerCase()) &&
+    !(username.trim() && value.toLowerCase().includes(username.trim().toLowerCase()))
+}
+
 type Props = {
   isAdmin: boolean
   onAdminChange: (value: boolean) => void
@@ -277,8 +289,8 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
       }
 
       if (mode === 'updatePassword') {
-        if (password.length < 6) {
-          showMessage('Your password must contain at least 6 characters.', 'error')
+        if (!isStrongPassword(password)) {
+          showMessage('Use at least 12 characters with uppercase and lowercase letters, a number and a symbol. Avoid common passwords and repeated characters.', 'error')
           return
         }
         if (password !== confirmPassword) {
@@ -303,6 +315,10 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
 
       if (mode === 'signup' && !/^[A-Za-z0-9_]{3,24}$/.test(username.trim())) {
         showMessage('Username must be 3–24 characters and use only letters, numbers, or underscores.', 'error')
+        return
+      }
+      if (mode === 'signup' && !isStrongPassword(password, username)) {
+        showMessage('Use at least 12 characters with uppercase and lowercase letters, a number and a symbol. Avoid common passwords, repeated characters, and your username.', 'error')
         return
       }
       if (mode === 'signup' && password !== confirmPassword) {
@@ -445,8 +461,8 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
           <form className="auth-form" onSubmit={submit}>
             {mode === 'signup' && <label>Username<input type="text" autoComplete="username" required minLength={3} maxLength={24} pattern="[A-Za-z0-9_]{3,24}" value={username} onChange={event => setUsername(event.target.value)} placeholder="Choose a unique username" /></label>}
             {mode !== 'updatePassword' && <label>{mode === 'signin' ? 'Email or username' : 'Email address'}<input type={mode === 'signin' ? 'text' : 'email'} autoComplete={mode === 'signin' ? 'username' : 'email'} required value={email} onChange={event => setEmail(event.target.value)} placeholder={mode === 'signin' ? 'you@example.com or username' : 'you@example.com'} /></label>}
-            {mode !== 'recovery' && <label>{mode === 'updatePassword' ? 'New password' : 'Password'}<span className="auth-password-field"><input type={showPassword ? 'text' : 'password'} autoComplete={mode === 'signup' || mode === 'updatePassword' ? 'new-password' : 'current-password'} minLength={6} required value={password} onChange={event => setPassword(event.target.value)} placeholder={mode === 'updatePassword' ? 'Enter a new password' : 'At least 6 characters'} /><button className="auth-password-toggle" type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)} title={showPassword ? 'Hide password' : 'Show password'}><svg viewBox="0 0 24 24" aria-hidden="true">{showPassword ? <><path d="M10.73 5.08A10.74 10.74 0 0 1 12 5c5.5 0 9.5 7 9.5 7a13.16 13.16 0 0 1-1.67 2.45" /><path d="M6.61 6.61A13.53 13.53 0 0 0 2.5 12s3.5 7 9.5 7a10.75 10.75 0 0 0 5.39-1.61" /><path d="m2 2 20 20" /><path d="M9.88 9.88a3 3 0 0 0 4.24 4.24" /></> : <><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" /><circle cx="12" cy="12" r="3" /></>}</svg></button></span></label>}
-            {(mode === 'signup' || mode === 'updatePassword') && <label>Confirm password<span className="auth-password-field"><input type={showConfirmPassword ? 'text' : 'password'} autoComplete="new-password" minLength={6} required value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} placeholder="Enter the password again" /><button className="auth-password-toggle" type="button" aria-label={showConfirmPassword ? 'Hide confirmation password' : 'Show confirmation password'} aria-pressed={showConfirmPassword} onClick={() => setShowConfirmPassword(value => !value)} title={showConfirmPassword ? 'Hide password' : 'Show password'}><svg viewBox="0 0 24 24" aria-hidden="true">{showConfirmPassword ? <><path d="M10.73 5.08A10.74 10.74 0 0 1 12 5c5.5 0 9.5 7 9.5 7a13.16 13.16 0 0 1-1.67 2.45" /><path d="M6.61 6.61A13.53 13.53 0 0 0 2.5 12s3.5 7 9.5 7a10.75 10.75 0 0 0 5.39-1.61" /><path d="m2 2 20 20" /><path d="M9.88 9.88a3 3 0 0 0 4.24 4.24" /></> : <><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" /><circle cx="12" cy="12" r="3" /></>}</svg></button></span></label>}
+            {mode !== 'recovery' && <label>{mode === 'updatePassword' ? 'New password' : 'Password'}<span className="auth-password-field"><input type={showPassword ? 'text' : 'password'} autoComplete={mode === 'signup' || mode === 'updatePassword' ? 'new-password' : 'current-password'} minLength={mode === 'signin' ? undefined : 12} required value={password} onChange={event => setPassword(event.target.value)} placeholder={mode === 'signin' ? 'Enter your password' : '12+ characters, mixed types'} /><button className="auth-password-toggle" type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)} title={showPassword ? 'Hide password' : 'Show password'}><svg viewBox="0 0 24 24" aria-hidden="true">{showPassword ? <><path d="M10.73 5.08A10.74 10.74 0 0 1 12 5c5.5 0 9.5 7 9.5 7a13.16 13.16 0 0 1-1.67 2.45" /><path d="M6.61 6.61A13.53 13.53 0 0 0 2.5 12s3.5 7 9.5 7a10.75 10.75 0 0 0 5.39-1.61" /><path d="m2 2 20 20" /><path d="M9.88 9.88a3 3 0 0 0 4.24 4.24" /></> : <><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" /><circle cx="12" cy="12" r="3" /></>}</svg></button></span></label>}
+            {(mode === 'signup' || mode === 'updatePassword') && <label>Confirm password<span className="auth-password-field"><input type={showConfirmPassword ? 'text' : 'password'} autoComplete="new-password" minLength={12} required value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} placeholder="Enter the password again" /><button className="auth-password-toggle" type="button" aria-label={showConfirmPassword ? 'Hide confirmation password' : 'Show confirmation password'} aria-pressed={showConfirmPassword} onClick={() => setShowConfirmPassword(value => !value)} title={showConfirmPassword ? 'Hide password' : 'Show password'}><svg viewBox="0 0 24 24" aria-hidden="true">{showConfirmPassword ? <><path d="M10.73 5.08A10.74 10.74 0 0 1 12 5c5.5 0 9.5 7 9.5 7a13.16 13.16 0 0 1-1.67 2.45" /><path d="M6.61 6.61A13.53 13.53 0 0 0 2.5 12s3.5 7 9.5 7a10.75 10.75 0 0 0 5.39-1.61" /><path d="m2 2 20 20" /><path d="M9.88 9.88a3 3 0 0 0 4.24 4.24" /></> : <><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" /><circle cx="12" cy="12" r="3" /></>}</svg></button></span></label>}
             <button className="button primary auth-submit" type="submit" disabled={busy}>{busy ? 'Please wait…' : mode === 'signin' ? 'Sign In' : mode === 'signup' ? 'Create account' : mode === 'recovery' ? 'Send reset link' : 'Update password'}</button>
           </form>
           {message && <p className={`auth-message auth-message-${messageType}`} role="status" aria-live="polite">{message}</p>}
