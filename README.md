@@ -69,7 +69,7 @@ In the admin workspace, open **Card manager → Load / reset 22 demo cards** to 
 
 - `supabase/schema.sql` defines shared card records, community reviews/ratings, public read access, and row-level security that restricts card writes to explicitly allowlisted Supabase admin user IDs.
 - `src/components/SharedDatabasePanel.tsx` provides Supabase sign-in, loading, and deliberate publishing of card edits from the existing editor. Demo records are excluded from publishing.
-- `src/components/CommunityReviews.tsx` adds ratings/reviews to card profiles. The live frontend is configured to use Supabase; public review submission is enabled for initial testing and needs anti-spam controls before a broad launch.
+- `src/components/CommunityReviews.tsx` displays approved community reviews publicly. Posting requires a signed-in registered account; the database also rejects anonymous review inserts. The author username and account ID are taken from the authenticated session.
 - A daily GitHub Actions workflow audits the checked-in source dataset and the configured Supabase shared records, checking source-link reachability and flagging verification dates older than 90 days. It does not scrape or silently rewrite player facts.
 - Setup and security notes are in `supabase/SETUP.md`. The connected Supabase project is active and its schema is deployed; however, the live `public.cards` table currently has 0 rows. The checked-in CSV dataset is not automatically imported into the shared cloud table.
 
@@ -81,7 +81,7 @@ The app uses browser local storage as a fallback/cache and also has a configured
 - Admin access uses Supabase Auth and the `public.admin_users` allowlist, with database row-level security enforcing card-write permissions. Keep the allowlist restricted to trusted accounts.
 - Uploaded images are stored as compressed data URLs in local storage and can consume browser storage quota.
 
-Before a broad public launch, add CAPTCHA/rate limits and moderation for public reviews, and consider dedicated image storage if compressed data URLs become too large. The Google Drive picker is optional and requires a separate Google Cloud setup; local-file import/export works without it. Never place service-role keys or private secrets in client-side `VITE_*` variables.
+Guest users are read-only: they can browse public content but cannot submit reviews or support messages. Review insertion is restricted by database RLS to signed-in accounts whose profile username matches the submitted author name. Supabase Auth rate limits password sign-in requests; do not treat UI-only checks as security boundaries. Consider CAPTCHA or a dedicated write-rate limiter before opening wider community posting. The Google Drive picker is optional and requires a separate Google Cloud setup; local-file import/export works without it. Never place service-role keys or private secrets in client-side `VITE_*` variables.
 
 ## Deployment
 
@@ -100,7 +100,7 @@ The GitHub Actions workflow in `.github/workflows/deploy.yml` builds the app and
 - JSON paste imports validate the complete payload before changing anything, reject repeated IDs in the incoming file, and show a confirmation summary for updates, additions, and likely duplicates.
 - Duplicate records with different IDs are skipped instead of silently replacing an existing card identity.
 - Supabase card write policies require an explicit `public.admin_users` allowlist entry; a generic authenticated session no longer grants card-edit permissions.
-- The live Supabase project has six recorded migrations and additional account/profile tables beyond the baseline `schema.sql`. Keep the checked-in SQL/migrations aligned with the live schema; a GitHub commit alone never applies SQL to the database.
+- The live Supabase project has multiple recorded migrations and additional account/profile tables beyond the baseline `schema.sql`. Keep the checked-in SQL/migrations aligned with the live schema; a GitHub commit alone never applies SQL to the database.
 
 ## Second major feature package
 
