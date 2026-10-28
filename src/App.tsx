@@ -336,12 +336,22 @@ export default function App() {
   const [adminProfilesBusy, setAdminProfilesBusy] = useState(false)
   const [adminProfilesMessage, setAdminProfilesMessage] = useState('')
   const [adminProfilesSearch, setAdminProfilesSearch] = useState('')
+  const [adminProfileFilter, setAdminProfileFilter] = useState<'all' | 'admins' | 'members'>('all')
+  const [adminProfileSort, setAdminProfileSort] = useState<'newest' | 'oldest' | 'username'>('newest')
   const [adminProfilesRefreshKey, setAdminProfilesRefreshKey] = useState(0)
   const [selectedAdminProfileId, setSelectedAdminProfileId] = useState<string | null>(null)
   const [adminProfileUsernameDraft, setAdminProfileUsernameDraft] = useState('')
   const [adminProfileLogoDraft, setAdminProfileLogoDraft] = useState<ProfileLogo>('default')
   const [adminProfileSaveBusy, setAdminProfileSaveBusy] = useState(false)
   const selectedAdminProfile = adminProfiles.find(profile => profile.id === selectedAdminProfileId) ?? null
+  const filteredAdminProfiles = adminProfiles
+    .filter(profile => profile.username.toLowerCase().includes(adminProfilesSearch.trim().toLowerCase()))
+    .filter(profile => adminProfileFilter === 'all' || (adminProfileFilter === 'admins' ? adminUserIds.includes(profile.id) : !adminUserIds.includes(profile.id)))
+    .sort((a, b) => adminProfileSort === 'username'
+      ? a.username.localeCompare(b.username)
+      : adminProfileSort === 'oldest'
+        ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        : new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   useEffect(() => {
     if (!account) {
@@ -1492,12 +1502,20 @@ export default function App() {
           <label className="profile-management-search"><span aria-hidden="true">⌕</span><input className="admin-search" value={adminProfilesSearch} onChange={event => setAdminProfilesSearch(event.target.value)} placeholder="Search by username…" aria-label="Search profiles by username" /></label>
           <button className="button secondary" type="button" onClick={() => setAdminProfilesRefreshKey(value => value + 1)} disabled={adminProfilesBusy}>{adminProfilesBusy ? 'Refreshing…' : '↻ Refresh profiles'}</button>
         </div>
+        <div className="profile-management-controls">
+          <div className="profile-management-filter" role="group" aria-label="Filter profiles by account type">
+            <button type="button" className={adminProfileFilter === 'all' ? 'active' : ''} aria-pressed={adminProfileFilter === 'all'} onClick={() => setAdminProfileFilter('all')}>All <span>{adminProfiles.length}</span></button>
+            <button type="button" className={adminProfileFilter === 'admins' ? 'active' : ''} aria-pressed={adminProfileFilter === 'admins'} onClick={() => setAdminProfileFilter('admins')}>Admins <span>{adminProfiles.filter(profile => adminUserIds.includes(profile.id)).length}</span></button>
+            <button type="button" className={adminProfileFilter === 'members' ? 'active' : ''} aria-pressed={adminProfileFilter === 'members'} onClick={() => setAdminProfileFilter('members')}>Members <span>{adminProfiles.filter(profile => !adminUserIds.includes(profile.id)).length}</span></button>
+          </div>
+          <label className="profile-management-sort"><span>Sort</span><select value={adminProfileSort} onChange={event => setAdminProfileSort(event.target.value as 'newest' | 'oldest' | 'username')} aria-label="Sort profiles"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="username">Username A–Z</option></select></label>
+        </div>
         {adminProfilesMessage && <p className={/could not|rejected|unavailable|already be in use|did not confirm/i.test(adminProfilesMessage) ? 'profile-management-message error' : 'profile-management-message'} role="status" aria-live="polite">{adminProfilesMessage}</p>}
         <div className="profile-management-layout">
           <div className="profile-management-list" aria-label="Registered profiles">
             {adminProfilesBusy && adminProfiles.length === 0 ? <div className="profile-management-empty"><span className="profile-management-spinner" />Loading profiles securely…</div> :
-              adminProfiles.filter(profile => profile.username.toLowerCase().includes(adminProfilesSearch.trim().toLowerCase())).length === 0 ? <div className="profile-management-empty"><span className="profile-management-empty-icon">⌕</span><strong>No matching profiles</strong><span>Try a different username.</span></div> :
-              adminProfiles.filter(profile => profile.username.toLowerCase().includes(adminProfilesSearch.trim().toLowerCase())).map(profile => {
+              filteredAdminProfiles.length === 0 ? <div className="profile-management-empty"><span className="profile-management-empty-icon">⌕</span><strong>No matching profiles</strong><span>Try another filter or username.</span></div> :
+              filteredAdminProfiles.map(profile => {
                 const isAdminProfile = adminUserIds.includes(profile.id)
                 const selected = selectedAdminProfileId === profile.id
                 const logoOption = profileLogoOptions.find(option => option.value === profile.profile_logo)
