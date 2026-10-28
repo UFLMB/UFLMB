@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import type { FormEvent } from 'react'
 import './SupportChat.css'
 
 type StoredSession = { access_token?: string; user?: { id?: string } }
@@ -132,7 +133,7 @@ export default function SupportChat() {
     return () => { cancelled = true }
   }, [open, selectedId, token, userId, requestHeaders])
 
-  const createConversation = async (event: React.FormEvent<HTMLFormElement>) => {
+  const createConversation = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!token || !userId || creating) return
     const cleanSubject = subject.trim()
