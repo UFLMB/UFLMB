@@ -35,3 +35,5 @@ jobs:
         run: npm run check:security
       - name: Validate checked-in card dataset
         run: node scripts/check-card-data.mjs
+      - name: Syntax-check shared source audit
+        run: node --check scripts/audit-shared-sources.mjs
