@@ -383,7 +383,7 @@ export default function App() {
   useEffect(() => {
     if (!isAdminSession || !adminDashboardOpen || adminTab !== 'profiles' || !account) return
     let cancelled = false
-    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\\/$/, '')
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
     if (!endpoint || !anonKey) {
       setAdminProfilesMessage('Profile management is unavailable because the database connection is not configured.')
@@ -436,7 +436,7 @@ export default function App() {
     }
     const isAdminProfile = adminUserIds.includes(selectedAdminProfile.id)
     const profileLogo = isAdminProfile ? 'admin' : isProfileLogo(adminProfileLogoDraft) && adminProfileLogoDraft !== 'admin' ? adminProfileLogoDraft : 'default'
-    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\\/$/, '')
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
     if (!endpoint || !anonKey) {
       setAdminProfilesMessage('Database connection is not configured.')
