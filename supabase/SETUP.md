@@ -6,7 +6,7 @@ The application uses Supabase as its primary cloud store for shared card records
 
 ## 1. Database migrations
 
-The repository contains tracked SQL migration files for the live project, including profile, support, community moderation, and account moderation changes. The older migration files were reconstructed from the current live schema and prior setup SQL because the original SQL files were absent from GitHub. They have **not yet been validated by a clean-database replay**, so run the workflow in `plan` mode first and do not treat the migration chain as proven for a brand-new project until that dry run succeeds against a disposable database.
+The repository contains 16 tracked SQL migration files for the live project, including profile, support, community moderation, account moderation, authenticated-only community reviews, and read-only guest permissions. Some older migration files were reconstructed from the live schema and prior setup SQL because original SQL files were absent from GitHub. `.github/workflows/database-migrations.yml` replays the complete migration chain against a clean local Supabase database in CI; treat the chain as verified only when that workflow succeeds.
 
 For the existing UFLMB project, do **not** recreate the project or blindly rerun `supabase/schema.sql`. Use the tracked migration workflow described below. The `schema.sql` file remains a manual baseline reference, not the canonical deployment path for the full account/profile schema.
 
@@ -23,7 +23,7 @@ The project reference is fixed in `supabase/config.toml` and the workflow as `uj
 
 Then open **GitHub → Actions → Supabase database and function deployment → Run workflow**:
 - Choose **plan** first. This links the project and runs `supabase db push --dry-run`; it should not change the production schema.
-- Choose **apply** only after reviewing a successful plan and confirming the pending migrations are expected. This applies pending migrations and deploys the tracked `username-signin` Edge Function.
+- Choose **apply** only after reviewing a successful plan and confirming the pending migrations are expected. This applies pending migrations and deploys the tracked `username-signin` and `account-moderation` Edge Functions.
 
 If the plan reports remote migration versions that are missing locally, unexpected pending migrations, or schema drift, stop and reconcile that output before choosing **apply**. The workflow is deliberately not automatic to protect the live database.
 
