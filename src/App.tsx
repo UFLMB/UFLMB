@@ -1575,7 +1575,7 @@ export default function App() {
           <section className="account-panel account-detail-panel"><p className="eyebrow">ACCOUNT DETAILS</p><h3>Profile information</h3><dl>
             <div><dt>Username</dt><dd>{account?.username || 'Guest'}</dd></div>
             <div><dt>Email</dt><dd>{account?.email || (account ? 'Email not available' : 'Sign in to view account details')}</dd></div>
-            {(isAdminSession || !account) && <div><dt>Access</dt><dd>{isAdminSession ? 'Administrator' : 'Guest'}</dd></div>}
+            {isAdminSession && <div><dt>Access</dt><dd>Administrator</dd></div>}
           </dl></section>
           <section className="account-panel account-detail-panel"><p className="eyebrow">QUICK PREFERENCES</p><h3>Appearance</h3><p className="account-panel-description">Current theme: <strong>{themeMode === 'system' ? 'System' : themeMode === 'light' ? 'Light' : 'Dark'}</strong></p><div className="settings-theme-options compact" role="group" aria-label="Choose theme mode">
             <button type="button" className={themeMode === 'dark' ? 'settings-theme-option active' : 'settings-theme-option'} aria-pressed={themeMode === 'dark'} onClick={() => setThemeMode('dark')}><span aria-hidden="true">☾</span><strong>Dark</strong></button>
