@@ -1017,9 +1017,9 @@ export default function App() {
     reader.readAsDataURL(file)
   }
 
-  const handleBulkImages = async (event: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? [])
-    event.target.value = ''
+  const [inputFolderBusy, setInputFolderBusy] = useState(false)
+
+  const processBulkImages = async (files: File[]) => {
     if (!files.length) return
 
     const baseUrl = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
@@ -1164,6 +1164,44 @@ export default function App() {
       }
     } else {
       setNotice('No images were uploaded successfully. ' + skippedReasons.length + ' file(s) skipped or failed. ' + skippedReasons.slice(0, 4).join(' · '))
+    }
+  }
+
+  const handleBulkImages = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+    event.target.value = ''
+    void processBulkImages(files)
+  }
+
+  const handleInputFolderImages = async () => {
+    if (inputFolderBusy) return
+    setInputFolderBusy(true)
+    try {
+      const manifestUrl = new URL('input/manifest.json', window.location.origin + import.meta.env.BASE_URL).toString()
+      const manifestResponse = await fetch(manifestUrl, { cache: 'no-store' })
+      if (!manifestResponse.ok) throw new Error('manifest unavailable (' + manifestResponse.status + ')')
+      const manifest = await manifestResponse.json() as { version?: unknown; files?: unknown }
+      if (manifest.version !== 1 || !Array.isArray(manifest.files)) throw new Error('manifest format is invalid')
+      const entries = manifest.files.filter((entry): entry is { name: string; size?: number } => Boolean(entry && typeof entry === 'object' && typeof (entry as { name?: unknown }).name === 'string'))
+      if (!entries.length) { setNotice('The repository input folder contains no supported card images. No files were changed.'); return }
+      const files: File[] = []
+      for (const entry of entries) {
+        if (!/^[a-z0-9_.-]+\.(png|jpe?g|webp)$/i.test(entry.name)) throw new Error('unsafe filename in manifest')
+        const fileUrl = new URL('input/' + encodeURIComponent(entry.name), window.location.origin + import.meta.env.BASE_URL).toString()
+        const response = await fetch(fileUrl, { cache: 'no-store' })
+        if (!response.ok) throw new Error(entry.name + ' could not be downloaded (' + response.status + ')')
+        const blob = await response.blob()
+        const extension = entry.name.split('.').pop()?.toLowerCase()
+        const mime = extension === 'png' ? 'image/png' : extension === 'webp' ? 'image/webp' : 'image/jpeg'
+        if (blob.size > 8 * 1024 * 1024) throw new Error(entry.name + ' exceeds the 8 MB limit')
+        files.push(new File([blob], entry.name, { type: mime }))
+      }
+      setNotice('Loaded ' + files.length + ' image(s) from the repository input folder. Review the confirmation before any upload starts.')
+      await processBulkImages(files)
+    } catch (error) {
+      setNotice('Could not prepare repository input images. No automatic upload was started. ' + (error instanceof Error ? error.message : 'Unknown error'))
+    } finally {
+      setInputFolderBusy(false)
     }
   }
 
@@ -1789,6 +1827,7 @@ export default function App() {
       <section className="admin-panel tools-panel">
         <p className="eyebrow">LOCAL FILE IMPORT</p><h2>Import images & backups</h2>
         <p className="muted-copy">Select card images named with the exact four-part convention (for example, fp.berardi.86.rw.png). The filename is matched against card type, player aliases, OVR and position; ambiguous matches are rejected. Images upload to shared Supabase Storage and are linked to the existing card ID.</p>
+        <div className="full-field"><strong>Import images from repository input folder</strong><p className="field-help">Reads the checked-in input/ images after the site build. It only prepares a preview; no upload or database update occurs until you confirm the existing import dialog.</p><button className="button secondary" type="button" onClick={() => void handleInputFolderImages()} disabled={inputFolderBusy || !isAdminSession}>{inputFolderBusy ? 'Loading repository images…' : 'Load repository input images'}</button></div>
         <label className="full-field">Import multiple card images<input type="file" accept="image/*" multiple onChange={handleBulkImages} /><span className="field-help">Up to 8 MB per image. Supported pattern: fp.playername.ovr.position.png or ot.playername.ovr.position.png. Requires a trusted admin session and the UFLMB card-image storage migration.</span></label>
         <label className="full-field">Import JSON backup file<input type="file" accept=".json,application/json" onChange={handleJsonFile} /><span className="field-help">Adds valid new records without replacing existing cards. Use JSON backup for full record fields.</span></label>
       </section>
