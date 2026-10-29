@@ -1117,7 +1117,7 @@ export default function App() {
         }
         storageObjectCreated = true
         const imageUrl = baseUrl + '/storage/v1/object/public/uflmb-card-images/' + objectPath
-        const linkResponse = await fetch(baseUrl + '/rest/v1/cards?id=eq.' + encodeURIComponent(candidate.card.id), {
+        const linkResponse = await fetch(baseUrl + '/rest/v1/cards?id=eq.' + encodeURIComponent(candidate.card.id) + '&image_url=is.null', {
           method: 'PATCH',
           headers: {
             apikey: anonKey,
