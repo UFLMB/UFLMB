@@ -1097,8 +1097,9 @@ export default function App() {
     let uploaded = 0
     const nextById = new Map(allCards.map(card => [card.id, card]))
     for (const candidate of safeCandidates) {
+      const objectPath = encodeURIComponent(candidate.card.id) + '.' + candidate.extension
+      let storageObjectCreated = false
       try {
-        const objectPath = encodeURIComponent(candidate.card.id) + '.' + candidate.extension
         const uploadResponse = await fetch(baseUrl + '/storage/v1/object/uflmb-card-images/' + objectPath, {
           method: 'POST',
           headers: {
@@ -1114,10 +1115,37 @@ export default function App() {
           const errorBody = await uploadResponse.json().catch(() => ({})) as { message?: string; error?: string }
           throw new Error(errorBody.message || errorBody.error || 'Storage upload failed (' + uploadResponse.status + ')')
         }
+        storageObjectCreated = true
         const imageUrl = baseUrl + '/storage/v1/object/public/uflmb-card-images/' + objectPath
+        const linkResponse = await fetch(baseUrl + '/rest/v1/cards?id=eq.' + encodeURIComponent(candidate.card.id), {
+          method: 'PATCH',
+          headers: {
+            apikey: anonKey,
+            Authorization: 'Bearer ' + accessToken,
+            'Content-Type': 'application/json',
+            Prefer: 'return=representation',
+          },
+          body: JSON.stringify({ image_url: imageUrl }),
+        })
+        if (!linkResponse.ok) {
+          const errorBody = await linkResponse.json().catch(() => ({})) as { message?: string; error?: string }
+          throw new Error(errorBody.message || errorBody.error || 'Card record update failed (' + linkResponse.status + ')')
+        }
+        const linkedRows = await linkResponse.json() as Array<{ id: string; image_url?: string | null }>
+        if (linkedRows.length !== 1 || linkedRows[0].id !== candidate.card.id || linkedRows[0].image_url !== imageUrl) {
+          throw new Error('The database did not confirm exactly one matching card update.')
+        }
         nextById.set(candidate.card.id, { ...candidate.card, imageUrl })
         uploaded++
       } catch (error) {
+        if (storageObjectCreated) {
+          try {
+            await fetch(baseUrl + '/storage/v1/object/uflmb-card-images/' + objectPath, {
+              method: 'DELETE',
+              headers: { apikey: anonKey, Authorization: 'Bearer ' + accessToken },
+            })
+          } catch { /* Report the link failure; never retry this upload automatically. */ }
+        }
         skippedReasons.push(candidate.file.name + ': ' + (error instanceof Error ? error.message : 'upload failed'))
       }
     }
@@ -1127,9 +1155,9 @@ export default function App() {
       try {
         saveCards(next)
         setAllCards(next)
-        setNotice('Image import finished: ' + uploaded + ' image(s) uploaded to shared storage and linked by card ID. ' + skippedReasons.length + ' file(s) skipped or failed. If cloud records were loaded first, the normal admin sync will publish the new image URLs.')
+        setNotice('Image import finished: ' + uploaded + ' image(s) uploaded and confirmed in the shared database. ' + skippedReasons.length + ' file(s) skipped or failed.')
       } catch {
-        setNotice('Uploaded ' + uploaded + ' image(s), but this browser could not save the updated card list. Reload cloud records before retrying; do not re-upload these images.')
+        setNotice('The shared database was updated for ' + uploaded + ' image(s), but this browser could not save its local cache. Reload the page; do not re-upload these images.')
       }
     } else {
       setNotice('No images were uploaded successfully. ' + skippedReasons.length + ' file(s) skipped or failed. ' + skippedReasons.slice(0, 4).join(' · '))
