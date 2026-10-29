@@ -1040,18 +1040,69 @@ export default function App() {
     const targetCounts = new Map<string, number>()
     const seenFileNames = new Set<string>()
 
+    // Match against the current shared snapshot, not only a potentially stale browser cache.
+    let sharedCards: PlayerCard[]
+    try {
+      const snapshotResponse = await fetch(baseUrl + '/rest/v1/cards?select=id,player_name,overall_rating,positions,nation,card_name,event,source_data,image_url,source_url,verified_at&order=player_name.asc', {
+        headers: { apikey: anonKey, Authorization: 'Bearer ' + accessToken },
+        cache: 'no-store',
+      })
+      if (!snapshotResponse.ok) throw new Error('Could not verify the latest shared cards (HTTP ' + snapshotResponse.status + ').')
+      const rows = await snapshotResponse.json() as Array<{
+        id: string; player_name: string; overall_rating: number; positions: string[]; nation: string
+        card_name?: string | null; event?: string | null; source_data?: Record<string, string> | null
+        image_url?: string | null; source_url: string; verified_at: string
+      }>
+      sharedCards = rows.filter(row => !row.id.startsWith('uflmb-demo-')).map(row => ({
+        id: row.id,
+        playerName: row.player_name,
+        overallRating: Number(row.overall_rating),
+        positions: Array.isArray(row.positions) ? row.positions : [],
+        nation: row.nation,
+        ...(row.card_name ? { cardName: row.card_name } : {}),
+        ...(row.event ? { event: row.event } : {}),
+        ...(row.source_data ? { sourceData: row.source_data } : {}),
+        ...(row.image_url ? { imageUrl: row.image_url } : {}),
+        sourceUrl: row.source_url,
+        verifiedAt: row.verified_at,
+      }))
+    } catch (error) {
+      setNotice((error instanceof Error ? error.message : 'Could not verify the latest shared cards.') + ' No images were uploaded. Check the connection and try again.')
+      return
+    }
+
+    const localById = new Map(allCards.map(card => [card.id, card]))
+    const samePositions = (a: string[], b: string[]) => [...a].map(value => value.toUpperCase()).sort().join('|') === [...b].map(value => value.toUpperCase()).sort().join('|')
     for (const file of files) {
       if (!file.type.startsWith('image/') || file.size > 8 * 1024 * 1024) {
         skippedReasons.push(file.name + ': unsupported image or larger than 8 MB')
         continue
       }
-      const matchResult = matchCardImageFilename(file.name, allCards)
+      const matchResult = matchCardImageFilename(file.name, sharedCards)
       if (!matchResult.card) {
         skippedReasons.push(file.name + ': ' + matchResult.reason)
         continue
       }
-      if (matchResult.card.imageUrl?.trim()) {
-        skippedReasons.push(file.name + ': the matched card already has an image; existing images are never overwritten automatically')
+      const sharedCard = matchResult.card
+      if (sharedCard.imageUrl?.trim()) {
+        skippedReasons.push(file.name + ': the shared card already has an image; existing images are never overwritten automatically')
+        continue
+      }
+      const localCard = localById.get(sharedCard.id)
+      if (!localCard) {
+        skippedReasons.push(file.name + ': this card is not in the current browser dataset; load the latest shared records before importing')
+        continue
+      }
+      const localMatchesSnapshot =
+        localCard.playerName === sharedCard.playerName &&
+        localCard.overallRating === sharedCard.overallRating &&
+        localCard.nation === sharedCard.nation &&
+        localCard.cardName === sharedCard.cardName &&
+        localCard.event === sharedCard.event &&
+        samePositions(localCard.positions, sharedCard.positions) &&
+        (localCard.imageUrl || '') === (sharedCard.imageUrl || '')
+      if (!localMatchesSnapshot) {
+        skippedReasons.push(file.name + ': the browser copy differs from the shared card; reload shared records before importing')
         continue
       }
       const lowerName = file.name.toLowerCase()
@@ -1060,9 +1111,9 @@ export default function App() {
         continue
       }
       seenFileNames.add(lowerName)
-      targetCounts.set(matchResult.card.id, (targetCounts.get(matchResult.card.id) || 0) + 1)
+      targetCounts.set(sharedCard.id, (targetCounts.get(sharedCard.id) || 0) + 1)
       const extension = (file.name.match(/\.([^.]+)$/)?.[1] || 'png').toLowerCase()
-      candidates.push({ file, card: matchResult.card, extension })
+      candidates.push({ file, card: localCard, extension })
     }
 
     const conflictingIds = new Set([...targetCounts].filter(([, count]) => count > 1).map(([id]) => id))
