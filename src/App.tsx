@@ -866,6 +866,7 @@ export default function App() {
   const nations = useMemo(() => Array.from(new Set(allCards.map(card => card.nation).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [allCards])
   const availableStats = useMemo(() => Array.from(new Set(allCards.flatMap(card => Object.keys(card.stats ?? {})))).sort((a,b) => a.localeCompare(b)), [allCards])
   const positions = useMemo(() => Array.from(new Set(allCards.flatMap(card => card.positions).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [allCards])
+  // The public-facing Card type filter intentionally uses card.event. Do not substitute card.cardName, which is a separate edition/name field.
   const cardTypes = useMemo(() => Array.from(new Set(allCards.map(card => card.event).filter((value): value is string => Boolean(value?.trim())))).sort((a, b) => a.localeCompare(b)), [allCards])
 
   const searchIndex = useMemo(() => new Map(allCards.map(card => [card.id,
@@ -1790,7 +1791,7 @@ export default function App() {
             {adminTab === 'assets' && <section className="admin-panel assets-management-panel">
         <div className="assets-page-heading">
           <div className="assets-page-icon" aria-hidden="true">▧</div>
-          <div><p className="eyebrow">VISUAL ASSET MANAGEMENT</p><h2>Assets</h2><p className="muted-copy">Manage visual assets associated with records in the UFLMB database, including card-type backgrounds and perk/trait artwork. Configure each asset once and apply it consistently to matching cards and player profiles.</p></div>
+          <div><p className="eyebrow">VISUAL ASSET MANAGEMENT</p><h2>Assets</h2><p className="muted-copy">Manage visual assets associated with records in the UFLMB database, including event-type backgrounds and perk/trait artwork. Configure each asset once and apply it consistently to matching cards and player profiles.</p></div>
           <span className="count-label">{Object.keys(siteBranding.perkTraitImages).length} configured</span>
         </div>
           <section className="event-type-background-editor">
