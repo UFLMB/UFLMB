@@ -9,6 +9,7 @@ import SharedDatabasePanel from './components/SharedDatabasePanel'
 import SupportChat from './components/SupportChat'
 import ModerationCenter from './components/ModerationCenter'
 import { validateUsernamePolicy } from './lib/usernamePolicy'
+import { matchCardImageFilename } from './lib/cardImageImport'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
 const VIEW_STATE_KEY = 'uflmb.current-view.v1'
@@ -1020,50 +1021,119 @@ export default function App() {
     const files = Array.from(event.target.files ?? [])
     event.target.value = ''
     if (!files.length) return
-    const nextById = new Map(allCards.map(card => [card.id, card]))
-    let matched = 0
-    let skipped = 0
-    const normalize = (value: string) => value.toLowerCase().replace(/\\.[^.]+$/, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '')
-    for (const file of files) {
-      if (!file.type.startsWith('image/') || file.size > 8 * 1024 * 1024) { skipped++; continue }
-      try {
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onerror = () => reject(new Error('Read failed'))
-          reader.onload = () => {
-            const image = new Image()
-            image.onerror = () => reject(new Error('Invalid image'))
-            image.onload = () => {
-              const scale = Math.min(1, 1000 / Math.max(image.width, image.height))
-              const canvas = document.createElement('canvas')
-              canvas.width = Math.max(1, Math.round(image.width * scale))
-              canvas.height = Math.max(1, Math.round(image.height * scale))
-              const context = canvas.getContext('2d')
-              if (!context) { reject(new Error('Canvas unavailable')); return }
-              context.drawImage(image, 0, 0, canvas.width, canvas.height)
-              resolve(canvas.toDataURL('image/jpeg', 0.78))
-            }
-            image.src = String(reader.result)
-          }
-          reader.readAsDataURL(file)
-        })
-        const key = normalize(file.name)
-        const match = Array.from(nextById.values()).find(card => normalize(card.playerName) === key)
-        if (!match) { skipped++; continue }
-        nextById.set(match.id, { ...match, imageUrl: dataUrl })
-        matched++
-      } catch { skipped++ }
+
+    const baseUrl = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    let accessToken = ''
+    try {
+      const raw = sessionStorage.getItem('uflmb.auth.session.v1')
+      accessToken = raw ? (JSON.parse(raw) as { access_token?: string }).access_token || '' : ''
+    } catch { accessToken = '' }
+    if (!baseUrl || !anonKey || !accessToken) {
+      setNotice('Image import requires the trusted admin account to be signed in and the shared database to be configured. No files were changed.')
+      return
     }
-    if (matched) {
+
+    type Candidate = { file: File; card: PlayerCard; extension: string }
+    const candidates: Candidate[] = []
+    const skippedReasons: string[] = []
+    const targetCounts = new Map<string, number>()
+    const seenFileNames = new Set<string>()
+
+    for (const file of files) {
+      if (!file.type.startsWith('image/') || file.size > 8 * 1024 * 1024) {
+        skippedReasons.push(file.name + ': unsupported image or larger than 8 MB')
+        continue
+      }
+      const matchResult = matchCardImageFilename(file.name, allCards)
+      if (!matchResult.card) {
+        skippedReasons.push(file.name + ': ' + matchResult.reason)
+        continue
+      }
+      if (matchResult.card.imageUrl?.trim()) {
+        skippedReasons.push(file.name + ': the matched card already has an image; existing images are never overwritten automatically')
+        continue
+      }
+      const lowerName = file.name.toLowerCase()
+      if (seenFileNames.has(lowerName)) {
+        skippedReasons.push(file.name + ': duplicate filename in this batch')
+        continue
+      }
+      seenFileNames.add(lowerName)
+      targetCounts.set(matchResult.card.id, (targetCounts.get(matchResult.card.id) || 0) + 1)
+      const extension = (file.name.match(/\.([^.]+)$/)?.[1] || 'png').toLowerCase()
+      candidates.push({ file, card: matchResult.card, extension })
+    }
+
+    const conflictingIds = new Set([...targetCounts].filter(([, count]) => count > 1).map(([id]) => id))
+    const safeCandidates = candidates.filter(candidate => {
+      if (!conflictingIds.has(candidate.card.id)) return true
+      skippedReasons.push(candidate.file.name + ': multiple files target the same card; all files for that card were held back')
+      return false
+    })
+
+    if (!safeCandidates.length) {
+      setNotice('No images are safe to apply. ' + skippedReasons.length + ' file(s) need correction. Check the four-part filename: fp.playername.ovr.position.png or ot.playername.ovr.position.png.')
+      return
+    }
+
+    const preview = [
+      'Ready to upload ' + safeCandidates.length + ' image(s) to Supabase Storage.',
+      skippedReasons.length + ' file(s) will be skipped or need correction.',
+      '',
+      'Only unique matches by card type + player alias + OVR + position are accepted.',
+      'Existing images will not be overwritten.',
+      '',
+      ...safeCandidates.slice(0, 12).map(item => item.file.name + ' → ' + item.card.playerName + ' · ' + item.card.overallRating + ' · ' + item.card.positions.join('/')),
+      ...(safeCandidates.length > 12 ? ['…and ' + (safeCandidates.length - 12) + ' more'] : []),
+      '',
+      'Continue?',
+    ].join('\n')
+    if (!window.confirm(preview)) {
+      setNotice('Image import cancelled. No files were uploaded.')
+      return
+    }
+
+    let uploaded = 0
+    const nextById = new Map(allCards.map(card => [card.id, card]))
+    for (const candidate of safeCandidates) {
+      try {
+        const objectPath = encodeURIComponent(candidate.card.id) + '.' + candidate.extension
+        const uploadResponse = await fetch(baseUrl + '/storage/v1/object/uflmb-card-images/' + objectPath, {
+          method: 'POST',
+          headers: {
+            apikey: anonKey,
+            Authorization: 'Bearer ' + accessToken,
+            'Content-Type': candidate.file.type || 'application/octet-stream',
+            'x-upsert': 'false',
+            'cache-control': '31536000',
+          },
+          body: candidate.file,
+        })
+        if (!uploadResponse.ok) {
+          const errorBody = await uploadResponse.json().catch(() => ({})) as { message?: string; error?: string }
+          throw new Error(errorBody.message || errorBody.error || 'Storage upload failed (' + uploadResponse.status + ')')
+        }
+        const imageUrl = baseUrl + '/storage/v1/object/public/uflmb-card-images/' + objectPath
+        nextById.set(candidate.card.id, { ...candidate.card, imageUrl })
+        uploaded++
+      } catch (error) {
+        skippedReasons.push(candidate.file.name + ': ' + (error instanceof Error ? error.message : 'upload failed'))
+      }
+    }
+
+    if (uploaded) {
       const next = Array.from(nextById.values())
       try {
         saveCards(next)
         setAllCards(next)
-        setNotice(`Bulk image import complete: ${matched} image(s) matched to cards; ${skipped} file(s) skipped. Name each image after the player (for example, Player Name.jpg).`)
+        setNotice('Image import finished: ' + uploaded + ' image(s) uploaded to shared storage and linked by card ID. ' + skippedReasons.length + ' file(s) skipped or failed. If cloud records were loaded first, the normal admin sync will publish the new image URLs.')
       } catch {
-        setNotice('The images exceeded available browser storage. Try fewer images at a time or smaller files.')
+        setNotice('Uploaded ' + uploaded + ' image(s), but this browser could not save the updated card list. Reload cloud records before retrying; do not re-upload these images.')
       }
-    } else setNotice(`No images were matched. ${skipped} file(s) were skipped. Image filenames must match player names, and each source image must be 8 MB or smaller.`)
+    } else {
+      setNotice('No images were uploaded successfully. ' + skippedReasons.length + ' file(s) skipped or failed. ' + skippedReasons.slice(0, 4).join(' · '))
+    }
   }
 
   const handleJsonFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -1687,8 +1757,8 @@ export default function App() {
       </section>
       <section className="admin-panel tools-panel">
         <p className="eyebrow">LOCAL FILE IMPORT</p><h2>Import images & backups</h2>
-        <p className="muted-copy">No Google account required. Select multiple image files to match them to existing cards by filename, or import a JSON backup. For example, “Kylian Mbappe.jpg” matches a card named “Kylian Mbappe”. Images are optimized before saving in this browser.</p>
-        <label className="full-field">Import multiple card images<input type="file" accept="image/*" multiple onChange={handleBulkImages} /><span className="field-help">Up to 8 MB per source image. Filenames must match player names; unmatched images are skipped. Local browser storage has limited capacity.</span></label>
+        <p className="muted-copy">Select card images named with the exact four-part convention (for example, fp.berardi.86.rw.png). The filename is matched against card type, player aliases, OVR and position; ambiguous matches are rejected. Images upload to shared Supabase Storage and are linked to the existing card ID.</p>
+        <label className="full-field">Import multiple card images<input type="file" accept="image/*" multiple onChange={handleBulkImages} /><span className="field-help">Up to 8 MB per image. Supported pattern: fp.playername.ovr.position.png or ot.playername.ovr.position.png. Requires a trusted admin session and the UFLMB card-image storage migration.</span></label>
         <label className="full-field">Import JSON backup file<input type="file" accept=".json,application/json" onChange={handleJsonFile} /><span className="field-help">Adds valid new records without replacing existing cards. Use JSON backup for full record fields.</span></label>
       </section>
       <section className="admin-panel tools-panel">
