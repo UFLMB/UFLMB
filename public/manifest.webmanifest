@@ -1,11 +1,11 @@
 {
-  "id": "/UFLMB/",
+  "id": "./",
   "name": "UFLMB — UFL Mobile Card Database",
   "short_name": "UFLMB",
   "description": "A community-built reference for UFL Mobile player cards, ratings, stats, perks and verified sources.",
   "lang": "en",
-  "start_url": "/UFLMB/",
-  "scope": "/UFLMB/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0b0d12",
@@ -13,7 +13,7 @@
   "categories": ["games", "reference", "sports"],
   "icons": [
     {
-      "src": "/UFLMB/icon.svg",
+      "src": "./icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
