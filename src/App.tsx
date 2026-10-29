@@ -387,7 +387,7 @@ export default function App() {
   const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
   const [compareIds, setCompareIds] = useState<string[]>(() => { try { const saved: unknown = JSON.parse(localStorage.getItem('uflmb.compare.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string').slice(0, 3) : [] } catch { return [] } })
   const [showCompare, setShowCompare] = useState(false)
-  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud' | 'profiles' | 'moderation'>('cards')
+  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'assets' | 'cloud' | 'profiles' | 'moderation'>('cards')
   const [adminProfiles, setAdminProfiles] = useState<AdminProfile[]>([])
   const [adminUserIds, setAdminUserIds] = useState<string[]>([])
   const [adminProfilesBusy, setAdminProfilesBusy] = useState(false)
@@ -1771,6 +1771,7 @@ export default function App() {
           ['quality', '✓', 'Data quality', 'Collection health checks'],
           ['imports', '⇅', 'Import / Export', 'Files, backups and data transfer'],
           ['appearance', '◈', 'Branding', 'Logo, icon and background'],
+          ['assets', '▧', 'Assets', 'Perk and trait artwork'],
           ['cloud', '☁', 'Cloud sync', 'Admin sign-in and shared records'],
           ['profiles', '♙', 'Profile management', 'Manage registered accounts'],
           ['moderation', '⚑', 'Moderation & warnings', 'Review flags and issue warnings'],
@@ -1780,7 +1781,26 @@ export default function App() {
           </button>
         ))}
       </nav>
-            {adminTab === 'profiles' && <section className="admin-panel profile-management-panel">
+            {adminTab === 'assets' && <section className="admin-panel assets-management-panel">
+        <div className="assets-page-heading">
+          <div className="assets-page-icon" aria-hidden="true">▧</div>
+          <div><p className="eyebrow">VISUAL ASSET MANAGEMENT</p><h2>Assets</h2><p className="muted-copy">Manage the artwork that gives UFLMB its identity. Configure perk and trait images once, then reuse them consistently across player cards and profiles.</p></div>
+          <span className="count-label">{Object.keys(siteBranding.perkTraitImages).length} configured</span>
+        </div>
+        <section className="perk-trait-image-editor assets-perk-trait-editor">
+            <div className="section-heading"><div><p className="eyebrow">ASSET LIBRARY · PERKS & TRAITS</p><h2>Perk & trait artwork</h2></div><span className="count-label">{Object.keys(siteBranding.perkTraitImages).length} configured</span></div>
+            <p className="muted-copy">Assign images once per perk/trait type. The compact official icon appears beside the perk in Players; the separate expanded image appears in Player Profile. Existing and newly added cards that use the same perk name update automatically. Enter direct HTTP or HTTPS image URLs.</p>
+            <div className="perk-trait-image-controls">
+              <label>Perk / trait type<select value={selectedPerkTraitType} onChange={event => { const next = event.target.value; const saved = next ? siteBranding.perkTraitImages[normalizeIdentityPart(next)] : undefined; setSelectedPerkTraitType(next); setPerkIconUrlDraft(saved?.iconUrl || ''); setPerkProfileImageUrlDraft(saved?.profileImageUrl || '') }}><option value="">Choose a perk / trait…</option>{Array.from(new Set(allCards.flatMap(card => card.perks ?? []).map(perk => perk.trim()).filter(Boolean))).sort((a,b) => a.localeCompare(b)).map(perk => <option key={normalizeIdentityPart(perk)} value={perk}>{perk}</option>)}</select></label>
+              <label>Players menu icon URL<input type="url" value={perkIconUrlDraft} onChange={event => setPerkIconUrlDraft(event.target.value)} placeholder="https://example.com/trait-icon.png" /></label>
+              <label>Player Profile expanded image URL<input type="url" value={perkProfileImageUrlDraft} onChange={event => setPerkProfileImageUrlDraft(event.target.value)} placeholder="https://example.com/trait-art.png" /></label>
+            </div>
+            {(perkIconUrlDraft.trim() || perkProfileImageUrlDraft.trim()) && <div className="perk-trait-image-previews">{perkIconUrlDraft.trim() && isHttpUrl(perkIconUrlDraft.trim()) && <div><span>Players icon</span><img className="perk-icon-preview" src={perkIconUrlDraft.trim()} alt="Perk icon preview" /></div>}{perkProfileImageUrlDraft.trim() && isHttpUrl(perkProfileImageUrlDraft.trim()) && <div><span>Profile image</span><img className="perk-profile-preview" src={perkProfileImageUrlDraft.trim()} alt="Expanded perk image preview" /></div>}</div>}
+            <div className="form-actions"><button className="button primary" type="button" disabled={Boolean(!selectedPerkTraitType || (!perkIconUrlDraft.trim() && !perkProfileImageUrlDraft.trim()) || (perkIconUrlDraft.trim() && !isHttpUrl(perkIconUrlDraft.trim())) || (perkProfileImageUrlDraft.trim() && !isHttpUrl(perkProfileImageUrlDraft.trim())))} onClick={() => { const key = normalizeIdentityPart(selectedPerkTraitType); setSiteBranding(current => ({ ...current, perkTraitImages: { ...current.perkTraitImages, [key]: { iconUrl: perkIconUrlDraft.trim(), profileImageUrl: perkProfileImageUrlDraft.trim() } } })); setPerkTraitImageStatus(`Images assigned to ${selectedPerkTraitType}. Click Update branding to publish them.`) }}>Apply to this perk / trait type</button><button className="button secondary" type="button" disabled={!selectedPerkTraitType || !siteBranding.perkTraitImages[normalizeIdentityPart(selectedPerkTraitType)]} onClick={() => { const key = normalizeIdentityPart(selectedPerkTraitType); setSiteBranding(current => { const next = { ...current.perkTraitImages }; delete next[key]; return { ...current, perkTraitImages: next } }); setPerkIconUrlDraft(''); setPerkProfileImageUrlDraft(''); setPerkTraitImageStatus(`Custom images removed from ${selectedPerkTraitType}. Click Update branding to publish.`) }}>Remove custom images</button></div>
+            {perkTraitImageStatus && <p className="muted-copy" role="status">{perkTraitImageStatus}</p>}
+          </section>
+      </section>}
+      {adminTab === 'profiles' && <section className="admin-panel profile-management-panel">
         <div className="section-heading"><div><p className="eyebrow">ACCOUNT CONTROL</p><h2>Profile management</h2></div><span className="count-label">{adminProfiles.length} profiles</span></div>
         <p className="muted-copy">A clear overview of registered members and trusted administrators. Update public usernames and profile icons, with administrator branding protected by the trusted database allowlist. Account permissions, passwords and authentication records are not changed here.</p>
         <div className="profile-management-overview" aria-label="Profile overview">
@@ -1881,18 +1901,7 @@ export default function App() {
             </div>
             {cardTypeBackgroundStatus && <p className="muted-copy" role="status">{cardTypeBackgroundStatus}</p>}
           </section>
-          <section className="perk-trait-image-editor">
-            <div className="section-heading"><div><p className="eyebrow">PERKS & TRAITS</p><h2>Perk / trait images</h2></div><span className="count-label">{Object.keys(siteBranding.perkTraitImages).length} configured</span></div>
-            <p className="muted-copy">Assign images once per perk/trait type. The compact official icon appears beside the perk in Players; the separate expanded image appears in Player Profile. Existing and newly added cards that use the same perk name update automatically. Enter direct HTTP or HTTPS image URLs.</p>
-            <div className="perk-trait-image-controls">
-              <label>Perk / trait type<select value={selectedPerkTraitType} onChange={event => { const next = event.target.value; const saved = next ? siteBranding.perkTraitImages[normalizeIdentityPart(next)] : undefined; setSelectedPerkTraitType(next); setPerkIconUrlDraft(saved?.iconUrl || ''); setPerkProfileImageUrlDraft(saved?.profileImageUrl || '') }}><option value="">Choose a perk / trait…</option>{Array.from(new Set(allCards.flatMap(card => card.perks ?? []).map(perk => perk.trim()).filter(Boolean))).sort((a,b) => a.localeCompare(b)).map(perk => <option key={normalizeIdentityPart(perk)} value={perk}>{perk}</option>)}</select></label>
-              <label>Players menu icon URL<input type="url" value={perkIconUrlDraft} onChange={event => setPerkIconUrlDraft(event.target.value)} placeholder="https://example.com/trait-icon.png" /></label>
-              <label>Player Profile expanded image URL<input type="url" value={perkProfileImageUrlDraft} onChange={event => setPerkProfileImageUrlDraft(event.target.value)} placeholder="https://example.com/trait-art.png" /></label>
-            </div>
-            {(perkIconUrlDraft.trim() || perkProfileImageUrlDraft.trim()) && <div className="perk-trait-image-previews">{perkIconUrlDraft.trim() && isHttpUrl(perkIconUrlDraft.trim()) && <div><span>Players icon</span><img className="perk-icon-preview" src={perkIconUrlDraft.trim()} alt="Perk icon preview" /></div>}{perkProfileImageUrlDraft.trim() && isHttpUrl(perkProfileImageUrlDraft.trim()) && <div><span>Profile image</span><img className="perk-profile-preview" src={perkProfileImageUrlDraft.trim()} alt="Expanded perk image preview" /></div>}</div>}
-            <div className="form-actions"><button className="button primary" type="button" disabled={Boolean(!selectedPerkTraitType || (!perkIconUrlDraft.trim() && !perkProfileImageUrlDraft.trim()) || (perkIconUrlDraft.trim() && !isHttpUrl(perkIconUrlDraft.trim())) || (perkProfileImageUrlDraft.trim() && !isHttpUrl(perkProfileImageUrlDraft.trim())))} onClick={() => { const key = normalizeIdentityPart(selectedPerkTraitType); setSiteBranding(current => ({ ...current, perkTraitImages: { ...current.perkTraitImages, [key]: { iconUrl: perkIconUrlDraft.trim(), profileImageUrl: perkProfileImageUrlDraft.trim() } } })); setPerkTraitImageStatus(`Images assigned to ${selectedPerkTraitType}. Click Update branding to publish them.`) }}>Apply to this perk / trait type</button><button className="button secondary" type="button" disabled={!selectedPerkTraitType || !siteBranding.perkTraitImages[normalizeIdentityPart(selectedPerkTraitType)]} onClick={() => { const key = normalizeIdentityPart(selectedPerkTraitType); setSiteBranding(current => { const next = { ...current.perkTraitImages }; delete next[key]; return { ...current, perkTraitImages: next } }); setPerkIconUrlDraft(''); setPerkProfileImageUrlDraft(''); setPerkTraitImageStatus(`Custom images removed from ${selectedPerkTraitType}. Click Update branding to publish.`) }}>Remove custom images</button></div>
-            {perkTraitImageStatus && <p className="muted-copy" role="status">{perkTraitImageStatus}</p>}
-          </section>
+
           <div className="branding-publish-panel">
             <div className="branding-publish-copy"><strong>Publish site appearance</strong><span>Apply the current branding to every visitor through the shared database.</span></div>
             <div className="branding-publish-actions">
