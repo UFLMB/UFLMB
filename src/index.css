@@ -6758,3 +6758,13 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   object-position: center center !important;
   transform: none !important;
 }
+
+
+/* Admin: assign one reusable background to every card of a selected type. */
+.card-type-background-editor{display:grid;gap:14px;margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--panel-bg,#11141b)}
+.card-type-background-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card-type-background-controls label{display:grid;gap:7px;font-size:12px;font-weight:700;color:var(--text-color,#f3f5f8)}
+.card-type-background-controls input,.card-type-background-controls select{width:100%;min-width:0;min-height:42px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--page-bg,#0b0d12);color:var(--text-color,#f3f5f8);font:inherit;font-size:12px}
+.card-type-background-preview{display:flex;align-items:center;justify-content:center;min-height:140px;padding:16px;border:1px solid var(--line);border-radius:10px;background-position:center;background-size:cover;color:#fff;font-size:12px;font-weight:800;text-align:center;text-shadow:0 2px 6px #000}
+.card-type-background-preview span{padding:7px 10px;border-radius:7px;background:rgba(0,0,0,.58)}
+@media(max-width:600px){.card-type-background-editor{padding:13px}.card-type-background-controls{grid-template-columns:1fr}}

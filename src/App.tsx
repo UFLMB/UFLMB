@@ -61,8 +61,14 @@ const loadThemeMode = (): ThemeMode => {
   }
 }
 const BRANDING_KEY = 'uflmb.site-branding.v1'
-type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[] }
-const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrls: [] }
+type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[]; cardTypeBackgrounds: Record<string, string> }
+const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrls: [], cardTypeBackgrounds: {} }
+const parseCardTypeBackgrounds = (value: unknown): Record<string, string> => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+  return Object.fromEntries(Object.entries(value as Record<string, unknown>).filter((entry): entry is [string, string] =>
+    Boolean(entry[0].trim()) && typeof entry[1] === 'string' && /^https?:\/\//i.test(entry[1]) && isHttpUrl(entry[1])
+  ))
+}
 type ProfileLogo = 'default' | 'star' | 'ball' | 'bolt' | 'shield' | 'admin' | 'striker' | 'keeper' | 'defender' | 'playmaker' | 'boots' | 'jersey' | 'stadium' | 'trophy' | 'goal'
 type AdminProfile = { id: string; username: string; profile_logo: string; created_at: string; updated_at: string }
 const profileLogoOptions: Array<{ value: ProfileLogo; label: string; glyph: string; adminOnly?: boolean }> = [
@@ -108,6 +114,7 @@ const loadBranding = (): SiteBranding => {
         logoUrl: typeof saved.logoUrl === 'string' ? saved.logoUrl : '',
         faviconUrl: typeof saved.faviconUrl === 'string' ? saved.faviconUrl : '',
         backgroundImageUrls: parseBackgroundUrls(savedImages),
+        cardTypeBackgrounds: parseCardTypeBackgrounds(saved.cardTypeBackgrounds),
       }
     }
   } catch { /* use defaults */ }
@@ -356,6 +363,9 @@ export default function App() {
   const [siteBranding, setSiteBranding] = useState<SiteBranding>(loadBranding)
   const [backgroundUrlsText, setBackgroundUrlsText] = useState(() => siteBranding.backgroundImageUrls.join('\n'))
   const [backgroundIndex, setBackgroundIndex] = useState(0)
+  const [selectedCardTypeForBackground, setSelectedCardTypeForBackground] = useState('')
+  const [cardTypeBackgroundUrlDraft, setCardTypeBackgroundUrlDraft] = useState('')
+  const [cardTypeBackgroundStatus, setCardTypeBackgroundStatus] = useState('')
   const [sharedBrandingLoaded, setSharedBrandingLoaded] = useState(false)
   const [sharedBrandingStatus, setSharedBrandingStatus] = useState('Loading shared appearance…')
   const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
@@ -705,6 +715,7 @@ export default function App() {
           logoUrl: typeof saved.logoUrl === 'string' ? saved.logoUrl : '',
           faviconUrl: typeof saved.faviconUrl === 'string' ? saved.faviconUrl : '',
           backgroundImageUrls: parseBackgroundUrls(urls),
+          cardTypeBackgrounds: parseCardTypeBackgrounds(saved.cardTypeBackgrounds),
         })
         setBackgroundUrlsText(parseBackgroundUrls(urls).join('\n'))
         setSharedBrandingStatus('Shared appearance loaded.')
@@ -1836,6 +1847,23 @@ export default function App() {
             {siteBranding.faviconUrl.trim() && <div className="branding-preview-item"><strong>Browser icon</strong><img className="favicon-preview" src={siteBranding.faviconUrl.trim()} alt="Favicon preview" /></div>}
             {siteBranding.backgroundImageUrls.length > 0 && <div className="branding-background-preview" style={{ backgroundImage: `linear-gradient(rgba(5,8,14,.74), rgba(5,8,14,.82)), url("${siteBranding.backgroundImageUrls[backgroundIndex % siteBranding.backgroundImageUrls.length].replace(/["\\]/g, '')}")` }}><span>Background preview · {backgroundIndex % siteBranding.backgroundImageUrls.length + 1}/{siteBranding.backgroundImageUrls.length} · rotates every 30 seconds</span></div>}
           </div>
+          <section className="card-type-background-editor">
+            <div className="section-heading"><div><p className="eyebrow">CARD ARTWORK</p><h2>Card type backgrounds</h2></div><span className="count-label">{Object.keys(siteBranding.cardTypeBackgrounds).length} configured</span></div>
+            <p className="muted-copy">Set one background per card type. Every card with the same type uses this image automatically, including cards added later. The card artwork stays on top; the background shows through its transparent/empty areas. Use a direct HTTP or HTTPS image URL.</p>
+            <div className="card-type-background-controls">
+              <label>Card type<select value={selectedCardTypeForBackground} onChange={event => { const nextType = event.target.value; setSelectedCardTypeForBackground(nextType); setCardTypeBackgroundUrlDraft(nextType ? siteBranding.cardTypeBackgrounds[normalizeIdentityPart(nextType)] || '' : '') }}>
+                <option value="">Choose a card type…</option>
+                {Array.from(new Map(allCards.map(card => [normalizeIdentityPart(card.cardName), (card.cardName || '').trim()])).entries()).filter(([key, label]) => key && label).sort((a, b) => a[1].localeCompare(b[1])).map(([key, label]) => <option key={key} value={label}>{label}</option>)}
+              </select></label>
+              <label>Background image URL<input type="url" value={cardTypeBackgroundUrlDraft} onChange={event => setCardTypeBackgroundUrlDraft(event.target.value)} placeholder="https://example.com/card-type-background.jpg" /></label>
+            </div>
+            {selectedCardTypeForBackground && cardTypeBackgroundUrlDraft.trim() && isHttpUrl(cardTypeBackgroundUrlDraft.trim()) && <div className="card-type-background-preview" style={{ backgroundImage: `url("${cardTypeBackgroundUrlDraft.trim().replace(/["\\]/g, '')}")` }}><span>{selectedCardTypeForBackground} · background preview</span></div>}
+            <div className="form-actions">
+              <button className="button primary" type="button" disabled={!selectedCardTypeForBackground || !isHttpUrl(cardTypeBackgroundUrlDraft.trim())} onClick={() => { const key = normalizeIdentityPart(selectedCardTypeForBackground); setSiteBranding(current => ({ ...current, cardTypeBackgrounds: { ...current.cardTypeBackgrounds, [key]: cardTypeBackgroundUrlDraft.trim() } })); setCardTypeBackgroundStatus(`Background assigned to ${selectedCardTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Apply to all cards of this type</button>
+              <button className="button secondary" type="button" disabled={!selectedCardTypeForBackground || !siteBranding.cardTypeBackgrounds[normalizeIdentityPart(selectedCardTypeForBackground)]} onClick={() => { const key = normalizeIdentityPart(selectedCardTypeForBackground); setSiteBranding(current => { const next = { ...current.cardTypeBackgrounds }; delete next[key]; return { ...current, cardTypeBackgrounds: next } }); setCardTypeBackgroundUrlDraft(''); setCardTypeBackgroundStatus(`Background removed from ${selectedCardTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Remove type background</button>
+            </div>
+            {cardTypeBackgroundStatus && <p className="muted-copy" role="status">{cardTypeBackgroundStatus}</p>}
+          </section>
           <div className="branding-publish-panel">
             <div className="branding-publish-copy"><strong>Publish site appearance</strong><span>Apply the current branding to every visitor through the shared database.</span></div>
             <div className="branding-publish-actions">
@@ -2003,6 +2031,7 @@ export default function App() {
       logoUrl: siteBranding.logoUrl.trim(),
       faviconUrl: siteBranding.faviconUrl.trim(),
       backgroundImageUrls: parseBackgroundUrls(backgroundUrlsText),
+      cardTypeBackgrounds: parseCardTypeBackgrounds(siteBranding.cardTypeBackgrounds),
     }
     if ((brandingToPublish.logoUrl && !isHttpUrl(brandingToPublish.logoUrl)) ||
         (brandingToPublish.faviconUrl && !isHttpUrl(brandingToPublish.faviconUrl))) {
@@ -2044,7 +2073,8 @@ export default function App() {
       if (!saved || saved.iconText !== brandingToPublish.iconText ||
           saved.logoUrl !== brandingToPublish.logoUrl ||
           saved.faviconUrl !== brandingToPublish.faviconUrl ||
-          JSON.stringify(saved.backgroundImageUrls ?? []) !== JSON.stringify(brandingToPublish.backgroundImageUrls)) {
+          JSON.stringify(saved.backgroundImageUrls ?? []) !== JSON.stringify(brandingToPublish.backgroundImageUrls) ||
+          JSON.stringify(parseCardTypeBackgrounds(saved.cardTypeBackgrounds)) !== JSON.stringify(brandingToPublish.cardTypeBackgrounds)) {
         throw new Error('The shared appearance did not match the submitted settings after saving. Please try again.')
       }
       setSharedBrandingStatus(`Verified: appearance updated for all visitors · ${new Date().toLocaleTimeString()}`)
@@ -2335,7 +2365,7 @@ export default function App() {
         <div className="section-heading"><div><p className="eyebrow">{showBookmarked ? 'STARRED PLAYERS' : 'THE COLLECTION'}</p><h2 id="database-title">{showBookmarked ? 'Your favorites' : 'Card database'}</h2></div><div className="collection-actions"><span className="count-label">{visibleCards.length} shown / {showBookmarked ? bookmarkedIds.length : allCards.length} total</span></div></div>
         {visibleCards.length === 0 ? <div className="empty-state"><div className="empty-emblem" aria-hidden="true">U<span>+</span></div><h3>{showBookmarked ? 'No favorites yet' : query.trim() ? 'No matching cards found' : 'The database starts here'}</h3><p>{showBookmarked ? 'Tap the star on any player card to add it to this list.' : query.trim() ? `No verified card matches “${query.trim()}”. Try another search or category.` : 'No card records have been entered yet.'}</p><span className="empty-tag">VERIFIED DATA ONLY</span></div> :
           <div className="card-grid">{pagedCards.map((card, index) => <article className={`player-card ${selectedCardId === card.id ? 'card-click-selected' : ''} ${compareIds.includes(card.id) ? 'compare-selected' : ''} ${card.sourceStatus === 'imported-unverified' ? 'imported-card' : ''} ${card.overallRating >= 90 ? 'elite-card ovr-elite' : card.overallRating >= 80 ? 'ovr-high' : card.overallRating >= 70 ? 'ovr-mid' : 'ovr-standard'}`} key={card.id} onClick={() => setSelectedCardId(current => current === card.id ? null : card.id)} style={{ animationDelay: `${Math.min(index % 12, 11) * 45}ms` }}>
-            <div className="player-image"><div className="card-art-glow" aria-hidden="true" />
+            <div className="player-image" style={siteBranding.cardTypeBackgrounds[normalizeIdentityPart(card.cardName)] ? { backgroundImage: `linear-gradient(rgba(5,8,14,.12), rgba(5,8,14,.2)), url("${siteBranding.cardTypeBackgrounds[normalizeIdentityPart(card.cardName)].replace(/["\\]/g, '')}")`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}><div className="card-art-glow" aria-hidden="true" />
               {card.imageUrl ? <img src={card.imageUrl} alt={`${card.playerName} card`} loading="lazy" /> : <div className="no-image"><span className="no-image-mark">✦</span><strong>UFL<span>MB</span></strong><small>PLAYER DATABASE</small></div>}
               <div className="card-quick-actions">
                 <button className={bookmarkedIds.includes(card.id) ? 'bookmark-toggle saved' : 'bookmark-toggle'} type="button" aria-label={bookmarkedIds.includes(card.id) ? `Remove ${card.playerName} from saved cards` : `Save ${card.playerName}`} aria-pressed={bookmarkedIds.includes(card.id)} onClick={event => { event.stopPropagation(); toggleBookmark(card.id) }}>{bookmarkedIds.includes(card.id) ? '★' : '☆'}</button>
