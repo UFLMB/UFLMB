@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "uflmb-hosting"
+  },
+  "targets": {
+    "uflmb-hosting": {
+      "hosting": {
+        "uflmb": [
+          "uflmb"
+        ]
+      }
+    }
+  }
+}
