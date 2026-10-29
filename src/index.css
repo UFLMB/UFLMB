@@ -6768,3 +6768,20 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .card-type-background-preview{display:flex;align-items:center;justify-content:center;min-height:140px;padding:16px;border:1px solid var(--line);border-radius:10px;background-position:center;background-size:cover;color:#fff;font-size:12px;font-weight:800;text-align:center;text-shadow:0 2px 6px #000}
 .card-type-background-preview span{padding:7px 10px;border-radius:7px;background:rgba(0,0,0,.58)}
 @media(max-width:600px){.card-type-background-editor{padding:13px}.card-type-background-controls{grid-template-columns:1fr}}
+
+
+/* Admin editor and public presentation for per-type perk / trait artwork. */
+.perk-trait-image-editor{display:grid;gap:14px;margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--panel-bg,#11141b)}
+.perk-trait-image-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.perk-trait-image-controls label{display:grid;gap:7px;min-width:0;font-size:12px;font-weight:700;color:var(--text-color,#f3f5f8)}
+.perk-trait-image-controls input,.perk-trait-image-controls select{width:100%;min-width:0;min-height:42px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--page-bg,#0b0d12);color:var(--text-color,#f3f5f8);font:inherit;font-size:12px}
+.perk-trait-image-previews{display:flex;align-items:flex-start;flex-wrap:wrap;gap:18px}
+.perk-trait-image-previews>div{display:grid;gap:8px;justify-items:start;font-size:11px;color:var(--muted-text,#a0a6b2)}
+.perk-icon-preview{width:42px;height:42px;object-fit:contain}
+.perk-profile-preview{width:116px;height:116px;object-fit:contain;border-radius:10px;background:rgba(255,255,255,.04)}
+.perk-item,.profile-perk-item{display:inline-flex;align-items:center;gap:6px}
+.perk-trait-icon{display:inline-block;width:18px;height:18px;flex:0 0 18px;object-fit:contain;vertical-align:middle}
+.profile-perk-row{align-items:stretch;flex-wrap:wrap;gap:10px}
+.profile-perk-item{flex-wrap:wrap;justify-content:center;min-width:0}
+.perk-trait-profile-image{display:block;width:100%;max-width:180px;height:auto;max-height:180px;object-fit:contain;flex-basis:100%;margin:0 auto 4px}
+@media(max-width:700px){.perk-trait-image-editor{padding:13px}.perk-trait-image-controls{grid-template-columns:1fr}}
