@@ -6734,3 +6734,17 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .profile-page .account-signin-note p {
   color: #657181;
 }
+
+
+/* Player list cards: center the complete card artwork in its image frame.
+   Keep this scoped to the list tile; the detailed profile image is unchanged. */
+.player-image > img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
+}
