@@ -6736,12 +6736,18 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Player list cards: center the complete card artwork in its image frame.
-   Keep this scoped to the list tile; the detailed profile image is unchanged. */
-.player-image > img {
+/* Players menu only: show the entire card artwork at its natural aspect ratio.
+   No OVR/position overlays are rendered on top of the supplied card graphic. */
+.database-section .player-image {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+.database-section .player-image > img {
   display: block !important;
   width: auto !important;
-  height: 100% !important;
+  height: auto !important;
   max-width: 100% !important;
   max-height: 100% !important;
   margin: 0 auto !important;
