@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/build-card-image-manifest.mjs && tsc -b && vite build",
+    "build:firebase": "node scripts/build-card-image-manifest.mjs && tsc -b && vite build --base=/",
     "preview": "vite preview",
     "check:security": "node scripts/check-security-contract.mjs"
   },
