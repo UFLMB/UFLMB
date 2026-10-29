@@ -1790,9 +1790,26 @@ export default function App() {
             {adminTab === 'assets' && <section className="admin-panel assets-management-panel">
         <div className="assets-page-heading">
           <div className="assets-page-icon" aria-hidden="true">▧</div>
-          <div><p className="eyebrow">VISUAL ASSET MANAGEMENT</p><h2>Assets</h2><p className="muted-copy">Manage the artwork that gives UFLMB its identity. Configure perk and trait images once, then reuse them consistently across player cards and profiles.</p></div>
+          <div><p className="eyebrow">VISUAL ASSET MANAGEMENT</p><h2>Assets</h2><p className="muted-copy">Manage visual assets associated with records in the UFLMB database, including card-type backgrounds and perk/trait artwork. Configure each asset once and apply it consistently to matching cards and player profiles.</p></div>
           <span className="count-label">{Object.keys(siteBranding.perkTraitImages).length} configured</span>
         </div>
+          <section className="card-type-background-editor">
+            <div className="section-heading"><div><p className="eyebrow">CARD ARTWORK</p><h2>Card type backgrounds</h2></div><span className="count-label">{Object.keys(siteBranding.cardTypeBackgrounds).length} configured</span></div>
+            <p className="muted-copy">Set one background per card type. Every card with the same type uses this image automatically, including cards added later. The card artwork stays on top; the background shows through its transparent/empty areas. Use a direct HTTP or HTTPS image URL.</p>
+            <div className="card-type-background-controls">
+              <label>Card type<select value={selectedCardTypeForBackground} onChange={event => { const nextType = event.target.value; setSelectedCardTypeForBackground(nextType); setCardTypeBackgroundUrlDraft(nextType ? siteBranding.cardTypeBackgrounds[normalizeIdentityPart(nextType)] || '' : '') }}>
+                <option value="">Choose a card type…</option>
+                {Array.from(new Map(allCards.map(card => [normalizeIdentityPart(card.cardName), (card.cardName || '').trim()])).entries()).filter(([key, label]) => key && label).sort((a, b) => a[1].localeCompare(b[1])).map(([key, label]) => <option key={key} value={label}>{label}</option>)}
+              </select></label>
+              <label>Background image URL<input type="url" value={cardTypeBackgroundUrlDraft} onChange={event => setCardTypeBackgroundUrlDraft(event.target.value)} placeholder="https://example.com/card-type-background.jpg" /></label>
+            </div>
+            {selectedCardTypeForBackground && cardTypeBackgroundUrlDraft.trim() && isHttpUrl(cardTypeBackgroundUrlDraft.trim()) && <div className="card-type-background-preview" style={{ backgroundImage: `url("${cardTypeBackgroundUrlDraft.trim().replace(/["\\]/g, '')}")` }}><span>{selectedCardTypeForBackground} · background preview</span></div>}
+            <div className="form-actions">
+              <button className="button primary" type="button" disabled={!selectedCardTypeForBackground || !isHttpUrl(cardTypeBackgroundUrlDraft.trim())} onClick={() => { const key = normalizeIdentityPart(selectedCardTypeForBackground); setSiteBranding(current => ({ ...current, cardTypeBackgrounds: { ...current.cardTypeBackgrounds, [key]: cardTypeBackgroundUrlDraft.trim() } })); setCardTypeBackgroundStatus(`Background assigned to ${selectedCardTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Apply to all cards of this type</button>
+              <button className="button secondary" type="button" disabled={!selectedCardTypeForBackground || !siteBranding.cardTypeBackgrounds[normalizeIdentityPart(selectedCardTypeForBackground)]} onClick={() => { const key = normalizeIdentityPart(selectedCardTypeForBackground); setSiteBranding(current => { const next = { ...current.cardTypeBackgrounds }; delete next[key]; return { ...current, cardTypeBackgrounds: next } }); setCardTypeBackgroundUrlDraft(''); setCardTypeBackgroundStatus(`Background removed from ${selectedCardTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Remove type background</button>
+            </div>
+            {cardTypeBackgroundStatus && <p className="muted-copy" role="status">{cardTypeBackgroundStatus}</p>}
+          </section>
         <section className="perk-trait-image-editor assets-perk-trait-editor">
             <div className="section-heading"><div><p className="eyebrow">ASSET LIBRARY · PERKS & TRAITS</p><h2>Perk & trait artwork</h2></div><span className="count-label">{Object.keys(siteBranding.perkTraitImages).length} configured</span></div>
             <p className="muted-copy">Assign images once per perk/trait type. The compact official icon appears beside the perk in Players; the separate expanded image appears in Player Profile. Existing and newly added cards that use the same perk name update automatically. Enter direct HTTP or HTTPS image URLs.</p>
@@ -1890,24 +1907,6 @@ export default function App() {
             {siteBranding.faviconUrl.trim() && <div className="branding-preview-item"><strong>Browser icon</strong><img className="favicon-preview" src={siteBranding.faviconUrl.trim()} alt="Favicon preview" /></div>}
             {siteBranding.backgroundImageUrls.length > 0 && <div className="branding-background-preview" style={{ backgroundImage: `linear-gradient(rgba(5,8,14,.74), rgba(5,8,14,.82)), url("${siteBranding.backgroundImageUrls[backgroundIndex % siteBranding.backgroundImageUrls.length].replace(/["\\]/g, '')}")` }}><span>Background preview · {backgroundIndex % siteBranding.backgroundImageUrls.length + 1}/{siteBranding.backgroundImageUrls.length} · rotates every 30 seconds</span></div>}
           </div>
-          <section className="card-type-background-editor">
-            <div className="section-heading"><div><p className="eyebrow">CARD ARTWORK</p><h2>Card type backgrounds</h2></div><span className="count-label">{Object.keys(siteBranding.cardTypeBackgrounds).length} configured</span></div>
-            <p className="muted-copy">Set one background per card type. Every card with the same type uses this image automatically, including cards added later. The card artwork stays on top; the background shows through its transparent/empty areas. Use a direct HTTP or HTTPS image URL.</p>
-            <div className="card-type-background-controls">
-              <label>Card type<select value={selectedCardTypeForBackground} onChange={event => { const nextType = event.target.value; setSelectedCardTypeForBackground(nextType); setCardTypeBackgroundUrlDraft(nextType ? siteBranding.cardTypeBackgrounds[normalizeIdentityPart(nextType)] || '' : '') }}>
-                <option value="">Choose a card type…</option>
-                {Array.from(new Map(allCards.map(card => [normalizeIdentityPart(card.cardName), (card.cardName || '').trim()])).entries()).filter(([key, label]) => key && label).sort((a, b) => a[1].localeCompare(b[1])).map(([key, label]) => <option key={key} value={label}>{label}</option>)}
-              </select></label>
-              <label>Background image URL<input type="url" value={cardTypeBackgroundUrlDraft} onChange={event => setCardTypeBackgroundUrlDraft(event.target.value)} placeholder="https://example.com/card-type-background.jpg" /></label>
-            </div>
-            {selectedCardTypeForBackground && cardTypeBackgroundUrlDraft.trim() && isHttpUrl(cardTypeBackgroundUrlDraft.trim()) && <div className="card-type-background-preview" style={{ backgroundImage: `url("${cardTypeBackgroundUrlDraft.trim().replace(/["\\]/g, '')}")` }}><span>{selectedCardTypeForBackground} · background preview</span></div>}
-            <div className="form-actions">
-              <button className="button primary" type="button" disabled={!selectedCardTypeForBackground || !isHttpUrl(cardTypeBackgroundUrlDraft.trim())} onClick={() => { const key = normalizeIdentityPart(selectedCardTypeForBackground); setSiteBranding(current => ({ ...current, cardTypeBackgrounds: { ...current.cardTypeBackgrounds, [key]: cardTypeBackgroundUrlDraft.trim() } })); setCardTypeBackgroundStatus(`Background assigned to ${selectedCardTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Apply to all cards of this type</button>
-              <button className="button secondary" type="button" disabled={!selectedCardTypeForBackground || !siteBranding.cardTypeBackgrounds[normalizeIdentityPart(selectedCardTypeForBackground)]} onClick={() => { const key = normalizeIdentityPart(selectedCardTypeForBackground); setSiteBranding(current => { const next = { ...current.cardTypeBackgrounds }; delete next[key]; return { ...current, cardTypeBackgrounds: next } }); setCardTypeBackgroundUrlDraft(''); setCardTypeBackgroundStatus(`Background removed from ${selectedCardTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Remove type background</button>
-            </div>
-            {cardTypeBackgroundStatus && <p className="muted-copy" role="status">{cardTypeBackgroundStatus}</p>}
-          </section>
-
           <div className="branding-publish-panel">
             <div className="branding-publish-copy"><strong>Publish site appearance</strong><span>Apply the current branding to every visitor through the shared database.</span></div>
             <div className="branding-publish-actions">
