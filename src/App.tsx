@@ -16,12 +16,12 @@ const VIEW_STATE_KEY = 'uflmb.current-view.v1'
 const BROWSE_FILTERS_KEY = 'uflmb.browse-filters.v1'
 type BrowseFilterScope = 'players' | 'favorites'
 type BrowseFilters = {
-  query: string; category: Category; nationFilter: string; positionFilter: string; eventFilter: string
+  query: string; category: Category; nationFilter: string; positionFilter: string; cardTypeFilter: string
   sourceFilter: 'all' | 'imported' | 'verified' | 'demo'; sortBy: 'ovr-desc' | 'ovr-asc' | 'name-asc' | 'verified-desc'
   minOvr: string; maxOvr: string; statFilter: string; minStat: string; maxStat: string
 }
 const defaultBrowseFilters: BrowseFilters = {
-  query: '', category: 'All cards', nationFilter: 'All nations', positionFilter: 'All positions', eventFilter: 'All events',
+  query: '', category: 'All cards', nationFilter: 'All nations', positionFilter: 'All positions', cardTypeFilter: 'All card types',
   sourceFilter: 'all', sortBy: 'ovr-desc', minOvr: '', maxOvr: '', statFilter: 'Any stat', minStat: '', maxStat: '',
 }
 const loadBrowseFilters = (scope: BrowseFilterScope): BrowseFilters => {
@@ -29,7 +29,7 @@ const loadBrowseFilters = (scope: BrowseFilterScope): BrowseFilters => {
     const saved: unknown = JSON.parse(localStorage.getItem(BROWSE_FILTERS_KEY) || 'null')
     if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
       const profile = (saved as Record<string, unknown>)[scope]
-      if (profile && typeof profile === 'object' && !Array.isArray(profile)) return { ...defaultBrowseFilters, ...(profile as Partial<BrowseFilters>) }
+      if (profile && typeof profile === 'object' && !Array.isArray(profile)) { const savedProfile = profile as Partial<BrowseFilters> & { eventFilter?: string }; return { ...defaultBrowseFilters, ...savedProfile, cardTypeFilter: savedProfile.cardTypeFilter ?? savedProfile.eventFilter ?? defaultBrowseFilters.cardTypeFilter } }
     }
   } catch { /* Start with default filters if saved state is invalid. */ }
   return { ...defaultBrowseFilters }
@@ -62,8 +62,8 @@ const loadThemeMode = (): ThemeMode => {
 }
 const BRANDING_KEY = 'uflmb.site-branding.v1'
 type PerkTraitImages = { iconUrl: string; profileImageUrl: string }
-type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[]; cardTypeBackgrounds: Record<string, string>; perkTraitImages: Record<string, PerkTraitImages> }
-const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrls: [], cardTypeBackgrounds: {}, perkTraitImages: {} }
+type SiteBranding = { iconText: string; logoUrl: string; faviconUrl: string; backgroundImageUrls: string[]; eventTypeBackgrounds: Record<string, string>; perkTraitImages: Record<string, PerkTraitImages> }
+const defaultBranding: SiteBranding = { iconText: 'U', logoUrl: '', faviconUrl: '', backgroundImageUrls: [], eventTypeBackgrounds: {}, perkTraitImages: {} }
 const parsePerkTraitImages = (value: unknown): Record<string, PerkTraitImages> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
   return Object.fromEntries(Object.entries(value as Record<string, unknown>).flatMap(([key, raw]) => {
@@ -74,7 +74,7 @@ const parsePerkTraitImages = (value: unknown): Record<string, PerkTraitImages> =
     return iconUrl || profileImageUrl ? [[key, { iconUrl, profileImageUrl } as PerkTraitImages]] : []
   }))
 }
-const parseCardTypeBackgrounds = (value: unknown): Record<string, string> => {
+const parseEventTypeBackgrounds = (value: unknown): Record<string, string> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
   return Object.fromEntries(Object.entries(value as Record<string, unknown>).filter((entry): entry is [string, string] =>
     Boolean(entry[0].trim()) && typeof entry[1] === 'string' && /^https?:\/\//i.test(entry[1]) && isHttpUrl(entry[1])
@@ -125,7 +125,7 @@ const loadBranding = (): SiteBranding => {
         logoUrl: typeof saved.logoUrl === 'string' ? saved.logoUrl : '',
         faviconUrl: typeof saved.faviconUrl === 'string' ? saved.faviconUrl : '',
         backgroundImageUrls: parseBackgroundUrls(savedImages),
-        cardTypeBackgrounds: parseCardTypeBackgrounds(saved.cardTypeBackgrounds),
+        eventTypeBackgrounds: parseEventTypeBackgrounds(saved.eventTypeBackgrounds),
         perkTraitImages: parsePerkTraitImages(saved.perkTraitImages),
       }
     }
@@ -341,7 +341,7 @@ export default function App() {
   const [category, setCategory] = useState<Category>(() => loadBrowseFilters(initialView.showBookmarked ? 'favorites' : 'players').category)
   const [nationFilter, setNationFilter] = useState(() => loadBrowseFilters(initialView.showBookmarked ? 'favorites' : 'players').nationFilter)
   const [positionFilter, setPositionFilter] = useState(() => loadBrowseFilters(initialView.showBookmarked ? 'favorites' : 'players').positionFilter)
-  const [eventFilter, setEventFilter] = useState(() => loadBrowseFilters(initialView.showBookmarked ? 'favorites' : 'players').eventFilter)
+  const [cardTypeFilter, setCardTypeFilter] = useState(() => loadBrowseFilters(initialView.showBookmarked ? 'favorites' : 'players').cardTypeFilter)
   const [sourceFilter, setSourceFilter] = useState<BrowseFilters['sourceFilter']>(() => loadBrowseFilters(initialView.showBookmarked ? 'favorites' : 'players').sourceFilter)
   const [sortBy, setSortBy] = useState<BrowseFilters['sortBy']>(() => loadBrowseFilters(initialView.showBookmarked ? 'favorites' : 'players').sortBy)
   const [minOvr, setMinOvr] = useState(() => loadBrowseFilters(initialView.showBookmarked ? 'favorites' : 'players').minOvr)
@@ -354,7 +354,7 @@ export default function App() {
     const scope: BrowseFilterScope = nextShowBookmarked ? 'favorites' : 'players'
     const filters = loadBrowseFilters(scope)
     setQuery(filters.query); setCategory(filters.category); setNationFilter(filters.nationFilter); setPositionFilter(filters.positionFilter)
-    setEventFilter(filters.eventFilter); setSourceFilter(filters.sourceFilter); setSortBy(filters.sortBy)
+    setCardTypeFilter(filters.cardTypeFilter); setSourceFilter(filters.sourceFilter); setSortBy(filters.sortBy)
     setMinOvr(filters.minOvr); setMaxOvr(filters.maxOvr); setStatFilter(filters.statFilter); setMinStat(filters.minStat); setMaxStat(filters.maxStat)
     setShowBookmarked(nextShowBookmarked)
   }
@@ -377,13 +377,13 @@ export default function App() {
   const [siteBranding, setSiteBranding] = useState<SiteBranding>(loadBranding)
   const [backgroundUrlsText, setBackgroundUrlsText] = useState(() => siteBranding.backgroundImageUrls.join('\n'))
   const [backgroundIndex, setBackgroundIndex] = useState(0)
-  const [selectedCardTypeForBackground, setSelectedCardTypeForBackground] = useState('')
+  const [selectedEventTypeForBackground, setSelectedEventTypeForBackground] = useState('')
   const [selectedPerkTraitType, setSelectedPerkTraitType] = useState('')
   const [perkIconUrlDraft, setPerkIconUrlDraft] = useState('')
   const [perkProfileImageUrlDraft, setPerkProfileImageUrlDraft] = useState('')
   const [perkTraitImageStatus, setPerkTraitImageStatus] = useState('')
-  const [cardTypeBackgroundUrlDraft, setCardTypeBackgroundUrlDraft] = useState('')
-  const [cardTypeBackgroundStatus, setCardTypeBackgroundStatus] = useState('')
+  const [eventTypeBackgroundUrlDraft, setEventTypeBackgroundUrlDraft] = useState('')
+  const [eventTypeBackgroundStatus, setEventTypeBackgroundStatus] = useState('')
   const [sharedBrandingLoaded, setSharedBrandingLoaded] = useState(false)
   const [sharedBrandingStatus, setSharedBrandingStatus] = useState('Loading shared appearance…')
   const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
@@ -614,10 +614,10 @@ export default function App() {
       const raw: unknown = JSON.parse(localStorage.getItem(BROWSE_FILTERS_KEY) || 'null')
       const profiles = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, unknown> : {}
       const scope: BrowseFilterScope = showBookmarked ? 'favorites' : 'players'
-      profiles[scope] = { query, category, nationFilter, positionFilter, eventFilter, sourceFilter, sortBy, minOvr, maxOvr, statFilter, minStat, maxStat }
+      profiles[scope] = { query, category, nationFilter, positionFilter, cardTypeFilter, sourceFilter, sortBy, minOvr, maxOvr, statFilter, minStat, maxStat }
       localStorage.setItem(BROWSE_FILTERS_KEY, JSON.stringify(profiles))
     } catch { /* Filtering remains available for this session if storage is unavailable. */ }
-  }, [showBookmarked, query, category, nationFilter, positionFilter, eventFilter, sourceFilter, sortBy, minOvr, maxOvr, statFilter, minStat, maxStat])
+  }, [showBookmarked, query, category, nationFilter, positionFilter, cardTypeFilter, sourceFilter, sortBy, minOvr, maxOvr, statFilter, minStat, maxStat])
 
   useEffect(() => {
     try { localStorage.setItem(VIEW_STATE_KEY, JSON.stringify({ page, showBookmarked: page === 'players' && showBookmarked })) } catch { /* Current view still works for this session. */ }
@@ -733,7 +733,7 @@ export default function App() {
           logoUrl: typeof saved.logoUrl === 'string' ? saved.logoUrl : '',
           faviconUrl: typeof saved.faviconUrl === 'string' ? saved.faviconUrl : '',
           backgroundImageUrls: parseBackgroundUrls(urls),
-          cardTypeBackgrounds: parseCardTypeBackgrounds(saved.cardTypeBackgrounds),
+          eventTypeBackgrounds: parseEventTypeBackgrounds(saved.eventTypeBackgrounds),
           perkTraitImages: parsePerkTraitImages(saved.perkTraitImages),
         })
         setBackgroundUrlsText(parseBackgroundUrls(urls).join('\n'))
@@ -866,7 +866,8 @@ export default function App() {
   const nations = useMemo(() => Array.from(new Set(allCards.map(card => card.nation).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [allCards])
   const availableStats = useMemo(() => Array.from(new Set(allCards.flatMap(card => Object.keys(card.stats ?? {})))).sort((a,b) => a.localeCompare(b)), [allCards])
   const positions = useMemo(() => Array.from(new Set(allCards.flatMap(card => card.positions).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [allCards])
-  const events = useMemo(() => Array.from(new Set(allCards.map(card => card.event).filter((value): value is string => Boolean(value?.trim())))).sort((a, b) => a.localeCompare(b)), [allCards])
+  // The public-facing Card type filter intentionally uses card.event. Do not substitute card.cardName, which is a separate edition/name field.
+  const cardTypes = useMemo(() => Array.from(new Set(allCards.map(card => card.event).filter((value): value is string => Boolean(value?.trim())))).sort((a, b) => a.localeCompare(b)), [allCards])
 
   const searchIndex = useMemo(() => new Map(allCards.map(card => [card.id,
     [card.playerName, card.nation, card.club, card.cardName, card.event, card.positionCategory, card.foot, card.sourceImagePath, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)]), ...Object.entries(card.sourceData ?? {}).flatMap(([key, value]) => [key, value])]
@@ -878,7 +879,7 @@ export default function App() {
       (category === 'All cards' || positionGroup(card.positions) === category) &&
       (nationFilter === 'All nations' || card.nation === nationFilter) &&
       (positionFilter === 'All positions' || card.positions.includes(positionFilter)) &&
-      (eventFilter === 'All events' || card.event === eventFilter) &&
+      (cardTypeFilter === 'All card types' || card.event === cardTypeFilter) &&
       (sourceFilter === 'all' || (sourceFilter === 'imported' && card.sourceStatus === 'imported-unverified') || (sourceFilter === 'demo' && card.id.startsWith('uflmb-demo-')) || (sourceFilter === 'verified' && card.sourceStatus !== 'imported-unverified' && !card.id.startsWith('uflmb-demo-'))) &&
       (minOvr === '' || card.overallRating >= Number(minOvr)) &&
       (maxOvr === '' || card.overallRating <= Number(maxOvr)) &&
@@ -887,7 +888,7 @@ export default function App() {
   }).sort((a, b) => sortBy === 'ovr-desc' ? b.overallRating - a.overallRating || a.playerName.localeCompare(b.playerName) :
     sortBy === 'ovr-asc' ? a.overallRating - b.overallRating || a.playerName.localeCompare(b.playerName) :
       sortBy === 'verified-desc' ? (b.verifiedAt || '').localeCompare(a.verifiedAt || '') || a.playerName.localeCompare(b.playerName) :
-        a.playerName.localeCompare(b.playerName)), [allCards, searchIndex, query, category, nationFilter, positionFilter, eventFilter, sourceFilter, sortBy, minOvr, maxOvr, statFilter, minStat, maxStat, showBookmarked, bookmarkedIds])
+        a.playerName.localeCompare(b.playerName)), [allCards, searchIndex, query, category, nationFilter, positionFilter, cardTypeFilter, sourceFilter, sortBy, minOvr, maxOvr, statFilter, minStat, maxStat, showBookmarked, bookmarkedIds])
 
   const comparedCards = useMemo(() => compareIds.map(id => allCards.find(card => card.id === id)).filter((card): card is PlayerCard => Boolean(card)), [allCards, compareIds])
   const pagedCards = useMemo(() => visibleCards.slice(0, cardPage * 24), [visibleCards, cardPage])
@@ -1790,25 +1791,25 @@ export default function App() {
             {adminTab === 'assets' && <section className="admin-panel assets-management-panel">
         <div className="assets-page-heading">
           <div className="assets-page-icon" aria-hidden="true">▧</div>
-          <div><p className="eyebrow">VISUAL ASSET MANAGEMENT</p><h2>Assets</h2><p className="muted-copy">Manage visual assets associated with records in the UFLMB database, including card-type backgrounds and perk/trait artwork. Configure each asset once and apply it consistently to matching cards and player profiles.</p></div>
+          <div><p className="eyebrow">VISUAL ASSET MANAGEMENT</p><h2>Assets</h2><p className="muted-copy">Manage visual assets associated with records in the UFLMB database, including event-type backgrounds and perk/trait artwork. Configure each asset once and apply it consistently to matching cards and player profiles.</p></div>
           <span className="count-label">{Object.keys(siteBranding.perkTraitImages).length} configured</span>
         </div>
-          <section className="card-type-background-editor">
-            <div className="section-heading"><div><p className="eyebrow">CARD ARTWORK</p><h2>Card type backgrounds</h2></div><span className="count-label">{Object.keys(siteBranding.cardTypeBackgrounds).length} configured</span></div>
-            <p className="muted-copy">Set one background per card type. Every card with the same type uses this image automatically, including cards added later. The card artwork stays on top; the background shows through its transparent/empty areas. Use a direct HTTP or HTTPS image URL.</p>
-            <div className="card-type-background-controls">
-              <label>Card type<select value={selectedCardTypeForBackground} onChange={event => { const nextType = event.target.value; setSelectedCardTypeForBackground(nextType); setCardTypeBackgroundUrlDraft(nextType ? siteBranding.cardTypeBackgrounds[normalizeIdentityPart(nextType)] || '' : '') }}>
-                <option value="">Choose a card type…</option>
+          <section className="event-type-background-editor">
+            <div className="section-heading"><div><p className="eyebrow">CARD ARTWORK</p><h2>Event type backgrounds</h2></div><span className="count-label">{Object.keys(siteBranding.eventTypeBackgrounds).length} configured</span></div>
+            <p className="muted-copy">Set one background per event type. Every card with the same event type uses this image automatically, including cards added later. The card artwork stays on top; the background shows through its transparent/empty areas. Use a direct HTTP or HTTPS image URL.</p>
+            <div className="event-type-background-controls">
+              <label>Event type<select value={selectedEventTypeForBackground} onChange={event => { const nextType = event.target.value; setSelectedEventTypeForBackground(nextType); setEventTypeBackgroundUrlDraft(nextType ? siteBranding.eventTypeBackgrounds[normalizeIdentityPart(nextType)] || '' : '') }}>
+                <option value="">Choose an event type…</option>
                 {Array.from(new Map(allCards.map(card => [normalizeIdentityPart(card.cardName), (card.cardName || '').trim()])).entries()).filter(([key, label]) => key && label).sort((a, b) => a[1].localeCompare(b[1])).map(([key, label]) => <option key={key} value={label}>{label}</option>)}
               </select></label>
-              <label>Background image URL<input type="url" value={cardTypeBackgroundUrlDraft} onChange={event => setCardTypeBackgroundUrlDraft(event.target.value)} placeholder="https://example.com/card-type-background.jpg" /></label>
+              <label>Background image URL<input type="url" value={eventTypeBackgroundUrlDraft} onChange={event => setEventTypeBackgroundUrlDraft(event.target.value)} placeholder="https://example.com/event-type-background.jpg" /></label>
             </div>
-            {selectedCardTypeForBackground && cardTypeBackgroundUrlDraft.trim() && isHttpUrl(cardTypeBackgroundUrlDraft.trim()) && <div className="card-type-background-preview" style={{ backgroundImage: `url("${cardTypeBackgroundUrlDraft.trim().replace(/["\\]/g, '')}")` }}><span>{selectedCardTypeForBackground} · background preview</span></div>}
+            {selectedEventTypeForBackground && eventTypeBackgroundUrlDraft.trim() && isHttpUrl(eventTypeBackgroundUrlDraft.trim()) && <div className="event-type-background-preview" style={{ backgroundImage: `url("${eventTypeBackgroundUrlDraft.trim().replace(/["\\]/g, '')}")` }}><span>{selectedEventTypeForBackground} · background preview</span></div>}
             <div className="form-actions">
-              <button className="button primary" type="button" disabled={!selectedCardTypeForBackground || !isHttpUrl(cardTypeBackgroundUrlDraft.trim())} onClick={() => { const key = normalizeIdentityPart(selectedCardTypeForBackground); setSiteBranding(current => ({ ...current, cardTypeBackgrounds: { ...current.cardTypeBackgrounds, [key]: cardTypeBackgroundUrlDraft.trim() } })); setCardTypeBackgroundStatus(`Background assigned to ${selectedCardTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Apply to all cards of this type</button>
-              <button className="button secondary" type="button" disabled={!selectedCardTypeForBackground || !siteBranding.cardTypeBackgrounds[normalizeIdentityPart(selectedCardTypeForBackground)]} onClick={() => { const key = normalizeIdentityPart(selectedCardTypeForBackground); setSiteBranding(current => { const next = { ...current.cardTypeBackgrounds }; delete next[key]; return { ...current, cardTypeBackgrounds: next } }); setCardTypeBackgroundUrlDraft(''); setCardTypeBackgroundStatus(`Background removed from ${selectedCardTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Remove type background</button>
+              <button className="button primary" type="button" disabled={!selectedEventTypeForBackground || !isHttpUrl(eventTypeBackgroundUrlDraft.trim())} onClick={() => { const key = normalizeIdentityPart(selectedEventTypeForBackground); setSiteBranding(current => ({ ...current, eventTypeBackgrounds: { ...current.eventTypeBackgrounds, [key]: eventTypeBackgroundUrlDraft.trim() } })); setEventTypeBackgroundStatus(`Background assigned to event type ${selectedEventTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Apply to all cards with this event type</button>
+              <button className="button secondary" type="button" disabled={!selectedEventTypeForBackground || !siteBranding.eventTypeBackgrounds[normalizeIdentityPart(selectedEventTypeForBackground)]} onClick={() => { const key = normalizeIdentityPart(selectedEventTypeForBackground); setSiteBranding(current => { const next = { ...current.eventTypeBackgrounds }; delete next[key]; return { ...current, eventTypeBackgrounds: next } }); setEventTypeBackgroundUrlDraft(''); setEventTypeBackgroundStatus(`Background removed from event type ${selectedEventTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Remove event background</button>
             </div>
-            {cardTypeBackgroundStatus && <p className="muted-copy" role="status">{cardTypeBackgroundStatus}</p>}
+            {eventTypeBackgroundStatus && <p className="muted-copy" role="status">{eventTypeBackgroundStatus}</p>}
           </section>
         <section className="perk-trait-image-editor assets-perk-trait-editor">
             <div className="section-heading"><div><p className="eyebrow">ASSET LIBRARY · PERKS & TRAITS</p><h2>Perk & trait artwork</h2></div><span className="count-label">{Object.keys(siteBranding.perkTraitImages).length} configured</span></div>
@@ -2074,7 +2075,7 @@ export default function App() {
       logoUrl: siteBranding.logoUrl.trim(),
       faviconUrl: siteBranding.faviconUrl.trim(),
       backgroundImageUrls: parseBackgroundUrls(backgroundUrlsText),
-      cardTypeBackgrounds: parseCardTypeBackgrounds(siteBranding.cardTypeBackgrounds),
+      eventTypeBackgrounds: parseEventTypeBackgrounds(siteBranding.eventTypeBackgrounds),
       perkTraitImages: parsePerkTraitImages(siteBranding.perkTraitImages),
     }
     if ((brandingToPublish.logoUrl && !isHttpUrl(brandingToPublish.logoUrl)) ||
@@ -2118,7 +2119,7 @@ export default function App() {
           saved.logoUrl !== brandingToPublish.logoUrl ||
           saved.faviconUrl !== brandingToPublish.faviconUrl ||
           JSON.stringify(saved.backgroundImageUrls ?? []) !== JSON.stringify(brandingToPublish.backgroundImageUrls) ||
-          JSON.stringify(parseCardTypeBackgrounds(saved.cardTypeBackgrounds)) !== JSON.stringify(brandingToPublish.cardTypeBackgrounds) ||
+          JSON.stringify(parseEventTypeBackgrounds(saved.eventTypeBackgrounds)) !== JSON.stringify(brandingToPublish.eventTypeBackgrounds) ||
           JSON.stringify(parsePerkTraitImages(saved.perkTraitImages)) !== JSON.stringify(brandingToPublish.perkTraitImages)) {
         throw new Error('The shared appearance did not match the submitted settings after saving. Please try again.')
       }
@@ -2378,7 +2379,7 @@ export default function App() {
           <div className="browse-controls" aria-label="Additional filters">
           <label>Nation <select value={nationFilter} onChange={e => setNationFilter(e.target.value)}><option>All nations</option>{nations.map(nation => <option key={nation} value={nation}>{nation}</option>)}</select></label>
           <label>Position <select value={positionFilter} onChange={e => setPositionFilter(e.target.value)}><option>All positions</option>{positions.map(position => <option key={position} value={position}>{position}</option>)}</select></label>
-          <label>Event <select value={eventFilter} onChange={e => setEventFilter(e.target.value)}><option>All events</option>{events.map(event => <option key={event} value={event}>{event}</option>)}</select></label>
+          <label>Card type <select value={cardTypeFilter} onChange={e => setCardTypeFilter(e.target.value)}><option>All card types</option>{cardTypes.map(cardType => <option key={cardType} value={cardType}>{cardType}</option>)}</select></label>
           <label>Data status <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value as 'all' | 'imported' | 'verified' | 'demo')}><option value="all">All data statuses</option><option value="imported">Imported · unverified</option><option value="verified">Verified records</option><option value="demo">Demo records</option></select></label>
           <label>Sort by <select value={sortBy} onChange={e => setSortBy(e.target.value as 'ovr-desc' | 'ovr-asc' | 'name-asc' | 'verified-desc')}><option value="ovr-desc">Highest OVR</option><option value="ovr-asc">Lowest OVR</option><option value="name-asc">Player name A–Z</option><option value="verified-desc">Recently verified</option></select></label>
           <label className="ovr-range">Min OVR <input aria-label="Minimum overall rating" type="number" min="1" max="999" value={minOvr} onChange={e => setMinOvr(e.target.value)} placeholder="Any" /></label>
@@ -2387,7 +2388,7 @@ export default function App() {
           <label className="ovr-range">Min stat <input aria-label="Minimum selected attribute" type="number" min="0" max="999" disabled={statFilter === 'Any stat'} value={minStat} onChange={e => setMinStat(e.target.value)} placeholder="Any" /></label>
           <label className="ovr-range">Max stat <input aria-label="Maximum selected attribute" type="number" min="0" max="999" disabled={statFilter === 'Any stat'} value={maxStat} onChange={e => setMaxStat(e.target.value)} placeholder="Any" /></label>
           <button className={showBookmarked ? 'category active' : 'category'} type="button" aria-pressed={showBookmarked} onClick={() => switchBrowseMode(!showBookmarked)}>★ {showBookmarked ? 'Show all cards' : `Saved cards (${bookmarkedIds.length})`}</button>
-          {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || eventFilter !== 'All events' || sourceFilter !== 'all' || sortBy !== 'ovr-desc' || minOvr !== '' || maxOvr !== '' || statFilter !== 'Any stat' || minStat !== '' || maxStat !== '' || showBookmarked) && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setEventFilter('All events'); setSourceFilter('all'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat('');  }}>Reset all filters</button>}
+          {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || cardTypeFilter !== 'All card types' || sourceFilter !== 'all' || sortBy !== 'ovr-desc' || minOvr !== '' || maxOvr !== '' || statFilter !== 'Any stat' || minStat !== '' || maxStat !== '' || showBookmarked) && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setSourceFilter('all'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat('');  }}>Reset all filters</button>}
           </div>
         </details>
       </section>}
@@ -2410,7 +2411,7 @@ export default function App() {
         <div className="section-heading"><div><p className="eyebrow">{showBookmarked ? 'STARRED PLAYERS' : 'THE COLLECTION'}</p><h2 id="database-title">{showBookmarked ? 'Your favorites' : 'Card database'}</h2></div><div className="collection-actions"><span className="count-label">{visibleCards.length} shown / {showBookmarked ? bookmarkedIds.length : allCards.length} total</span></div></div>
         {visibleCards.length === 0 ? <div className="empty-state"><div className="empty-emblem" aria-hidden="true">U<span>+</span></div><h3>{showBookmarked ? 'No favorites yet' : query.trim() ? 'No matching cards found' : 'The database starts here'}</h3><p>{showBookmarked ? 'Tap the star on any player card to add it to this list.' : query.trim() ? `No verified card matches “${query.trim()}”. Try another search or category.` : 'No card records have been entered yet.'}</p><span className="empty-tag">VERIFIED DATA ONLY</span></div> :
           <div className="card-grid">{pagedCards.map((card, index) => <article className={`player-card ${selectedCardId === card.id ? 'card-click-selected' : ''} ${compareIds.includes(card.id) ? 'compare-selected' : ''} ${card.sourceStatus === 'imported-unverified' ? 'imported-card' : ''} ${card.overallRating >= 90 ? 'elite-card ovr-elite' : card.overallRating >= 80 ? 'ovr-high' : card.overallRating >= 70 ? 'ovr-mid' : 'ovr-standard'}`} key={card.id} onClick={() => setSelectedCardId(current => current === card.id ? null : card.id)} style={{ animationDelay: `${Math.min(index % 12, 11) * 45}ms` }}>
-            <div className="player-image" style={siteBranding.cardTypeBackgrounds[normalizeIdentityPart(card.cardName)] ? { backgroundImage: `linear-gradient(rgba(5,8,14,.12), rgba(5,8,14,.2)), url("${siteBranding.cardTypeBackgrounds[normalizeIdentityPart(card.cardName)].replace(/["\\]/g, '')}")`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}><div className="card-art-glow" aria-hidden="true" />
+            <div className="player-image" style={siteBranding.eventTypeBackgrounds[normalizeIdentityPart(card.event)] ? { backgroundImage: `linear-gradient(rgba(5,8,14,.12), rgba(5,8,14,.2)), url("${siteBranding.eventTypeBackgrounds[normalizeIdentityPart(card.event)].replace(/["\\]/g, '')}")`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}><div className="card-art-glow" aria-hidden="true" />
               {card.imageUrl ? <img src={card.imageUrl} alt={`${card.playerName} card`} loading="lazy" /> : <div className="no-image"><span className="no-image-mark">✦</span><strong>UFL<span>MB</span></strong><small>PLAYER DATABASE</small></div>}
               <div className="card-quick-actions">
                 <button className={bookmarkedIds.includes(card.id) ? 'bookmark-toggle saved' : 'bookmark-toggle'} type="button" aria-label={bookmarkedIds.includes(card.id) ? `Remove ${card.playerName} from saved cards` : `Save ${card.playerName}`} aria-pressed={bookmarkedIds.includes(card.id)} onClick={event => { event.stopPropagation(); toggleBookmark(card.id) }}>{bookmarkedIds.includes(card.id) ? '★' : '☆'}</button>
