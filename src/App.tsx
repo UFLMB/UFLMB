@@ -291,10 +291,10 @@ const downloadCsv = (cards: PlayerCard[]) => {
 }
 
 export default function App() {
+  const [initialView] = useState(loadViewState)
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
   const [query, setQuery] = useState(() => loadBrowseFilters(initialView.showBookmarked ? 'favorites' : 'players').query)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [initialView] = useState(loadViewState)
   const [page, setPage] = useState<PublicPage>(initialView.page)
   const [cardPage, setCardPage] = useState(1)
   const [isAdminSession, setIsAdminSession] = useState(false)
@@ -359,7 +359,7 @@ export default function App() {
   const [sharedBrandingLoaded, setSharedBrandingLoaded] = useState(false)
   const [sharedBrandingStatus, setSharedBrandingStatus] = useState('Loading shared appearance…')
   const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
-  const [compareIds, setCompareIds] = useState<string[]>([])
+  const [compareIds, setCompareIds] = useState<string[]>(() => { try { const saved: unknown = JSON.parse(localStorage.getItem('uflmb.compare.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string').slice(0, 3) : [] } catch { return [] } })
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'cloud' | 'profiles' | 'moderation'>('cards')
   const [adminProfiles, setAdminProfiles] = useState<AdminProfile[]>([])
@@ -763,6 +763,10 @@ export default function App() {
     }, 800)
     return () => { cancelled = true; window.clearTimeout(timer) }
   }, [siteBranding, siteTheme, isAdminSession, sharedBrandingLoaded])
+
+  useEffect(() => {
+    try { localStorage.setItem('uflmb.compare.v1', JSON.stringify(compareIds.slice(0, 3))) } catch { /* Comparison still works for this session. */ }
+  }, [compareIds])
 
   useEffect(() => {
     // Batch rapid state changes so imports/cloud loads do not repeatedly serialize a large collection.
@@ -1963,7 +1967,7 @@ export default function App() {
       {createPortal(
         <nav className="mobile-bottom-nav" aria-label="Primary navigation">
                 <button type="button" className={page === 'home' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={page === 'home' ? 'page' : undefined} onClick={() => { if (page === 'home') { window.location.reload(); return } setPage('home'); window.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">⌂</span><span>Home</span></button>
-                <button type="button" className={!showBookmarked && page === 'players' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={!showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { if (page === 'players' && !showBookmarked) { window.location.reload(); return } setPage('players'); setShowBookmarked(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon player-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="7" r="4" fill="currentColor" /><path d="M4.5 21v-2.2a7.5 7.5 0 0 1 15 0V21z" fill="currentColor" /></svg></span><span>Players</span><small>{allCards.length}</small></button>
+                <button type="button" className={!showBookmarked && page === 'players' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={!showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { if (page === 'players' && !showBookmarked) { document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }); return } setPage('players'); switchBrowseMode(false); window.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon player-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="7" r="4" fill="currentColor" /><path d="M4.5 21v-2.2a7.5 7.5 0 0 1 15 0V21z" fill="currentColor" /></svg></span><span>Players</span><small>{allCards.length}</small></button>
           <button type="button" className={showBookmarked && page === 'players' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { if (page === 'players' && showBookmarked) { document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }); return } setPage('players'); switchBrowseMode(true); window.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">★</span><span>Favorites</span>{bookmarkedIds.length > 0 && <small>{bookmarkedIds.length}</small>}</button>
                 <button type="button" className={page === 'compare' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={page === 'compare' ? 'page' : undefined} onClick={() => { if (page === 'compare') { window.location.reload(); return } setPage('compare'); window.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">⇄</span><span>Compare</span>{compareIds.length > 0 && <small>{compareIds.length}</small>}</button>
               </nav>,
@@ -2214,7 +2218,7 @@ export default function App() {
         <nav className={menuOpen ? "site-nav site-nav-open" : "site-nav"} id="uflmb-main-navigation" aria-label="Main navigation">
           <button type="button" className={page === 'home' ? 'nav-page active' : 'nav-page'} aria-current={page === 'home' ? 'page' : undefined} onClick={() => { if (page === 'home') { window.location.reload(); return } setPage('home'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}>Home</button>
           <button type="button" className={!showBookmarked && page === 'players' ? 'nav-page active' : 'nav-page'} aria-current={!showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { if (page === 'players' && !showBookmarked) { window.location.reload(); return } setPage('players'); setShowBookmarked(false); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}>Players <span className="nav-count">{allCards.length}</span></button>
-          <button type="button" className={showBookmarked && page === 'players' ? 'nav-page active' : 'nav-page'} aria-current={showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { if (page === 'players' && showBookmarked) { window.location.reload(); return } setPage('players'); setShowBookmarked(true); setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setEventFilter('All events'); setSourceFilter('all'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat(''); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}>Favorites {bookmarkedIds.length > 0 && <span className="nav-count">{bookmarkedIds.length}</span>}</button>
+          <button type="button" className={showBookmarked && page === 'players' ? 'nav-page active' : 'nav-page'} aria-current={showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { if (page === 'players' && showBookmarked) { document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }); return } setPage('players'); switchBrowseMode(true); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}>Favorites {bookmarkedIds.length > 0 && <span className="nav-count">{bookmarkedIds.length}</span>}</button>
           <button type="button" className={page === 'compare' ? 'nav-page active' : 'nav-page'} aria-current={page === 'compare' ? 'page' : undefined} onClick={() => { if (page === 'compare') { window.location.reload(); return } setPage('compare'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}>Compare {compareIds.length > 0 && <span className="nav-count">{compareIds.length}</span>}</button>
         </nav>
         <div className="top-actions"><button type="button" className="public-refresh-toggle" aria-label="Refresh UFLMB" title="Refresh" onClick={() => window.location.reload()}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></button><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setAdminDashboardOpen} onProfileChange={() => { setAdminDashboardOpen(false); setPage('profile'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }} /><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
@@ -2308,7 +2312,7 @@ export default function App() {
           <label className="ovr-range">Min stat <input aria-label="Minimum selected attribute" type="number" min="0" max="999" disabled={statFilter === 'Any stat'} value={minStat} onChange={e => setMinStat(e.target.value)} placeholder="Any" /></label>
           <label className="ovr-range">Max stat <input aria-label="Maximum selected attribute" type="number" min="0" max="999" disabled={statFilter === 'Any stat'} value={maxStat} onChange={e => setMaxStat(e.target.value)} placeholder="Any" /></label>
           <button className={showBookmarked ? 'category active' : 'category'} type="button" aria-pressed={showBookmarked} onClick={() => switchBrowseMode(!showBookmarked)}>★ {showBookmarked ? 'Show all cards' : `Saved cards (${bookmarkedIds.length})`}</button>
-          {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || eventFilter !== 'All events' || sourceFilter !== 'all' || sortBy !== 'ovr-desc' || minOvr !== '' || maxOvr !== '' || statFilter !== 'Any stat' || minStat !== '' || maxStat !== '' || showBookmarked) && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setCardTypeFilter('All card types'); setEventFilter('All events'); setSourceFilter('all'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat(''); setShowBookmarked(false) }}>Reset all filters</button>}
+          {(query !== '' || category !== 'All cards' || nationFilter !== 'All nations' || positionFilter !== 'All positions' || eventFilter !== 'All events' || sourceFilter !== 'all' || sortBy !== 'ovr-desc' || minOvr !== '' || maxOvr !== '' || statFilter !== 'Any stat' || minStat !== '' || maxStat !== '' || showBookmarked) && <button className="category" type="button" onClick={() => { setQuery(''); setCategory('All cards'); setNationFilter('All nations'); setPositionFilter('All positions'); setEventFilter('All events'); setSourceFilter('all'); setSortBy('ovr-desc'); setMinOvr(''); setMaxOvr(''); setStatFilter('Any stat'); setMinStat(''); setMaxStat('');  }}>Reset all filters</button>}
           </div>
         </details>
       </section>}
