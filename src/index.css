@@ -6728,7 +6728,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 
 /* Give the guest "Make yourself at home" panel a slightly deeper beige hierarchy. */
 :root[data-ui-theme="light"] .profile-page .account-signin-note {
-  background: #eff1e7 !important;
+  background: #f3f4ed !important;
   border-color: rgba(20,30,45,.16) !important;
 }
 :root[data-ui-theme="light"] .profile-page .account-signin-note p {
