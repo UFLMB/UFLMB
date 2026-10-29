@@ -6662,3 +6662,55 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .profile-management-sort { justify-content:space-between; width:100%; }
   .profile-management-sort select { flex:1; max-width:none; }
 }
+
+
+/* Light mode surface consistency: preserve the existing UFLMB palette while
+   preventing later component rules from introducing mismatched panel tones. */
+:root[data-ui-theme="light"] {
+  --page-bg: #f4f6f8;
+  --panel-bg: #ffffff;
+  --text-color: #18202b;
+  --muted: #647084;
+  --line: rgba(24,32,43,.12);
+  --surface-1: #ffffff;
+  --surface-2: #f7f9fb;
+  --surface-3: #edf1f5;
+  --surface-light: #ffffff;
+  --accent-soft: rgba(163,230,53,.13);
+  --accent-border: rgba(101,133,42,.32);
+  --arena-surface: linear-gradient(145deg,#ffffff 0%,#f6f8fb 100%);
+  --arena-border: rgba(24,32,43,.12);
+}
+:root[data-ui-theme="light"] body {
+  background: radial-gradient(ellipse at 50% -20%,rgba(163,230,53,.12),transparent 45%),#f4f6f8 !important;
+}
+:root[data-ui-theme="light"] .search-wrap,
+:root[data-ui-theme="light"] .browse-controls,
+:root[data-ui-theme="light"] .squad-toolbar,
+:root[data-ui-theme="light"] .admin-panel,
+:root[data-ui-theme="light"] .analytics-panel,
+:root[data-ui-theme="light"] .shared-database-panel,
+:root[data-ui-theme="light"] .admin-empty-state,
+:root[data-ui-theme="light"] .gate-diagnostic,
+:root[data-ui-theme="light"] .empty-state,
+:root[data-ui-theme="light"] .squad-empty,
+:root[data-ui-theme="light"] .quality-tile,
+:root[data-ui-theme="light"] .theme-live-preview,
+:root[data-ui-theme="light"] .branding-editor,
+:root[data-ui-theme="light"] .filter-disclosure,
+:root[data-ui-theme="light"] .compare-panel,
+:root[data-ui-theme="light"] .squad-panel,
+:root[data-ui-theme="light"] .home-overview article,
+:root[data-ui-theme="light"] .featured-player,
+:root[data-ui-theme="light"] .player-card {
+  background: var(--arena-surface) !important;
+  border-color: var(--arena-border) !important;
+}
+:root[data-ui-theme="light"] .stats-grid span,
+:root[data-ui-theme="light"] .snapshot-grid>div,
+:root[data-ui-theme="light"] .community-review-list article,
+:root[data-ui-theme="light"] .shared-database-panel .field-help[role="status"],
+:root[data-ui-theme="light"] .theme-controls label {
+  background: #f7f9fb;
+  border-color: rgba(24,32,43,.10);
+}
