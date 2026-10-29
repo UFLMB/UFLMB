@@ -1099,6 +1099,7 @@ export default function App() {
     for (const candidate of safeCandidates) {
       const objectPath = encodeURIComponent(candidate.card.id) + '.' + candidate.extension
       let storageObjectCreated = false
+      let confirmedUnlinked = false
       try {
         const uploadResponse = await fetch(baseUrl + '/storage/v1/object/uflmb-card-images/' + objectPath, {
           method: 'POST',
@@ -1133,12 +1134,12 @@ export default function App() {
         }
         const linkedRows = await linkResponse.json() as Array<{ id: string; image_url?: string | null }>
         if (linkedRows.length === 0) {
-          // The conditional PATCH matched no card (for example, another admin added an image).
-          // Keep storageObjectCreated true so the catch block removes this unused upload.
+          // A successful empty PATCH response confirms that no card was linked.
+          confirmedUnlinked = true
           throw new Error('The card image was not linked because the card already has an image or no longer exists.')
         }
-        // At least one row reports the URL, so do not delete the object if the response is
-        // unexpectedly malformed or contains multiple rows; that could break a saved URL.
+        // At least one row reports a link, so never delete this object—even if the response
+        // is malformed or contains multiple rows and the result needs manual review.
         storageObjectCreated = false
         if (linkedRows.length !== 1 || linkedRows[0].id !== candidate.card.id || linkedRows[0].image_url !== imageUrl) {
           throw new Error('The database did not confirm exactly one matching card update.')
@@ -1146,13 +1147,15 @@ export default function App() {
         nextById.set(candidate.card.id, { ...candidate.card, imageUrl })
         uploaded++
       } catch (error) {
-        if (storageObjectCreated) {
+        // A failed/interrupted PATCH can have an ambiguous outcome. Prefer a possible orphan
+        // in Storage over deleting an object that the database may already reference.
+        if (storageObjectCreated && confirmedUnlinked) {
           try {
             await fetch(baseUrl + '/storage/v1/object/uflmb-card-images/' + objectPath, {
               method: 'DELETE',
               headers: { apikey: anonKey, Authorization: 'Bearer ' + accessToken },
             })
-          } catch { /* Report the link failure; never retry this upload automatically. */ }
+          } catch { /* A confirmed-unlinked orphan can be cleaned up manually if deletion fails. */ }
         }
         skippedReasons.push(candidate.file.name + ': ' + (error instanceof Error ? error.message : 'upload failed'))
       }
