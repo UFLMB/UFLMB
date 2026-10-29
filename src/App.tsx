@@ -1795,7 +1795,7 @@ export default function App() {
           <span className="count-label">{Object.keys(siteBranding.perkTraitImages).length} configured</span>
         </div>
           <section className="event-type-background-editor">
-            <div className="section-heading"><div><p className="eyebrow">CARD ARTWORK</p><h2>Event type backgrounds</h2></div><span className="count-label">{Object.keys(siteBranding.eventTypeBackgrounds).length} configured</span></div>
+            <div className="section-heading"><div><p className="eyebrow">CARD ARTWORK</p><h2>Card type backgrounds</h2></div><span className="count-label">{Object.keys(siteBranding.eventTypeBackgrounds).length} configured</span></div>
             <p className="muted-copy">Set one background per event type. Every card with the same event type uses this image automatically, including cards added later. The card artwork stays on top; the background shows through its transparent/empty areas. Use a direct HTTP or HTTPS image URL.</p>
             <div className="event-type-background-controls">
               <label>Event type<select value={selectedEventTypeForBackground} onChange={event => { const nextType = event.target.value; setSelectedEventTypeForBackground(nextType); setEventTypeBackgroundUrlDraft(nextType ? siteBranding.eventTypeBackgrounds[normalizeIdentityPart(nextType)] || '' : '') }}>
