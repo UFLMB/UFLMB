@@ -6736,23 +6736,23 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Players menu only: show the entire card artwork slightly inset in its frame.
-   No OVR/position overlays are rendered on top of the supplied card graphic. */
+/* Players menu only: show the entire card artwork nearly filling its frame,
+   with a slim, even inset. No OVR/position overlays cover the supplied graphic. */
 .database-section .player-image {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   overflow: hidden !important;
-  padding: 6px !important;
+  padding: 3px !important;
   box-sizing: border-box !important;
 }
 .database-section .player-image > img {
   display: block !important;
   width: auto !important;
   height: auto !important;
-  max-width: 90% !important;
-  max-height: 85% !important;
-  margin: 4px auto 0 !important;
+  max-width: 95% !important;
+  max-height: 92% !important;
+  margin: 2px auto 0 !important;
   padding: 0 !important;
   object-fit: contain !important;
   object-position: center center !important;
