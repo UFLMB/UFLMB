@@ -1131,10 +1131,15 @@ export default function App() {
           const errorBody = await linkResponse.json().catch(() => ({})) as { message?: string; error?: string }
           throw new Error(errorBody.message || errorBody.error || 'Card record update failed (' + linkResponse.status + ')')
         }
-        // Once PostgREST confirms the PATCH succeeded, do not delete the object even
-        // if response verification is unexpectedly malformed; avoid breaking a saved URL.
-        storageObjectCreated = false
         const linkedRows = await linkResponse.json() as Array<{ id: string; image_url?: string | null }>
+        if (linkedRows.length === 0) {
+          // The conditional PATCH matched no card (for example, another admin added an image).
+          // Keep storageObjectCreated true so the catch block removes this unused upload.
+          throw new Error('The card image was not linked because the card already has an image or no longer exists.')
+        }
+        // At least one row reports the URL, so do not delete the object if the response is
+        // unexpectedly malformed or contains multiple rows; that could break a saved URL.
+        storageObjectCreated = false
         if (linkedRows.length !== 1 || linkedRows[0].id !== candidate.card.id || linkedRows[0].image_url !== imageUrl) {
           throw new Error('The database did not confirm exactly one matching card update.')
         }
