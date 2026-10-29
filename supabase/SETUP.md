@@ -65,3 +65,10 @@ The two-team demo fixture is local-only and is excluded from shared-database pub
 - The daily GitHub Actions job audits the checked-in source dataset and the configured shared Supabase records, checking source-link reachability and flagging verification dates older than 90 days. It does not scrape third-party pages or change player ratings. Reliable automatic content refresh needs a supported source/API and an explicit mapping/verification policy. Do not treat the audit as an automatic facts refresh.
 - Supabase is the primary cloud save. The local cache and downloadable JSON backup remain available only as a recovery path. Google Picker credentials and the admin session token remain browser-local and are not included in the cloud snapshot.
 - Committing SQL to GitHub does not itself apply it to the live Supabase database. Production schema changes require the manually gated workflow.
+
+
+## Card image bulk import
+
+The bulk image importer uses the filename as the card identity hint; it does not use OCR or vision to infer card data. Accepted names are fp.playername.ovr.position.png or ot.playername.ovr.position.png (PNG, JPEG, or WebP; maximum 8 MiB each). It requires an existing card record with a unique match on card type, player alias, OVR, and position. Ambiguous or unmatched files are skipped, and an existing image is never overwritten automatically.
+
+Before using this importer on a deployed environment, review and apply supabase/migrations/20261029110000_card_image_storage.sql to the intended Supabase project. It creates the public-read uflmb-card-images bucket and restricts uploads/updates/deletes to users in public.admin_users. The importer uploads to Storage and sets the card's image_url to the public object URL. To make links visible on other devices, load the shared cloud records first and confirm the usual admin cloud-sync status after import. No service-role key is used by the browser.
