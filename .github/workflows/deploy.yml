@@ -37,6 +37,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: https://ujuptqzlpubcdelrjmja.supabase.co
           VITE_SUPABASE_ANON_KEY: sb_publishable_mI4mGppqhAbG3T2H3b7z3Q_PK09LaD_
+          VITE_SITE_URL: https://uflmb.github.io/UFLMB/
         run: npm run build
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
