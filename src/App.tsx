@@ -2337,12 +2337,7 @@ export default function App() {
           <div className="card-grid">{pagedCards.map((card, index) => <article className={`player-card ${selectedCardId === card.id ? 'card-click-selected' : ''} ${compareIds.includes(card.id) ? 'compare-selected' : ''} ${card.sourceStatus === 'imported-unverified' ? 'imported-card' : ''} ${card.overallRating >= 90 ? 'elite-card ovr-elite' : card.overallRating >= 80 ? 'ovr-high' : card.overallRating >= 70 ? 'ovr-mid' : 'ovr-standard'}`} key={card.id} onClick={() => setSelectedCardId(current => current === card.id ? null : card.id)} style={{ animationDelay: `${Math.min(index % 12, 11) * 45}ms` }}>
             <div className="player-image"><div className="card-art-glow" aria-hidden="true" />
               {card.imageUrl ? <img src={card.imageUrl} alt={`${card.playerName} card`} loading="lazy" /> : <div className="no-image"><span className="no-image-mark">✦</span><strong>UFL<span>MB</span></strong><small>PLAYER DATABASE</small></div>}
-              <div className="ovr-badge" aria-label={`Overall rating ${card.overallRating}`}>
-                <strong>{card.overallRating}</strong>
-                {countryFlagCode(card.nation) ? <img className="card-country-flag ovr-country-flag" src={`https://flagcdn.com/${countryFlagCode(card.nation)}.svg`} alt={card.nation} loading="lazy" /> : <span className="ovr-flag-fallback" aria-label={card.nation}>⚑</span>}
-                <span className="ovr-position">{card.positions[0] || '—'}</span>
-              </div>
-              <div className="card-quick-actions">
+
                 <button className={bookmarkedIds.includes(card.id) ? 'bookmark-toggle saved' : 'bookmark-toggle'} type="button" aria-label={bookmarkedIds.includes(card.id) ? `Remove ${card.playerName} from saved cards` : `Save ${card.playerName}`} aria-pressed={bookmarkedIds.includes(card.id)} onClick={event => { event.stopPropagation(); toggleBookmark(card.id) }}>{bookmarkedIds.includes(card.id) ? '★' : '☆'}</button>
                 <button className={compareIds.includes(card.id) ? 'compare-toggle selected' : 'compare-toggle'} type="button" aria-label={compareIds.includes(card.id) ? `Remove ${card.playerName} from comparison` : `Add ${card.playerName} to comparison`} aria-pressed={compareIds.includes(card.id)} onClick={event => { event.stopPropagation(); toggleCompare(card.id) }}>⇄</button>
               </div>
