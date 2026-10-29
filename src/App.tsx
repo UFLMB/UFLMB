@@ -1018,9 +1018,11 @@ export default function App() {
   }
 
   const [inputFolderBusy, setInputFolderBusy] = useState(false)
+  const [imageImportProgress, setImageImportProgress] = useState<{ phase: 'loading' | 'matching' | 'uploading' | 'success' | 'error' | 'cancelled'; current: number; total: number; message: string } | null>(null)
 
   const processBulkImages = async (files: File[]) => {
     if (!files.length) return
+    setImageImportProgress({ phase: 'matching', current: 0, total: files.length, message: `Checking ${files.length} image(s) against the latest shared cards…` })
 
     const baseUrl = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
@@ -1030,7 +1032,9 @@ export default function App() {
       accessToken = raw ? (JSON.parse(raw) as { access_token?: string }).access_token || '' : ''
     } catch { accessToken = '' }
     if (!baseUrl || !anonKey || !accessToken) {
-      setNotice('Image import requires the trusted admin account to be signed in and the shared database to be configured. No files were changed.')
+      const message = 'Image import requires the trusted admin account to be signed in and the shared database to be configured. No files were changed.'
+      setNotice(message)
+      setImageImportProgress({ phase: 'error', current: 0, total: files.length, message })
       return
     }
 
@@ -1067,7 +1071,9 @@ export default function App() {
         verifiedAt: row.verified_at,
       }))
     } catch (error) {
-      setNotice((error instanceof Error ? error.message : 'Could not verify the latest shared cards.') + ' No images were uploaded. Check the connection and try again.')
+      const message = (error instanceof Error ? error.message : 'Could not verify the latest shared cards.') + ' No images were uploaded. Check the connection and try again.'
+      setNotice(message)
+      setImageImportProgress({ phase: 'error', current: 0, total: files.length, message })
       return
     }
 
@@ -1124,7 +1130,9 @@ export default function App() {
     })
 
     if (!safeCandidates.length) {
-      setNotice('No images are safe to apply. ' + skippedReasons.length + ' file(s) need correction. Check the four-part filename: fp.playername.ovr.position.png or ot.playername.ovr.position.png.')
+      const message = 'No images are safe to apply. ' + skippedReasons.length + ' file(s) need correction. Check the four-part filename: fp.playername.ovr.position.png or ot.playername.ovr.position.png.'
+      setNotice(message)
+      setImageImportProgress({ phase: 'error', current: 0, total: files.length, message })
       return
     }
 
@@ -1141,13 +1149,16 @@ export default function App() {
       'Continue?',
     ].join('\n')
     if (!window.confirm(preview)) {
-      setNotice('Image import cancelled. No files were uploaded.')
+      const message = 'Image import cancelled. No files were uploaded.'
+      setNotice(message)
+      setImageImportProgress({ phase: 'cancelled', current: 0, total: safeCandidates.length, message })
       return
     }
 
     let uploaded = 0
     const nextById = new Map(allCards.map(card => [card.id, card]))
-    for (const candidate of safeCandidates) {
+    for (const [index, candidate] of safeCandidates.entries()) {
+      setImageImportProgress({ phase: 'uploading', current: index, total: safeCandidates.length, message: `Uploading image ${index + 1} of ${safeCandidates.length}: ${candidate.file.name}` })
       const objectPath = encodeURIComponent(candidate.card.id) + '.' + candidate.extension
       let storageObjectCreated = false
       let confirmedUnlinked = false
@@ -1217,12 +1228,18 @@ export default function App() {
       try {
         saveCards(next)
         setAllCards(next)
-        setNotice('Image import finished: ' + uploaded + ' image(s) uploaded and confirmed in the shared database. ' + skippedReasons.length + ' file(s) skipped or failed.')
+        const message = 'Image import finished: ' + uploaded + ' image(s) uploaded and confirmed in the shared database. ' + skippedReasons.length + ' file(s) skipped or failed.'
+      setNotice(message)
+      setImageImportProgress({ phase: uploaded === safeCandidates.length && skippedReasons.length === 0 ? 'success' : uploaded > 0 ? 'success' : 'error', current: safeCandidates.length, total: safeCandidates.length, message })
       } catch {
-        setNotice('The shared database was updated for ' + uploaded + ' image(s), but this browser could not save its local cache. Reload the page; do not re-upload these images.')
+        const message = 'The shared database was updated for ' + uploaded + ' image(s), but this browser could not save its local cache. Reload the page; do not re-upload these images.'
+      setNotice(message)
+      setImageImportProgress({ phase: 'success', current: safeCandidates.length, total: safeCandidates.length, message })
       }
     } else {
-      setNotice('No images were uploaded successfully. ' + skippedReasons.length + ' file(s) skipped or failed. ' + skippedReasons.slice(0, 4).join(' · '))
+      const message = 'No images were uploaded successfully. ' + skippedReasons.length + ' file(s) skipped or failed. ' + skippedReasons.slice(0, 4).join(' · ')
+      setNotice(message)
+      setImageImportProgress({ phase: 'error', current: safeCandidates.length, total: safeCandidates.length, message })
     }
   }
 
@@ -1235,6 +1252,7 @@ export default function App() {
   const handleInputFolderImages = async () => {
     if (inputFolderBusy) return
     setInputFolderBusy(true)
+    setImageImportProgress({ phase: 'loading', current: 0, total: 0, message: 'Loading repository image list…' })
     try {
       const manifestUrl = new URL('input/manifest.json', window.location.origin + import.meta.env.BASE_URL).toString()
       const manifestResponse = await fetch(manifestUrl, { cache: 'no-store' })
@@ -1244,7 +1262,9 @@ export default function App() {
       const entries = manifest.files.filter((entry): entry is { name: string; size?: number } => Boolean(entry && typeof entry === 'object' && typeof (entry as { name?: unknown }).name === 'string'))
       if (!entries.length) { setNotice('The repository input folder contains no supported card images. No files were changed.'); return }
       const files: File[] = []
-      for (const entry of entries) {
+      setImageImportProgress({ phase: 'loading', current: 0, total: entries.length, message: `Loading repository images: 0 of ${entries.length}` })
+      for (const [index, entry] of entries.entries()) {
+        setImageImportProgress({ phase: 'loading', current: index, total: entries.length, message: `Loading repository images: ${index + 1} of ${entries.length} · ${entry.name}` })
         if (!/^[a-z0-9_.-]+\.(png|jpe?g|webp)$/i.test(entry.name)) throw new Error('unsafe filename in manifest')
         const fileUrl = new URL('input/' + encodeURIComponent(entry.name), window.location.origin + import.meta.env.BASE_URL).toString()
         const response = await fetch(fileUrl, { cache: 'no-store' })
@@ -1258,7 +1278,9 @@ export default function App() {
       setNotice('Loaded ' + files.length + ' image(s) from the repository input folder. Review the confirmation before any upload starts.')
       await processBulkImages(files)
     } catch (error) {
-      setNotice('Could not prepare repository input images. No automatic upload was started. ' + (error instanceof Error ? error.message : 'Unknown error'))
+      const message = 'Could not prepare repository input images. No automatic upload was started. ' + (error instanceof Error ? error.message : 'Unknown error')
+      setNotice(message)
+      setImageImportProgress({ phase: 'error', current: 0, total: 0, message })
     } finally {
       setInputFolderBusy(false)
     }
@@ -1887,6 +1909,7 @@ export default function App() {
         <p className="eyebrow">LOCAL FILE IMPORT</p><h2>Import images & backups</h2>
         <p className="muted-copy">Select card images named with the exact four-part convention (for example, fp.berardi.86.rw.png). The filename is matched against card type, player aliases, OVR and position; ambiguous matches are rejected. Images upload to shared Supabase Storage and are linked to the existing card ID.</p>
         <div className="full-field"><strong>Import images from repository input folder</strong><p className="field-help">Reads the checked-in input/ images after the site build. It only prepares a preview; no upload or database update occurs until you confirm the existing import dialog.</p><button className="button secondary" type="button" onClick={() => void handleInputFolderImages()} disabled={inputFolderBusy || !isAdminSession}>{inputFolderBusy ? 'Loading repository images…' : 'Load repository input images'}</button></div>
+        {imageImportProgress && <div className={`image-import-status image-import-${imageImportProgress.phase}`} role="status" aria-live="polite"><div className="image-import-status-heading"><strong>{imageImportProgress.phase === 'loading' ? 'Preparing import' : imageImportProgress.phase === 'matching' ? 'Checking images' : imageImportProgress.phase === 'uploading' ? 'Import in progress' : imageImportProgress.phase === 'success' ? 'Import finished' : imageImportProgress.phase === 'cancelled' ? 'Import cancelled' : 'Import needs attention'}</strong><span>{imageImportProgress.total > 0 ? `${imageImportProgress.current} / ${imageImportProgress.total}` : ''}</span></div>{imageImportProgress.total > 0 && <progress max={imageImportProgress.total} value={imageImportProgress.current} aria-label="Image import progress" /> }<p>{imageImportProgress.message}</p></div>}
         <label className="full-field">Import multiple card images<input type="file" accept="image/*" multiple onChange={handleBulkImages} /><span className="field-help">Up to 8 MB per image. Supported pattern: fp.playername.ovr.position.png or ot.playername.ovr.position.png. Requires a trusted admin session and the UFLMB card-image storage migration.</span></label>
         <label className="full-field">Import JSON backup file<input type="file" accept=".json,application/json" onChange={handleJsonFile} /><span className="field-help">Adds valid new records without replacing existing cards. Use JSON backup for full record fields.</span></label>
       </section>
