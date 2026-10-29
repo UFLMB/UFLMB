@@ -6785,3 +6785,24 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .profile-perk-item{flex-wrap:wrap;justify-content:center;min-width:0}
 .perk-trait-profile-image{display:block;width:100%;max-width:180px;height:auto;max-height:180px;object-fit:contain;flex-basis:100%;margin:0 auto 4px}
 @media(max-width:700px){.perk-trait-image-editor{padding:13px}.perk-trait-image-controls{grid-template-columns:1fr}}
+
+
+/* Dedicated Assets admin page — aligned with the UFLMB admin design system. */
+.assets-management-panel{display:grid;gap:20px}
+.assets-page-heading{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:16px;padding:20px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(125deg,rgba(163,230,53,.09),rgba(163,230,53,.025) 48%,var(--panel-bg,rgba(255,255,255,.015)))}
+.assets-page-icon{display:grid;place-items:center;width:52px;height:52px;border-radius:14px;background:#a3e635;color:#17200b;font-size:25px;font-weight:800;box-shadow:0 5px 18px rgba(163,230,53,.14)}
+.assets-page-heading .eyebrow{margin:0 0 5px;color:var(--muted-text,#a0a6b2);font-size:10px;font-weight:800;letter-spacing:.14em}
+.assets-page-heading h2{margin:0;font-size:clamp(21px,2.2vw,28px);line-height:1.15;letter-spacing:-.025em}
+.assets-page-heading .muted-copy{max-width:720px;margin:8px 0 0;line-height:1.6}
+.assets-page-heading .count-label{align-self:start;white-space:nowrap}
+.assets-perk-trait-editor{margin-top:0;gap:16px;padding:20px;background:var(--panel-bg,rgba(255,255,255,.015));box-shadow:0 8px 24px rgba(0,0,0,.035)}
+.assets-perk-trait-editor .section-heading{align-items:center}
+.assets-perk-trait-editor .section-heading h2{font-size:18px;letter-spacing:-.015em}
+.assets-perk-trait-editor .muted-copy{max-width:900px;line-height:1.65}
+.assets-perk-trait-editor .form-actions{margin-top:2px}
+@media(max-width:700px){
+  .assets-page-heading{grid-template-columns:42px minmax(0,1fr);gap:12px;padding:15px}
+  .assets-page-icon{width:42px;height:42px;border-radius:12px;font-size:21px}
+  .assets-page-heading .count-label{grid-column:2;justify-self:start}
+  .assets-perk-trait-editor{padding:14px}
+}
