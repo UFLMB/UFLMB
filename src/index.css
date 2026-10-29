@@ -6719,6 +6719,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 /* Match the light-mode account cards to the same soft beige surface. */
 :root[data-ui-theme="light"] .settings-page .settings-appearance,
 :root[data-ui-theme="light"] .settings-page .account-profile-link,
+:root[data-ui-theme="light"] .profile-page .account-profile-hero,
 :root[data-ui-theme="light"] .profile-page .account-detail-panel {
   background: #f7f9f4 !important;
   border-color: rgba(20,30,45,.13) !important;
