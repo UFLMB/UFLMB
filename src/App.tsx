@@ -9,6 +9,7 @@ import SharedDatabasePanel from './components/SharedDatabasePanel'
 import SupportChat from './components/SupportChat'
 import ModerationCenter from './components/ModerationCenter'
 import { validateUsernamePolicy } from './lib/usernamePolicy'
+import { matchCardImageFilename } from './lib/cardImageImport'
 
 const STORAGE_KEY = 'uflmb.cards.v1'
 const VIEW_STATE_KEY = 'uflmb.current-view.v1'
@@ -1016,54 +1017,251 @@ export default function App() {
     reader.readAsDataURL(file)
   }
 
-  const handleBulkImages = async (event: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? [])
-    event.target.value = ''
+  const [inputFolderBusy, setInputFolderBusy] = useState(false)
+
+  const processBulkImages = async (files: File[]) => {
     if (!files.length) return
-    const nextById = new Map(allCards.map(card => [card.id, card]))
-    let matched = 0
-    let skipped = 0
-    const normalize = (value: string) => value.toLowerCase().replace(/\\.[^.]+$/, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '')
-    for (const file of files) {
-      if (!file.type.startsWith('image/') || file.size > 8 * 1024 * 1024) { skipped++; continue }
-      try {
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onerror = () => reject(new Error('Read failed'))
-          reader.onload = () => {
-            const image = new Image()
-            image.onerror = () => reject(new Error('Invalid image'))
-            image.onload = () => {
-              const scale = Math.min(1, 1000 / Math.max(image.width, image.height))
-              const canvas = document.createElement('canvas')
-              canvas.width = Math.max(1, Math.round(image.width * scale))
-              canvas.height = Math.max(1, Math.round(image.height * scale))
-              const context = canvas.getContext('2d')
-              if (!context) { reject(new Error('Canvas unavailable')); return }
-              context.drawImage(image, 0, 0, canvas.width, canvas.height)
-              resolve(canvas.toDataURL('image/jpeg', 0.78))
-            }
-            image.src = String(reader.result)
-          }
-          reader.readAsDataURL(file)
-        })
-        const key = normalize(file.name)
-        const match = Array.from(nextById.values()).find(card => normalize(card.playerName) === key)
-        if (!match) { skipped++; continue }
-        nextById.set(match.id, { ...match, imageUrl: dataUrl })
-        matched++
-      } catch { skipped++ }
+
+    const baseUrl = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    let accessToken = ''
+    try {
+      const raw = sessionStorage.getItem('uflmb.auth.session.v1')
+      accessToken = raw ? (JSON.parse(raw) as { access_token?: string }).access_token || '' : ''
+    } catch { accessToken = '' }
+    if (!baseUrl || !anonKey || !accessToken) {
+      setNotice('Image import requires the trusted admin account to be signed in and the shared database to be configured. No files were changed.')
+      return
     }
-    if (matched) {
+
+    type Candidate = { file: File; card: PlayerCard; extension: string }
+    const candidates: Candidate[] = []
+    const skippedReasons: string[] = []
+    const targetCounts = new Map<string, number>()
+    const seenFileNames = new Set<string>()
+
+    // Match against the current shared snapshot, not only a potentially stale browser cache.
+    let sharedCards: PlayerCard[]
+    try {
+      const snapshotResponse = await fetch(baseUrl + '/rest/v1/cards?select=id,player_name,overall_rating,positions,nation,card_name,event,source_data,image_url,source_url,verified_at&order=player_name.asc', {
+        headers: { apikey: anonKey, Authorization: 'Bearer ' + accessToken },
+        cache: 'no-store',
+      })
+      if (!snapshotResponse.ok) throw new Error('Could not verify the latest shared cards (HTTP ' + snapshotResponse.status + ').')
+      const rows = await snapshotResponse.json() as Array<{
+        id: string; player_name: string; overall_rating: number; positions: string[]; nation: string
+        card_name?: string | null; event?: string | null; source_data?: Record<string, string> | null
+        image_url?: string | null; source_url: string; verified_at: string
+      }>
+      sharedCards = rows.filter(row => !row.id.startsWith('uflmb-demo-')).map(row => ({
+        id: row.id,
+        playerName: row.player_name,
+        overallRating: Number(row.overall_rating),
+        positions: Array.isArray(row.positions) ? row.positions : [],
+        nation: row.nation,
+        ...(row.card_name ? { cardName: row.card_name } : {}),
+        ...(row.event ? { event: row.event } : {}),
+        ...(row.source_data ? { sourceData: row.source_data } : {}),
+        ...(row.image_url ? { imageUrl: row.image_url } : {}),
+        sourceUrl: row.source_url,
+        verifiedAt: row.verified_at,
+      }))
+    } catch (error) {
+      setNotice((error instanceof Error ? error.message : 'Could not verify the latest shared cards.') + ' No images were uploaded. Check the connection and try again.')
+      return
+    }
+
+    const localById = new Map(allCards.map(card => [card.id, card]))
+    const samePositions = (a: string[], b: string[]) => [...a].map(value => value.toUpperCase()).sort().join('|') === [...b].map(value => value.toUpperCase()).sort().join('|')
+    for (const file of files) {
+      if (!file.type.startsWith('image/') || file.size > 8 * 1024 * 1024) {
+        skippedReasons.push(file.name + ': unsupported image or larger than 8 MB')
+        continue
+      }
+      const matchResult = matchCardImageFilename(file.name, sharedCards)
+      if (!matchResult.card) {
+        skippedReasons.push(file.name + ': ' + matchResult.reason)
+        continue
+      }
+      const sharedCard = matchResult.card
+      if (sharedCard.imageUrl?.trim()) {
+        skippedReasons.push(file.name + ': the shared card already has an image; existing images are never overwritten automatically')
+        continue
+      }
+      const localCard = localById.get(sharedCard.id)
+      if (!localCard) {
+        skippedReasons.push(file.name + ': this card is not in the current browser dataset; load the latest shared records before importing')
+        continue
+      }
+      const localMatchesSnapshot =
+        localCard.playerName === sharedCard.playerName &&
+        localCard.overallRating === sharedCard.overallRating &&
+        localCard.nation === sharedCard.nation &&
+        localCard.cardName === sharedCard.cardName &&
+        localCard.event === sharedCard.event &&
+        samePositions(localCard.positions, sharedCard.positions) &&
+        (localCard.imageUrl || '') === (sharedCard.imageUrl || '')
+      if (!localMatchesSnapshot) {
+        skippedReasons.push(file.name + ': the browser copy differs from the shared card; reload shared records before importing')
+        continue
+      }
+      const lowerName = file.name.toLowerCase()
+      if (seenFileNames.has(lowerName)) {
+        skippedReasons.push(file.name + ': duplicate filename in this batch')
+        continue
+      }
+      seenFileNames.add(lowerName)
+      targetCounts.set(sharedCard.id, (targetCounts.get(sharedCard.id) || 0) + 1)
+      const extension = (file.name.match(/\.([^.]+)$/)?.[1] || 'png').toLowerCase()
+      candidates.push({ file, card: localCard, extension })
+    }
+
+    const conflictingIds = new Set([...targetCounts].filter(([, count]) => count > 1).map(([id]) => id))
+    const safeCandidates = candidates.filter(candidate => {
+      if (!conflictingIds.has(candidate.card.id)) return true
+      skippedReasons.push(candidate.file.name + ': multiple files target the same card; all files for that card were held back')
+      return false
+    })
+
+    if (!safeCandidates.length) {
+      setNotice('No images are safe to apply. ' + skippedReasons.length + ' file(s) need correction. Check the four-part filename: fp.playername.ovr.position.png or ot.playername.ovr.position.png.')
+      return
+    }
+
+    const preview = [
+      'Ready to upload ' + safeCandidates.length + ' image(s) to Supabase Storage.',
+      skippedReasons.length + ' file(s) will be skipped or need correction.',
+      '',
+      'Only unique matches by card type + player alias + OVR + position are accepted.',
+      'Existing images will not be overwritten.',
+      '',
+      ...safeCandidates.slice(0, 12).map(item => item.file.name + ' → ' + item.card.playerName + ' · ' + item.card.overallRating + ' · ' + item.card.positions.join('/')),
+      ...(safeCandidates.length > 12 ? ['…and ' + (safeCandidates.length - 12) + ' more'] : []),
+      '',
+      'Continue?',
+    ].join('\n')
+    if (!window.confirm(preview)) {
+      setNotice('Image import cancelled. No files were uploaded.')
+      return
+    }
+
+    let uploaded = 0
+    const nextById = new Map(allCards.map(card => [card.id, card]))
+    for (const candidate of safeCandidates) {
+      const objectPath = encodeURIComponent(candidate.card.id) + '.' + candidate.extension
+      let storageObjectCreated = false
+      let confirmedUnlinked = false
+      try {
+        const uploadResponse = await fetch(baseUrl + '/storage/v1/object/uflmb-card-images/' + objectPath, {
+          method: 'POST',
+          headers: {
+            apikey: anonKey,
+            Authorization: 'Bearer ' + accessToken,
+            'Content-Type': candidate.file.type || 'application/octet-stream',
+            'x-upsert': 'false',
+            'cache-control': '31536000',
+          },
+          body: candidate.file,
+        })
+        if (!uploadResponse.ok) {
+          const errorBody = await uploadResponse.json().catch(() => ({})) as { message?: string; error?: string }
+          throw new Error(errorBody.message || errorBody.error || 'Storage upload failed (' + uploadResponse.status + ')')
+        }
+        storageObjectCreated = true
+        const imageUrl = baseUrl + '/storage/v1/object/public/uflmb-card-images/' + objectPath
+        const linkResponse = await fetch(baseUrl + '/rest/v1/cards?id=eq.' + encodeURIComponent(candidate.card.id) + '&image_url=is.null', {
+          method: 'PATCH',
+          headers: {
+            apikey: anonKey,
+            Authorization: 'Bearer ' + accessToken,
+            'Content-Type': 'application/json',
+            Prefer: 'return=representation',
+          },
+          body: JSON.stringify({ image_url: imageUrl }),
+        })
+        if (!linkResponse.ok) {
+          const errorBody = await linkResponse.json().catch(() => ({})) as { message?: string; error?: string }
+          throw new Error(errorBody.message || errorBody.error || 'Card record update failed (' + linkResponse.status + ')')
+        }
+        const linkedRows = await linkResponse.json() as Array<{ id: string; image_url?: string | null }>
+        if (linkedRows.length === 0) {
+          // A successful empty PATCH response confirms that no card was linked.
+          confirmedUnlinked = true
+          throw new Error('The card image was not linked because the card already has an image or no longer exists.')
+        }
+        // At least one row reports a link, so never delete this object—even if the response
+        // is malformed or contains multiple rows and the result needs manual review.
+        storageObjectCreated = false
+        if (linkedRows.length !== 1 || linkedRows[0].id !== candidate.card.id || linkedRows[0].image_url !== imageUrl) {
+          throw new Error('The database did not confirm exactly one matching card update.')
+        }
+        nextById.set(candidate.card.id, { ...candidate.card, imageUrl })
+        uploaded++
+      } catch (error) {
+        // A failed/interrupted PATCH can have an ambiguous outcome. Prefer a possible orphan
+        // in Storage over deleting an object that the database may already reference.
+        if (storageObjectCreated && confirmedUnlinked) {
+          try {
+            await fetch(baseUrl + '/storage/v1/object/uflmb-card-images/' + objectPath, {
+              method: 'DELETE',
+              headers: { apikey: anonKey, Authorization: 'Bearer ' + accessToken },
+            })
+          } catch { /* A confirmed-unlinked orphan can be cleaned up manually if deletion fails. */ }
+        }
+        skippedReasons.push(candidate.file.name + ': ' + (error instanceof Error ? error.message : 'upload failed'))
+      }
+    }
+
+    if (uploaded) {
       const next = Array.from(nextById.values())
       try {
         saveCards(next)
         setAllCards(next)
-        setNotice(`Bulk image import complete: ${matched} image(s) matched to cards; ${skipped} file(s) skipped. Name each image after the player (for example, Player Name.jpg).`)
+        setNotice('Image import finished: ' + uploaded + ' image(s) uploaded and confirmed in the shared database. ' + skippedReasons.length + ' file(s) skipped or failed.')
       } catch {
-        setNotice('The images exceeded available browser storage. Try fewer images at a time or smaller files.')
+        setNotice('The shared database was updated for ' + uploaded + ' image(s), but this browser could not save its local cache. Reload the page; do not re-upload these images.')
       }
-    } else setNotice(`No images were matched. ${skipped} file(s) were skipped. Image filenames must match player names, and each source image must be 8 MB or smaller.`)
+    } else {
+      setNotice('No images were uploaded successfully. ' + skippedReasons.length + ' file(s) skipped or failed. ' + skippedReasons.slice(0, 4).join(' · '))
+    }
+  }
+
+  const handleBulkImages = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? [])
+    event.target.value = ''
+    void processBulkImages(files)
+  }
+
+  const handleInputFolderImages = async () => {
+    if (inputFolderBusy) return
+    setInputFolderBusy(true)
+    try {
+      const manifestUrl = new URL('input/manifest.json', window.location.origin + import.meta.env.BASE_URL).toString()
+      const manifestResponse = await fetch(manifestUrl, { cache: 'no-store' })
+      if (!manifestResponse.ok) throw new Error('manifest unavailable (' + manifestResponse.status + ')')
+      const manifest = await manifestResponse.json() as { version?: unknown; files?: unknown }
+      if (manifest.version !== 1 || !Array.isArray(manifest.files)) throw new Error('manifest format is invalid')
+      const entries = manifest.files.filter((entry): entry is { name: string; size?: number } => Boolean(entry && typeof entry === 'object' && typeof (entry as { name?: unknown }).name === 'string'))
+      if (!entries.length) { setNotice('The repository input folder contains no supported card images. No files were changed.'); return }
+      const files: File[] = []
+      for (const entry of entries) {
+        if (!/^[a-z0-9_.-]+\.(png|jpe?g|webp)$/i.test(entry.name)) throw new Error('unsafe filename in manifest')
+        const fileUrl = new URL('input/' + encodeURIComponent(entry.name), window.location.origin + import.meta.env.BASE_URL).toString()
+        const response = await fetch(fileUrl, { cache: 'no-store' })
+        if (!response.ok) throw new Error(entry.name + ' could not be downloaded (' + response.status + ')')
+        const blob = await response.blob()
+        const extension = entry.name.split('.').pop()?.toLowerCase()
+        const mime = extension === 'png' ? 'image/png' : extension === 'webp' ? 'image/webp' : 'image/jpeg'
+        if (blob.size > 8 * 1024 * 1024) throw new Error(entry.name + ' exceeds the 8 MB limit')
+        files.push(new File([blob], entry.name, { type: mime }))
+      }
+      setNotice('Loaded ' + files.length + ' image(s) from the repository input folder. Review the confirmation before any upload starts.')
+      await processBulkImages(files)
+    } catch (error) {
+      setNotice('Could not prepare repository input images. No automatic upload was started. ' + (error instanceof Error ? error.message : 'Unknown error'))
+    } finally {
+      setInputFolderBusy(false)
+    }
   }
 
   const handleJsonFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -1687,8 +1885,9 @@ export default function App() {
       </section>
       <section className="admin-panel tools-panel">
         <p className="eyebrow">LOCAL FILE IMPORT</p><h2>Import images & backups</h2>
-        <p className="muted-copy">No Google account required. Select multiple image files to match them to existing cards by filename, or import a JSON backup. For example, “Kylian Mbappe.jpg” matches a card named “Kylian Mbappe”. Images are optimized before saving in this browser.</p>
-        <label className="full-field">Import multiple card images<input type="file" accept="image/*" multiple onChange={handleBulkImages} /><span className="field-help">Up to 8 MB per source image. Filenames must match player names; unmatched images are skipped. Local browser storage has limited capacity.</span></label>
+        <p className="muted-copy">Select card images named with the exact four-part convention (for example, fp.berardi.86.rw.png). The filename is matched against card type, player aliases, OVR and position; ambiguous matches are rejected. Images upload to shared Supabase Storage and are linked to the existing card ID.</p>
+        <div className="full-field"><strong>Import images from repository input folder</strong><p className="field-help">Reads the checked-in input/ images after the site build. It only prepares a preview; no upload or database update occurs until you confirm the existing import dialog.</p><button className="button secondary" type="button" onClick={() => void handleInputFolderImages()} disabled={inputFolderBusy || !isAdminSession}>{inputFolderBusy ? 'Loading repository images…' : 'Load repository input images'}</button></div>
+        <label className="full-field">Import multiple card images<input type="file" accept="image/*" multiple onChange={handleBulkImages} /><span className="field-help">Up to 8 MB per image. Supported pattern: fp.playername.ovr.position.png or ot.playername.ovr.position.png. Requires a trusted admin session and the UFLMB card-image storage migration.</span></label>
         <label className="full-field">Import JSON backup file<input type="file" accept=".json,application/json" onChange={handleJsonFile} /><span className="field-help">Adds valid new records without replacing existing cards. Use JSON backup for full record fields.</span></label>
       </section>
       <section className="admin-panel tools-panel">
