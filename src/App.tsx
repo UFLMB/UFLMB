@@ -377,13 +377,13 @@ export default function App() {
   const [siteBranding, setSiteBranding] = useState<SiteBranding>(loadBranding)
   const [backgroundUrlsText, setBackgroundUrlsText] = useState(() => siteBranding.backgroundImageUrls.join('\n'))
   const [backgroundIndex, setBackgroundIndex] = useState(0)
-  const [selectedEventTypeForBackground, setSelectedCardTypeForBackground] = useState('')
+  const [selectedEventTypeForBackground, setSelectedEventTypeForBackground] = useState('')
   const [selectedPerkTraitType, setSelectedPerkTraitType] = useState('')
   const [perkIconUrlDraft, setPerkIconUrlDraft] = useState('')
   const [perkProfileImageUrlDraft, setPerkProfileImageUrlDraft] = useState('')
   const [perkTraitImageStatus, setPerkTraitImageStatus] = useState('')
-  const [eventTypeBackgroundUrlDraft, setCardTypeBackgroundUrlDraft] = useState('')
-  const [eventTypeBackgroundStatus, setCardTypeBackgroundStatus] = useState('')
+  const [eventTypeBackgroundUrlDraft, setEventTypeBackgroundUrlDraft] = useState('')
+  const [eventTypeBackgroundStatus, setEventTypeBackgroundStatus] = useState('')
   const [sharedBrandingLoaded, setSharedBrandingLoaded] = useState(false)
   const [sharedBrandingStatus, setSharedBrandingStatus] = useState('Loading shared appearance…')
   const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
@@ -1797,16 +1797,16 @@ export default function App() {
             <div className="section-heading"><div><p className="eyebrow">CARD ARTWORK</p><h2>Event type backgrounds</h2></div><span className="count-label">{Object.keys(siteBranding.eventTypeBackgrounds).length} configured</span></div>
             <p className="muted-copy">Set one background per event type. Every card with the same event type uses this image automatically, including cards added later. The card artwork stays on top; the background shows through its transparent/empty areas. Use a direct HTTP or HTTPS image URL.</p>
             <div className="event-type-background-controls">
-              <label>Event type<select value={selectedEventTypeForBackground} onChange={event => { const nextType = event.target.value; setSelectedCardTypeForBackground(nextType); setCardTypeBackgroundUrlDraft(nextType ? siteBranding.eventTypeBackgrounds[normalizeIdentityPart(nextType)] || '' : '') }}>
+              <label>Event type<select value={selectedEventTypeForBackground} onChange={event => { const nextType = event.target.value; setSelectedEventTypeForBackground(nextType); setEventTypeBackgroundUrlDraft(nextType ? siteBranding.eventTypeBackgrounds[normalizeIdentityPart(nextType)] || '' : '') }}>
                 <option value="">Choose an event type…</option>
                 {Array.from(new Map(allCards.map(card => [normalizeIdentityPart(card.cardName), (card.cardName || '').trim()])).entries()).filter(([key, label]) => key && label).sort((a, b) => a[1].localeCompare(b[1])).map(([key, label]) => <option key={key} value={label}>{label}</option>)}
               </select></label>
-              <label>Background image URL<input type="url" value={eventTypeBackgroundUrlDraft} onChange={event => setCardTypeBackgroundUrlDraft(event.target.value)} placeholder="https://example.com/event-type-background.jpg" /></label>
+              <label>Background image URL<input type="url" value={eventTypeBackgroundUrlDraft} onChange={event => setEventTypeBackgroundUrlDraft(event.target.value)} placeholder="https://example.com/event-type-background.jpg" /></label>
             </div>
             {selectedEventTypeForBackground && eventTypeBackgroundUrlDraft.trim() && isHttpUrl(eventTypeBackgroundUrlDraft.trim()) && <div className="event-type-background-preview" style={{ backgroundImage: `url("${eventTypeBackgroundUrlDraft.trim().replace(/["\\]/g, '')}")` }}><span>{selectedEventTypeForBackground} · background preview</span></div>}
             <div className="form-actions">
-              <button className="button primary" type="button" disabled={!selectedEventTypeForBackground || !isHttpUrl(eventTypeBackgroundUrlDraft.trim())} onClick={() => { const key = normalizeIdentityPart(selectedEventTypeForBackground); setSiteBranding(current => ({ ...current, eventTypeBackgrounds: { ...current.eventTypeBackgrounds, [key]: eventTypeBackgroundUrlDraft.trim() } })); setCardTypeBackgroundStatus(`Background assigned to event type ${selectedEventTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Apply to all cards with this event type</button>
-              <button className="button secondary" type="button" disabled={!selectedEventTypeForBackground || !siteBranding.eventTypeBackgrounds[normalizeIdentityPart(selectedEventTypeForBackground)]} onClick={() => { const key = normalizeIdentityPart(selectedEventTypeForBackground); setSiteBranding(current => { const next = { ...current.eventTypeBackgrounds }; delete next[key]; return { ...current, eventTypeBackgrounds: next } }); setCardTypeBackgroundUrlDraft(''); setCardTypeBackgroundStatus(`Background removed from event type ${selectedEventTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Remove event background</button>
+              <button className="button primary" type="button" disabled={!selectedEventTypeForBackground || !isHttpUrl(eventTypeBackgroundUrlDraft.trim())} onClick={() => { const key = normalizeIdentityPart(selectedEventTypeForBackground); setSiteBranding(current => ({ ...current, eventTypeBackgrounds: { ...current.eventTypeBackgrounds, [key]: eventTypeBackgroundUrlDraft.trim() } })); setEventTypeBackgroundStatus(`Background assigned to event type ${selectedEventTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Apply to all cards with this event type</button>
+              <button className="button secondary" type="button" disabled={!selectedEventTypeForBackground || !siteBranding.eventTypeBackgrounds[normalizeIdentityPart(selectedEventTypeForBackground)]} onClick={() => { const key = normalizeIdentityPart(selectedEventTypeForBackground); setSiteBranding(current => { const next = { ...current.eventTypeBackgrounds }; delete next[key]; return { ...current, eventTypeBackgrounds: next } }); setEventTypeBackgroundUrlDraft(''); setEventTypeBackgroundStatus(`Background removed from event type ${selectedEventTypeForBackground}. Publish the appearance to apply it for all visitors.`) }}>Remove event background</button>
             </div>
             {eventTypeBackgroundStatus && <p className="muted-copy" role="status">{eventTypeBackgroundStatus}</p>}
           </section>
