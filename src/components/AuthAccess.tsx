@@ -257,19 +257,23 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
       showMessage('Email confirmed. You can now sign in.', 'success')
     }
     void restoreSession().then(async restored => {
-      if (cancelled || !restored) return
+      if (cancelled) return
+      if (!restored) { onDashboardChange(false); return }
       setSession(restored)
       setSessionEmail(restored.user.email || '')
       const restoredUsername = await getProfileUsername(restored)
       setSessionUsername(restoredUsername)
       if (!cancelled) onAccountChange({ userId: restored.user.id, username: restoredUsername, email: restored.user.email || '', accessToken: restored.access_token })
       const admin = await checkAdmin(restored)
-      if (!cancelled) onAdminChange(admin)
+      if (!cancelled) {
+        onAdminChange(admin)
+        onDashboardChange(admin && sessionStorage.getItem('uflmb.admin.dashboard.v1') === 'open')
+      }
       if (!cancelled && fragmentType === 'recovery') showMessage('Choose a new password for your account.', 'info')
       if (!cancelled && fragmentType === 'signup') showMessage('Email confirmed. Your account is ready.', 'success')
     })
     return () => { cancelled = true }
-  }, [onAdminChange, onAccountChange])
+  }, [onAdminChange, onAccountChange, onDashboardChange])
 
   const signOut = async () => {
     const { url, key } = getConfig()

@@ -317,8 +317,10 @@ export default function App() {
   const [page, setPage] = useState<PublicPage>(initialView.page)
   const [cardPage, setCardPage] = useState(1)
   const [isAdminSession, setIsAdminSession] = useState(false)
-  const [adminDashboardOpen, setAdminDashboardOpen] = useState(false)
-  useEffect(() => { if (!isAdminSession) setAdminDashboardOpen(false) }, [isAdminSession])
+  const [adminDashboardOpen, setAdminDashboardOpen] = useState(() => { try { return sessionStorage.getItem('uflmb.admin.dashboard.v1') === 'open' } catch { return false } })
+  useEffect(() => {
+    try { sessionStorage.setItem('uflmb.admin.dashboard.v1', adminDashboardOpen ? 'open' : 'closed') } catch { /* The current view remains usable if session storage is unavailable. */ }
+  }, [adminDashboardOpen])
   const [themeMode, setThemeMode] = useState<ThemeMode>(loadThemeMode)
   const [account, setAccount] = useState<{ userId: string; username: string; email?: string; accessToken: string } | null>(null)
   const [profileUsernameDraft, setProfileUsernameDraft] = useState('')
@@ -387,7 +389,7 @@ export default function App() {
   const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
   const [compareIds, setCompareIds] = useState<string[]>(() => { try { const saved: unknown = JSON.parse(localStorage.getItem('uflmb.compare.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string').slice(0, 3) : [] } catch { return [] } })
   const [showCompare, setShowCompare] = useState(false)
-  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'assets' | 'cloud' | 'profiles' | 'moderation'>('cards')
+  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'assets' | 'cloud' | 'profiles' | 'moderation'>(() => { try { const saved = sessionStorage.getItem('uflmb.admin.tab.v1'); return saved === 'cards' || saved === 'quality' || saved === 'imports' || saved === 'appearance' || saved === 'assets' || saved === 'cloud' || saved === 'profiles' || saved === 'moderation' ? saved : 'cards' } catch { return 'cards' } })
   const [adminProfiles, setAdminProfiles] = useState<AdminProfile[]>([])
   const [adminUserIds, setAdminUserIds] = useState<string[]>([])
   const [adminProfilesBusy, setAdminProfilesBusy] = useState(false)
@@ -746,6 +748,10 @@ export default function App() {
     })
     return () => { cancelled = true }
   }, [])
+
+  useEffect(() => {
+    try { sessionStorage.setItem('uflmb.admin.tab.v1', adminTab) } catch { /* The current tab remains usable if session storage is unavailable. */ }
+  }, [adminTab])
 
   useEffect(() => {
     if (!sharedBrandingLoaded || !isAdminSession) return
@@ -1757,7 +1763,7 @@ export default function App() {
     <main className="app-shell admin-shell">
       <header className="topbar admin-topbar">
         <a className="brand" href="/UFLMB/" aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
-        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Admin access verified</span><button type="button" className="public-refresh-toggle" aria-label="Refresh UFLMB" title="Refresh" onClick={() => window.location.reload()}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></button><a className="back-link" href="/UFLMB/">Public database ↗</a><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setAdminDashboardOpen} onProfileChange={() => { setPage('profile'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }} /></div>
+        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Admin access verified</span><a className="back-link" href="/UFLMB/">Public database ↗</a><button type="button" className="public-refresh-toggle" aria-label="Refresh UFLMB" title="Refresh" onClick={() => window.location.reload()}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></button><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setAdminDashboardOpen} onProfileChange={() => { setPage('profile'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }} /></div>
       </header>
       <section className="admin-intro">
         <p className="eyebrow">CONTENT MANAGEMENT</p>
