@@ -1780,6 +1780,7 @@ export default function App() {
         <p className="hero-copy">Manually add, edit, save, and export cards, images, stats, and verification sources.</p>
         {notice && <div className="notice">{notice}</div>}
       </section>
+      <div className="admin-overview-shell">
       <nav className="admin-tabs" aria-label="Admin sections">
         {([
           ['cards', '▣', 'Card manager', 'Add, edit and manage records'],
@@ -1798,6 +1799,7 @@ export default function App() {
           </button>
         ))}
       </nav>
+      </div>
             {adminTab === 'assets' && <section className="admin-panel assets-management-panel">
         <div className="assets-page-heading">
           <div className="assets-page-icon" aria-hidden="true">▧</div>
