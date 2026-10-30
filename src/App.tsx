@@ -1804,8 +1804,8 @@ export default function App() {
             : 'No analytics script is loaded until the site owner adds the Cloudflare Web Analytics site token to the GitHub Actions variable. No visitor analytics are currently collected by UFLMB.'}</p>
           <ol>
             <li>Create a free Cloudflare account and add each live hostname in Web Analytics: <strong>uflmb.github.io</strong> and <strong>uflmb.web.app</strong>.</li>
-            <li>Copy the JavaScript beacon token for each site. If Cloudflare issues different tokens, both must be configured separately; this build currently supports one token per build.</li>
-            <li>Add the token as the GitHub Actions repository variable <code>CF_WEB_ANALYTICS_TOKEN</code>. Do not use an API token or account secret here.</li>
+            <li>Copy the JavaScript beacon token for each site. Each deployment has its own token variable because the two hostnames are configured as separate analytics sites.</li>
+            <li>Add the GitHub Actions repository variables <code>CF_WEB_ANALYTICS_TOKEN_PAGES</code> and <code>CF_WEB_ANALYTICS_TOKEN_FIREBASE</code> with the matching site tokens. These are public beacon identifiers, not API tokens or account secrets.</li>
             <li>Run the Pages and Firebase deployment workflows again. Confirm both hostnames appear in Cloudflare Web Analytics.</li>
           </ol>
           <div className="form-actions">
