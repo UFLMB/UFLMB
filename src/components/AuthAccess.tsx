@@ -111,6 +111,18 @@ async function getProfileUsername(session: AuthSession): Promise<string> {
     return rows[0]?.username || session.user.email?.split('@')[0] || 'Account'
   } catch { return session.user.email?.split('@')[0] || 'Account' }
 }
+async function recordAuthEvent(session: AuthSession, action: 'record_login' | 'record_logout', method: 'email_password' | 'username_password' | 'session_restore' = 'email_password') {
+  const { url, key } = getConfig()
+  if (!url || !key || !session.access_token) return
+  try {
+    await fetch(url + '/functions/v1/account-moderation', {
+      method: 'POST',
+      headers: { apikey: key, Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, method }),
+      cache: 'no-store',
+    })
+  } catch { /* Authentication must not fail because an audit event could not be sent. */ }
+}
 async function isAccountSuspended(session: AuthSession): Promise<boolean> {
   const { url, key } = getConfig()
   if (!url || !key) throw new Error('Account status could not be verified. Please try again later.')
@@ -259,6 +271,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
     void restoreSession().then(async restored => {
       if (cancelled) return
       if (!restored) { onDashboardChange(false); return }
+      void recordAuthEvent(restored, 'record_login', 'session_restore')
       setSession(restored)
       setSessionEmail(restored.user.email || '')
       const restoredUsername = await getProfileUsername(restored)
@@ -275,8 +288,9 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
     return () => { cancelled = true }
   }, [onAdminChange, onAccountChange, onDashboardChange])
 
-  const signOut = async () => {
+  const signOut = async (recordEvent = true) => {
     const { url, key } = getConfig()
+    if (recordEvent && session?.access_token) await recordAuthEvent(session, 'record_logout')
     try {
       if (session?.access_token && url && key) {
         await fetch(`${url}/auth/v1/logout`, {
@@ -298,6 +312,12 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
     onDashboardChange(false)
     onAdminChange(false)
   }
+
+  useEffect(() => {
+    const handleAccountDeleted = () => { void signOut(false) }
+    window.addEventListener('uflmb:account-deleted', handleAccountDeleted)
+    return () => window.removeEventListener('uflmb:account-deleted', handleAccountDeleted)
+  }, [session])
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -382,6 +402,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
       }
 
       saveSession(nextSession)
+      void recordAuthEvent(nextSession, 'record_login', mode === 'signin' ? (email.trim().includes('@') ? 'email_password' : 'username_password') : 'email_password')
       setSession(nextSession)
       setSessionEmail(nextSession.user.email || email.trim())
       const nextUsername = mode === 'signup' ? username.trim() : await getProfileUsername(nextSession)
