@@ -1827,7 +1827,7 @@ export default function App() {
       </section>}
       {adminTab === 'profiles' && <section className="admin-panel profile-management-panel">
         <div className="section-heading"><div><p className="eyebrow">ACCOUNT CONTROL</p><h2>Profile management</h2></div><span className="count-label">{adminProfiles.length} profiles</span></div>
-        <p className="muted-copy">A clear overview of registered members and trusted administrators. Update public usernames and profile icons, with administrator branding protected by the trusted database allowlist. Account permissions, passwords and authentication records are not changed here.</p>
+        <p className="muted-copy">A clear overview of registered members and trusted administrators. Select any profile to update its public identity and manage its account status, including suspension, restoration and permanent deletion. Trusted administrator access remains protected by the database allowlist.</p>
         <div className="profile-management-overview" aria-label="Profile overview">
           <div className="profile-management-stat"><span className="profile-management-stat-icon">◎</span><div><small>Total profiles</small><strong>{adminProfiles.length}</strong><span>Registered accounts</span></div></div>
           <div className="profile-management-stat"><span className="profile-management-stat-icon admin">♜</span><div><small>Administrators</small><strong>{adminUserIds.filter(id => adminProfiles.some(profile => profile.id === id)).length}</strong><span>Trusted access</span></div></div>
