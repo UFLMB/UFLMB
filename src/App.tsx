@@ -400,6 +400,7 @@ export default function App() {
   const [adminProfileSort, setAdminProfileSort] = useState<'newest' | 'oldest' | 'username'>('newest')
   const [adminProfilesRefreshKey, setAdminProfilesRefreshKey] = useState(0)
   const [selectedAdminProfileId, setSelectedAdminProfileId] = useState<string | null>(null)
+  const [selectedProfileReviewCount, setSelectedProfileReviewCount] = useState<number | null>(null)
   const selectedAdminProfile = adminProfiles.find(profile => profile.id === selectedAdminProfileId) ?? null
   const filteredAdminProfiles = adminProfiles
     .filter(profile => profile.username.toLowerCase().includes(adminProfilesSearch.trim().toLowerCase()))
@@ -483,6 +484,41 @@ export default function App() {
     })()
     return () => { cancelled = true }
   }, [isAdminSession, adminDashboardOpen, adminTab, account?.userId, account?.accessToken, adminProfilesRefreshKey])
+
+  useEffect(() => {
+    if (!selectedAdminProfile || !account?.accessToken) {
+      setSelectedProfileReviewCount(null)
+      return
+    }
+    let cancelled = false
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\\/$/, '')
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+    if (!endpoint || !anonKey) {
+      setSelectedProfileReviewCount(null)
+      return
+    }
+    setSelectedProfileReviewCount(null)
+    void (async () => {
+      try {
+        const response = await fetch(endpoint + '/rest/v1/card_reviews?select=id&user_id=eq.' + encodeURIComponent(selectedAdminProfile.id), {
+          method: 'HEAD',
+          headers: {
+            apikey: anonKey,
+            Authorization: 'Bearer ' + account.accessToken,
+            Prefer: 'count=exact',
+          },
+          cache: 'no-store',
+        })
+        if (!response.ok) throw new Error('Review count is unavailable')
+        const range = response.headers.get('content-range') || ''
+        const match = range.match(/\\/(\\d+)$/)
+        if (!cancelled) setSelectedProfileReviewCount(match ? Number(match[1]) : 0)
+      } catch {
+        if (!cancelled) setSelectedProfileReviewCount(null)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [selectedAdminProfile?.id, account?.accessToken])
 
   const selectAdminProfile = (profile: AdminProfile) => {
     setSelectedAdminProfileId(profile.id)
@@ -1818,11 +1854,12 @@ export default function App() {
               </div>
               <div className="profile-management-readonly-identity">
                 <div className="profile-management-meta"><span>Username</span><strong>@{selectedAdminProfile.username}</strong></div>
-                <div className="profile-management-meta"><span>Profile logo</span><strong>{adminUserIds.includes(selectedAdminProfile.id) ? 'Admin shield' : profileLogoOptions.find(option => option.value === selectedAdminProfile.profile_logo)?.label || 'Player'}</strong></div>
-                <small className="profile-management-help">Public identity is read-only for administrators. Users can manage their own username and profile logo in their personal settings.</small>
+                <div className="profile-management-meta"><span>User ID (UUID)</span><strong className="profile-management-uuid">{selectedAdminProfile.id}</strong></div>
+                <div className="profile-management-meta"><span>Email Verified</span><strong>Unavailable</strong></div>
+                <div className="profile-management-meta"><span>Total Reviews</span><strong>{selectedProfileReviewCount === null ? 'Unavailable' : selectedProfileReviewCount}</strong></div>
+                <div className="profile-management-meta"><span>Created</span><strong>{new Date(selectedAdminProfile.created_at).toLocaleString()}</strong></div>
+                <div className="profile-management-meta"><span>Last updated</span><strong>{new Date(selectedAdminProfile.updated_at).toLocaleString()}</strong></div>
               </div>
-              <div className="profile-management-meta"><span>Created</span><strong>{new Date(selectedAdminProfile.created_at).toLocaleString()}</strong></div>
-              <div className="profile-management-meta"><span>Last updated</span><strong>{new Date(selectedAdminProfile.updated_at).toLocaleString()}</strong></div>
             <AccountManagement userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'profiles')} selectedAccount={{ id: selectedAdminProfile.id, username: selectedAdminProfile.username, createdAt: selectedAdminProfile.created_at, isAdmin: adminUserIds.includes(selectedAdminProfile.id) }} onDeleted={() => { setAdminProfiles(current => current.filter(profile => profile.id !== selectedAdminProfile.id)); setSelectedAdminProfileId(null); setAdminProfilesMessage('Account permanently deleted.') }} /></div> : <div className="profile-management-empty profile-management-editor-empty"><span className="profile-management-empty-icon">◎</span><strong>Select a profile</strong><span>Choose an account from the list to review and manage its public profile.</span></div>}
           </div>
         </div>
