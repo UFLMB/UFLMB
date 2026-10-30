@@ -6811,3 +6811,18 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .assets-page-heading .count-label{grid-column:2;justify-self:start}
   .assets-perk-trait-editor{padding:14px}
 }
+
+/* Account self-service deletion — visually separated from ordinary profile settings. */
+.account-self-delete-panel{margin-top:16px;border-color:rgba(248,113,113,.25);background:linear-gradient(145deg,rgba(248,113,113,.045),var(--panel-bg,#11141b))}
+.account-self-delete-panel>.eyebrow{color:#f87171}
+.account-self-delete-panel>.button{margin-top:5px}
+.account-self-delete-warning{display:grid;gap:6px;margin:15px 0;padding:13px 14px;border:1px solid rgba(248,113,113,.3);border-radius:11px;background:rgba(248,113,113,.07);color:#fca5a5;font-size:11px;line-height:1.55}
+.account-self-delete-warning strong{font-size:12px;color:#f87171}
+.account-self-delete-warning b{overflow-wrap:anywhere;color:var(--text-color,#f3f5f8)}
+.account-self-delete-confirm{display:grid;gap:7px;max-width:420px;color:var(--text-color,#f3f5f8);font-size:11px;font-weight:700}
+.account-self-delete-confirm input{width:100%;min-height:42px;padding:10px 12px;border:1px solid rgba(248,113,113,.3);border-radius:9px;background:rgba(0,0,0,.14);color:var(--text-color,#f3f5f8);font:inherit;font-size:12px}
+.account-self-delete-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}
+:root[data-ui-theme="light"] .account-self-delete-panel{background:linear-gradient(145deg,rgba(248,113,113,.06),#fff);border-color:rgba(180,35,24,.2)}
+:root[data-ui-theme="light"] .account-self-delete-confirm{color:#18202b}
+:root[data-ui-theme="light"] .account-self-delete-confirm input{background:#fff;border-color:rgba(180,35,24,.25);color:#18202b}
+@media(max-width:560px){.account-self-delete-actions{flex-direction:column}.account-self-delete-actions .button{width:100%}}
