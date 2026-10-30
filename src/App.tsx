@@ -1833,7 +1833,7 @@ export default function App() {
             {perkTraitImageStatus && <p className="muted-copy" role="status">{perkTraitImageStatus}</p>}
           </section>
       </section>}
-      {adminTab === 'action-log' && <ActionLog userId={account?.userId} accessToken={account?.accessToken} />}
+      {adminTab === 'action-log' && <ActionLog accessToken={account?.accessToken} />}
       {adminTab === 'profiles' && <section className="admin-panel profile-management-panel">
         <div className="section-heading"><div><p className="eyebrow">ACCOUNT CONTROL</p><h2>Profile management</h2></div><span className="count-label">{adminProfiles.length} profiles</span></div>
         <p className="muted-copy">A clear overview of registered members and trusted administrators. Select any profile to view its public identity and manage its account status, including suspension, restoration and permanent deletion. Trusted administrator access remains protected by the database allowlist.</p>
