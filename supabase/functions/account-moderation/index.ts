@@ -47,10 +47,11 @@ Deno.serve(async (req: Request) => {
       return json({ suspended: Boolean(suspension) });
     }
 
-    if (body.action === "record_login" || body.action === "record_logout") {
+    if (body.action === "record_login" || body.action === "record_logout" || body.action === "record_password_change") {
       const { data: profile } = await adminClient.from("profiles").select("username").eq("id", actor.id).maybeSingle();
+      const eventKey = body.action === "record_login" ? "LOGIN_SUCCESS" : body.action === "record_logout" ? "LOGOUT" : "PASSWORD_CHANGED";
       const { error: logError } = await adminClient.from("action_logs").insert({
-        event_key: body.action === "record_login" ? "LOGIN_SUCCESS" : "LOGOUT",
+        event_key: eventKey,
         category: "auth",
         actor_user_id: actor.id,
         actor_username: profile?.username ?? actor.email?.split("@")[0] ?? null,
