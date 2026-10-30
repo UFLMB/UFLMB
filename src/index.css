@@ -7243,23 +7243,52 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 /* Unified Light Mode stadium treatment — public and admin.
-   Soften the photo itself, then place the same translucent white veil above it.
-   These selectors are Light-mode-only; both Dark-mode layers remain untouched. */
+   A single fixed white veil removes the dark/bright banding while preserving
+   a softly visible stadium image. Dark mode is intentionally untouched. */
 :root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell))::after,
 :root[data-ui-theme="light"] body.has-background-images:has(.admin-shell)::after {
-  opacity: .55 !important;
-  filter: contrast(1.03) saturate(.88) brightness(1.02) !important;
+  display: block !important;
+  content: "" !important;
+  opacity: .58 !important;
+  filter: contrast(1.02) saturate(.88) brightness(1.02) !important;
+  z-index: 0 !important;
 }
 :root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell))::before,
 :root[data-ui-theme="light"] body.has-background-images:has(.admin-shell)::before {
   display: block !important;
   content: "" !important;
   opacity: 1 !important;
-  background: linear-gradient(
-    180deg,
-    rgba(248,250,252,.46) 0%,
-    rgba(248,250,252,.56) 48%,
-    rgba(248,250,252,.66) 100%
-  ) !important;
+  background: rgba(248,250,252,.68) !important;
+  z-index: 1 !important;
+}
+
+/* Light Mode glass surfaces — consistent, softly translucent panels.
+   Keep readable dark text while allowing the stadium image to show through. */
+:root[data-ui-theme="light"] body.has-background-images .profile-page .account-profile-hero,
+:root[data-ui-theme="light"] body.has-background-images .profile-page .account-panel,
+:root[data-ui-theme="light"] body.has-background-images .profile-page .account-detail-panel {
+  background: rgba(247,249,244,.78) !important;
+  background-image: none !important;
+  border-color: rgba(255,255,255,.62) !important;
+  color: #18202b !important;
+  box-shadow: 0 12px 34px rgba(20,30,45,.09), inset 0 1px 0 rgba(255,255,255,.48) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(115%) !important;
+  backdrop-filter: blur(12px) saturate(115%) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-featured,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-overview article,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .featured-player,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .player-card,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .compare-panel,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .squad-panel,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .analytics-panel,
+:root[data-ui-theme="light"] body.has-background-images .admin-shell .admin-panel,
+:root[data-ui-theme="light"] body.has-background-images .admin-shell .analytics-panel {
+  background-color: rgba(247,249,244,.76) !important;
+  background-image: none !important;
+  border-color: rgba(255,255,255,.58) !important;
+  box-shadow: 0 10px 30px rgba(20,30,45,.075), inset 0 1px 0 rgba(255,255,255,.42) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(112%) !important;
+  backdrop-filter: blur(10px) saturate(112%) !important;
 }
 
