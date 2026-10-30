@@ -7302,7 +7302,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] body.has-background-images .account-page-heading,
 :root[data-ui-theme="light"] body.has-background-images .admin-overview-shell {
   color: #18202b !important;
-  background: rgba(247,249,244,.05) !important;
+  background: rgba(247,249,244,.10) !important;
   background-image: none !important;
   border: 1px solid rgba(255,255,255,.72) !important;
   border-radius: 20px !important;
