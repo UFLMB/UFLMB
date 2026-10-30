@@ -428,7 +428,8 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
     } catch (error) {
       const raw = error instanceof Error ? error.message : 'Authentication failed. Please try again.'
       const lower = raw.toLowerCase()
-      const friendly = lower.includes('invalid login credentials') ? 'The email or password is incorrect.'
+      const friendly = lower.includes('account is suspended') || lower.includes('user is banned') || lower.includes('banned') ? 'Account is suspended.'
+        : lower.includes('invalid login credentials') ? 'The email or password is incorrect.'
         : lower.includes('email not confirmed') ? 'Please confirm your email using the link we sent you.'
         : lower.includes('user already registered') ? 'An account with this email already exists. Try signing in instead.'
         : lower.includes('username_policy') || lower.includes('username policy') || lower.includes('offensive') || lower.includes('official, admin') ? 'That username is not allowed. Choose a non-offensive name that does not imply official or staff status.'
