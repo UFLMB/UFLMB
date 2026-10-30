@@ -1,24 +1,28 @@
-import { useState } from 'react'
-import type { FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import './AccountManagement.css'
 
-type Props = { userId?: string; accessToken?: string; isAdmin: boolean; adminView: boolean }
+type SelectedAccount = { id: string; username: string; createdAt: string | null; isAdmin: boolean }
+type Props = {
+  userId?: string
+  accessToken?: string
+  isAdmin: boolean
+  adminView: boolean
+  selectedAccount: SelectedAccount
+  onDeleted?: () => void
+}
 type Account = { id: string; username: string; createdAt: string | null; suspended: boolean; suspensionReason: string | null }
 type Action = 'suspend' | 'restore' | 'delete'
 
 const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-export default function AccountManagement({ userId, accessToken, isAdmin, adminView }: Props) {
-  const [username, setUsername] = useState('')
+export default function AccountManagement({ userId, accessToken, isAdmin, adminView, selectedAccount, onDeleted }: Props) {
   const [reason, setReason] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [account, setAccount] = useState<Account | null>(null)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-
-  if (!isAdmin || !adminView) return null
 
   const call = async (payload: Record<string, string>) => {
     if (!endpoint || !anonKey || !accessToken) throw new Error('A valid administrator session is required.')
@@ -33,21 +37,43 @@ export default function AccountManagement({ userId, accessToken, isAdmin, adminV
     return result
   }
 
-  const lookup = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setBusy(true); setError(''); setMessage(''); setAccount(null); setConfirmation('')
-    try {
-      const result = await call({ action: 'lookup', username: username.trim() })
-      if (!result.account) throw new Error('No registered account matched that exact username.')
-      setAccount(result.account)
-      setUsername(result.account.username)
-      setMessage('Account found. Review the status and reason before taking action.')
-    } catch (err) { setError(err instanceof Error ? err.message : 'Account lookup failed.') }
-    finally { setBusy(false) }
-  }
+  useEffect(() => {
+    let cancelled = false
+    setAccount(null)
+    setReason('')
+    setConfirmation('')
+    setError('')
+    setMessage('')
+    if (!isAdmin || !adminView || !accessToken) {
+      setError('A verified administrator session is required.')
+      return () => { cancelled = true }
+    }
+    if (selectedAccount.isAdmin) {
+      setMessage('This is a trusted administrator account. Suspension and deletion are protected.')
+      return () => { cancelled = true }
+    }
+    void (async () => {
+      setBusy(true)
+      try {
+        const result = await call({ action: 'lookup', username: selectedAccount.username })
+        if (!result.account || result.account.id !== selectedAccount.id) {
+          throw new Error('The selected account could not be verified. Refresh the profile list before continuing.')
+        }
+        if (!cancelled) {
+          setAccount(result.account)
+          setMessage('Account verified. Actions below apply only to this selected profile.')
+        }
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Account status could not be loaded.')
+      } finally {
+        if (!cancelled) setBusy(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [selectedAccount.id, selectedAccount.username, selectedAccount.isAdmin, isAdmin, adminView, accessToken])
 
   const runAction = async (action: Action) => {
-    if (!account || !reason.trim() || !accessToken) return
+    if (!account || !reason.trim() || !accessToken || busy) return
     const expected = action === 'delete' ? 'DELETE ' + account.username : account.username
     if (confirmation !== expected) {
       setError(action === 'delete'
@@ -71,41 +97,51 @@ export default function AccountManagement({ userId, accessToken, isAdmin, adminV
         confirmation,
         targetUserId: account.id,
       })
-      setMessage(result.message || (action === 'delete' ? 'Account deleted.' : action === 'suspend' ? 'Account suspended.' : 'Account restored.'))
       if (action === 'delete') {
-        setAccount(null); setUsername(''); setReason(''); setConfirmation('')
+        setAccount(null)
+        setReason('')
+        setConfirmation('')
+        setMessage(result.message || 'Account permanently deleted.')
+        onDeleted?.()
       } else {
         setAccount(current => current ? { ...current, suspended: action === 'suspend', suspensionReason: action === 'suspend' ? reason.trim() : null } : current)
         setConfirmation('')
+        setMessage(result.message || (action === 'suspend' ? 'Account suspended.' : 'Account restored.'))
       }
-    } catch (err) { setError(err instanceof Error ? err.message : 'The account action failed.') }
-    finally { setBusy(false) }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'The account action failed.')
+    } finally {
+      setBusy(false)
+    }
   }
 
-  return <section className="admin-panel account-management-panel">
-    <div className="section-heading"><div><p className="eyebrow">ACCOUNT SAFETY</p><h2>Account suspension & deletion</h2></div></div>
-    <p className="muted-copy">These are privileged actions. Accounts on the administrator allowlist cannot be suspended or deleted. Every action requires a reason and is recorded in the server-side audit log.</p>
+  const expectedConfirmation = account ? (account.suspended ? account.username : account.username) : ''
+
+  return <div className="account-management-panel">
+    <div className="account-management-heading">
+      <div><p className="eyebrow">ACCOUNT ACTIONS</p><h3>Account status & safety</h3></div>
+      {account && <span className={account.suspended ? 'account-status suspended' : 'account-status active'}>{account.suspended ? 'Suspended' : 'Active'}</span>}
+      {selectedAccount.isAdmin && <span className="account-status protected">Protected admin</span>}
+    </div>
+    <p className="account-management-description">Manage this selected account here. Every privileged action is checked by the server and recorded in the moderation audit log.</p>
     {error && <p className="account-management-error" role="alert">{error}</p>}
     {message && <p className="account-management-message" role="status">{message}</p>}
-    <form className="account-lookup-form" onSubmit={lookup}>
-      <label>Exact registered username<input value={username} onChange={event => setUsername(event.target.value)} minLength={3} maxLength={24} pattern="[A-Za-z0-9_]{3,24}" required placeholder="Member username" /></label>
-      <button type="submit" className="button secondary" disabled={busy || username.trim().length < 3}>Find account</button>
-    </form>
-    {account && <div className="account-management-target">
-      <div className="account-management-target-heading">
-        <div><h3>@{account.username}</h3><p>Registered {account.createdAt ? new Date(account.createdAt).toLocaleDateString() : 'date unavailable'}</p></div>
-        <span className={account.suspended ? 'account-status suspended' : 'account-status active'}>{account.suspended ? 'Suspended' : 'Active'}</span>
-      </div>
-      {account.suspended && <p className="account-suspension-reason"><strong>Current reason:</strong> {account.suspensionReason || 'No reason recorded'}</p>}
-      <label>Reason for this action<textarea value={reason} onChange={event => setReason(event.target.value)} minLength={10} maxLength={500} rows={3} required placeholder="Record the policy reason and context (10–500 characters)." /></label>
-      <label>Confirmation {account.suspended ? '(type the exact username to restore; type DELETE username to permanently delete)' : '(type the exact username to suspend; type DELETE username to permanently delete)'}<input value={confirmation} onChange={event => setConfirmation(event.target.value)} autoComplete="off" placeholder={account.suspended ? account.username : 'Username or DELETE username'} required /></label>
+    {busy && <p className="account-management-loading" role="status">Verifying account status…</p>}
+    {account?.suspended && <p className="account-suspension-reason"><strong>Current suspension reason:</strong> {account.suspensionReason || 'No reason recorded'}</p>}
+    {account && <>
+      <label className="account-management-field">Reason for this action
+        <textarea value={reason} onChange={event => setReason(event.target.value)} minLength={10} maxLength={500} rows={3} required placeholder="Record the policy reason and context (10–500 characters)." />
+      </label>
+      <label className="account-management-field">Confirmation <small>{account.suspended ? 'Type the exact username to restore, or DELETE username to permanently delete.' : 'Type the exact username to suspend, or DELETE username to permanently delete.'}</small>
+        <input value={confirmation} onChange={event => setConfirmation(event.target.value)} autoComplete="off" placeholder={account.username} required />
+      </label>
       <div className="account-management-actions">
-        {!account.suspended && <button type="button" className="button danger" disabled={busy || reason.trim().length < 10 || confirmation !== account.username} onClick={() => void runAction('suspend')}>Suspend account</button>}
+        {!account.suspended && <button type="button" className="button danger" disabled={busy || reason.trim().length < 10 || confirmation !== expectedConfirmation} onClick={() => void runAction('suspend')}>Suspend account</button>}
         {account.suspended && <button type="button" className="button primary" disabled={busy || reason.trim().length < 10 || confirmation !== account.username} onClick={() => void runAction('restore')}>Restore account</button>}
         <button type="button" className="button danger account-delete-button" disabled={busy || reason.trim().length < 10 || confirmation !== 'DELETE ' + account.username} onClick={() => void runAction('delete')}>Permanently delete</button>
       </div>
       <p className="account-management-caution">Permanent deletion cannot be undone. If the account owns Supabase Storage objects, deletion may be rejected until those objects are reassigned or removed.</p>
-    </div>}
-    <small className="account-management-footnote">Signed-in administrator: {userId ? 'verified session' : 'session unavailable'}</small>
-  </section>
+    </>}
+    <small className="account-management-footnote">Selected account: @{selectedAccount.username} · {selectedAccount.createdAt ? 'Registered ' + new Date(selectedAccount.createdAt).toLocaleDateString() : 'Registration date unavailable'} · {userId ? 'administrator session verified' : 'session unavailable'}</small>
+  </div>
 }
