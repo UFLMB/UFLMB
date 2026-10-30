@@ -105,6 +105,6 @@ export default function ActionLog({ accessToken }: Props) {
       </article>)}
     </div>
     {offset < count && <div className="action-log-more"><button type="button" className="button secondary" onClick={() => void load(false)} disabled={busy}>{busy ? 'Loading…' : 'Load more events'}</button></div>}
-    <small className="action-log-footnote">Showing {visibleLogs.length.toLocaleString()} loaded entries · {count.toLocaleString()} total matching events · Newest first</small>
+    <small className="action-log-footnote">Showing {visibleLogs.length.toLocaleString()} loaded entries · {count.toLocaleString()} total events for selected filters · Newest first</small>
   </section>
 }
