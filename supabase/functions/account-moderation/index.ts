@@ -47,9 +47,62 @@ Deno.serve(async (req: Request) => {
       return json({ suspended: Boolean(suspension) });
     }
 
+    if (body.action === "record_login" || body.action === "record_logout") {
+      const { data: profile } = await adminClient.from("profiles").select("username").eq("id", actor.id).maybeSingle();
+      const { error: logError } = await adminClient.from("action_logs").insert({
+        event_key: body.action === "record_login" ? "LOGIN_SUCCESS" : "LOGOUT",
+        category: "auth",
+        actor_user_id: actor.id,
+        actor_username: profile?.username ?? actor.email?.split("@")[0] ?? null,
+        details: { method: typeof body.method === "string" && ["email_password","username_password","session_restore"].includes(body.method) ? body.method : "password" },
+        outcome: "success",
+      });
+      if (logError) return json({ error: "The authentication event could not be recorded." }, 500);
+      return json({ recorded: true });
+    }
+
+    if (body.action === "delete_self") {
+      const { data: profile, error: profileError } = await adminClient.from("profiles").select("id,username").eq("id", actor.id).maybeSingle();
+      if (profileError || !profile) return json({ error: "The account profile could not be verified." }, 404);
+      const { data: adminAccount, error: adminLookupError } = await adminClient.from("admin_users").select("user_id").eq("user_id", actor.id).maybeSingle();
+      if (adminLookupError) return json({ error: "Account privileges could not be verified." }, 500);
+      if (adminAccount) return json({ error: "Trusted administrator accounts cannot be self-deleted." }, 403);
+      if (body.confirmation !== "DELETE " + profile.username) return json({ error: "Type DELETE followed by your exact username to confirm." }, 400);
+
+      const { data: log, error: logError } = await adminClient.from("action_logs").insert({
+        event_key: "ACCOUNT_DELETED", category: "profile",
+        actor_user_id: actor.id, actor_username: profile.username,
+        target_user_id: actor.id, target_username: profile.username,
+        details: { deletion_source: "self_service" }, outcome: "pending",
+      }).select("id").single();
+      if (logError || !log) return json({ error: "The deletion could not be securely logged, so no account change was made." }, 500);
+
+      const { error: deleteError } = await adminClient.auth.admin.deleteUser(actor.id);
+      const outcome = deleteError ? "failed" : "success";
+      const { error: updateError } = await adminClient.from("action_logs").update({
+        outcome, details: { deletion_source: "self_service", ...(deleteError ? { failure: "Auth account deletion was rejected." } : {}) },
+      }).eq("id", log.id);
+      if (deleteError) return json({ error: "Account deletion failed. Your account remains active; please contact support if this continues." }, 500);
+      if (updateError) return json({ error: "The account was deleted, but the audit status could not be finalized. The pending audit entry has been retained." }, 500);
+      return json({ message: "Your UFLMB account has been permanently deleted." });
+    }
+
     const { data: adminRow, error: adminError } = await adminClient
       .from("admin_users").select("user_id").eq("user_id", actor.id).maybeSingle();
     if (adminError || !adminRow) return json({ error: "Administrator authorization is required." }, 403);
+
+    if (body.action === "list_action_logs") {
+      const requestedLimit = Number(body.limit);
+      const requestedOffset = Number(body.offset);
+      const limit = Number.isInteger(requestedLimit) ? Math.min(100, Math.max(1, requestedLimit)) : 50;
+      const offset = Number.isInteger(requestedOffset) ? Math.min(100000, Math.max(0, requestedOffset)) : 0;
+      let query = adminClient.from("action_logs").select("*", { count: "exact" }).order("created_at", { ascending: false }).range(offset, offset + limit - 1);
+      if (typeof body.category === "string" && ["auth","profile","moderation","community","support","content","system"].includes(body.category)) query = query.eq("category", body.category);
+      if (typeof body.outcome === "string" && ["success","failed","pending"].includes(body.outcome)) query = query.eq("outcome", body.outcome);
+      const { data: logs, count, error } = await query;
+      if (error) return json({ error: "The action log could not be loaded." }, 500);
+      return json({ logs: logs ?? [], count: count ?? 0, limit, offset });
+    }
 
     if (body.action === "profile_statuses") {
       if (!Array.isArray(body.userIds) || body.userIds.length > 500 ||
@@ -65,10 +118,10 @@ Deno.serve(async (req: Request) => {
       if (suspensionError || warningsError) {
         return json({ error: "Could not load profile moderation statuses." }, 500);
       }
-      const statuses: Record<string, "member" | "warned" | "banned"> = {};
+      const statuses: Record<string, "member" | "warn" | "suspended"> = {};
       for (const id of userIds) statuses[id] = "member";
-      for (const warning of warnings ?? []) statuses[warning.user_id] = "warned";
-      for (const suspension of suspensions ?? []) statuses[suspension.user_id] = "banned";
+      for (const warning of warnings ?? []) statuses[warning.user_id] = "warn";
+      for (const suspension of suspensions ?? []) statuses[suspension.user_id] = "suspended";
       return json({ statuses });
     }
 
@@ -146,6 +199,17 @@ Deno.serve(async (req: Request) => {
       .select("id").single();
     if (auditError || !audit) return json({ error: "The action could not be logged, so no change was made." }, 500);
 
+    const eventKey = action === "delete" ? "ACCOUNT_BANNED" : action === "suspend" ? "ACCOUNT_SUSPENDED" : "ACCOUNT_RESTORED";
+    const { data: actorProfile } = await adminClient.from("profiles").select("username").eq("id", actor.id).maybeSingle();
+    const { data: actionLog, error: actionLogError } = await adminClient.from("action_logs").insert({
+      event_key: eventKey, category: "moderation",
+      actor_user_id: actor.id, actor_username: actorProfile?.username ?? null,
+      target_user_id: target.id, target_username: target.username,
+      details: { reason, action_source: "admin_profile_management", deletion_behavior: action === "delete" ? "permanent_auth_deletion" : null },
+      outcome: "pending",
+    }).select("id").single();
+    if (actionLogError || !actionLog) return json({ error: "The action could not be recorded in the central audit log, so no change was made." }, 500);
+
     let actionError: string | null = null;
     if (action === "suspend") {
       const { error: suspensionError } = await adminClient.from("account_suspensions").upsert({
@@ -181,10 +245,14 @@ Deno.serve(async (req: Request) => {
     const outcome = actionError ? "failed" : "completed";
     const { error: auditUpdateError } = await adminClient.from("account_moderation_audit")
       .update({ outcome, completed_at: new Date().toISOString() }).eq("id", audit.id);
-    if (actionError) return json({ error: actionError + (auditUpdateError ? " The audit entry remains pending." : "") }, 500);
-    if (auditUpdateError) return json({ error: "The action succeeded, but the audit status update failed. The audit entry remains pending; verify the account before retrying." }, 500);
+    const { error: centralLogUpdateError } = await adminClient.from("action_logs").update({
+      outcome: actionError ? "failed" : "success",
+      details: { reason, action_source: "admin_profile_management", deletion_behavior: action === "delete" ? "permanent_auth_deletion" : null, ...(actionError ? { failure: actionError } : {}) },
+    }).eq("id", actionLog.id);
+    if (actionError) return json({ error: actionError + (auditUpdateError || centralLogUpdateError ? " The audit entry remains pending." : "") }, 500);
+    if (auditUpdateError || centralLogUpdateError) return json({ error: "The action succeeded, but an audit status update failed. The pending audit entry has been retained; verify the account before retrying." }, 500);
 
-    return json({ message: action === "suspend" ? "Account suspended and new sign-ins blocked." : action === "restore" ? "Account restored." : "Account permanently deleted." });
+    return json({ message: action === "suspend" ? "Account suspended and new sign-ins blocked." : action === "restore" ? "Account restored." : "Account permanently banned and deleted." });
   } catch {
     return json({ error: "The request could not be completed. Verify the account and try again." }, 500);
   }
