@@ -33,3 +33,16 @@
 .action-log-entry.banned{border-color:rgba(248,113,113,.34);background:linear-gradient(100deg,rgba(248,113,113,.065),rgba(248,113,113,.015))}
 .action-log-entry.banned .action-log-entry-title strong{color:#f87171}
 :root[data-ui-theme="light"] .action-log-entry.banned{border-color:rgba(180,35,24,.25);background:rgba(248,113,113,.045)}
+
+.action-log-details{margin-top:9px;border-top:1px solid var(--line,rgba(255,255,255,.08));padding-top:7px}
+.action-log-details summary{width:max-content;max-width:100%;color:var(--muted,#9299a8);font-size:9px;font-weight:700;cursor:pointer;list-style:none}
+.action-log-details summary::-webkit-details-marker{display:none}
+.action-log-details summary:after{content:' +';color:var(--accent,#a3e635)}
+.action-log-details[open] summary:after{content:' −'}
+.action-log-details dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 14px;margin:9px 0 0}
+.action-log-details dl>div{display:grid;gap:3px;min-width:0}
+.action-log-details dt{color:var(--muted,#9299a8);font-size:8px;text-transform:capitalize}
+.action-log-details dd{margin:0;color:var(--text-color,#f3f5f8);font-family:'DM Mono',monospace;font-size:9px;overflow-wrap:anywhere}
+:root[data-ui-theme="light"] .action-log-details{border-color:rgba(20,30,45,.1)}
+:root[data-ui-theme="light"] .action-log-details dd{color:#18202b}
+@media(max-width:480px){.action-log-details dl{grid-template-columns:1fr}}
