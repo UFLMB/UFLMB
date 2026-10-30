@@ -7314,6 +7314,13 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] body.has-background-images .hero {
   padding: clamp(24px, 4.5vw, 46px) !important;
 }
+
+/* Remove only the outer hero outlines in Light mode; preserve all other panels and inner controls. */
+:root[data-ui-theme="light"] body.has-background-images .home-hero,
+:root[data-ui-theme="light"] body.has-background-images .hero,
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell {
+  border: none !important;
+}
 :root[data-ui-theme="light"] body.has-background-images .account-page-heading {
   padding: clamp(20px, 3.5vw, 34px) !important;
   margin-bottom: 22px !important;
