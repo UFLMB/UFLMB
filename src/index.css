@@ -7392,3 +7392,28 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     border-radius: 16px !important;
   }
 }
+
+/* Light-mode contrast for notices and public filter/category controls inside glass headers. */
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell .notice {
+  color: #344154 !important;
+  background: rgba(224,239,190,.72) !important;
+  border-color: rgba(111,153,35,.34) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell .notice.warning {
+  color: #654b20 !important;
+  background: rgba(255,239,207,.82) !important;
+  border-color: rgba(194,139,48,.38) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .hero .category {
+  color: #3f4c5b !important;
+  background: rgba(255,255,255,.48) !important;
+  border-color: rgba(71,84,99,.24) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .hero .category.active {
+  color: #456b0f !important;
+  background: rgba(163,230,53,.20) !important;
+  border-color: rgba(111,153,35,.48) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .hero .filter-disclosure > summary {
+  color: #263344 !important;
+}
