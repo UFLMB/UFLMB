@@ -491,7 +491,7 @@ export default function App() {
       return
     }
     let cancelled = false
-    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\\/$/, '')
+    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
     if (!endpoint || !anonKey) {
       setSelectedProfileReviewCount(null)
@@ -511,7 +511,7 @@ export default function App() {
         })
         if (!response.ok) throw new Error('Review count is unavailable')
         const range = response.headers.get('content-range') || ''
-        const match = range.match(/\\/(\\d+)$/)
+        const match = range.match(/\/(\d+)$/)
         if (!cancelled) setSelectedProfileReviewCount(match ? Number(match[1]) : 0)
       } catch {
         if (!cancelled) setSelectedProfileReviewCount(null)
@@ -1855,7 +1855,7 @@ export default function App() {
               <div className="profile-management-readonly-identity">
                 <div className="profile-management-meta"><span>Username</span><strong>@{selectedAdminProfile.username}</strong></div>
                 <div className="profile-management-meta"><span>User ID (UUID)</span><strong className="profile-management-uuid">{selectedAdminProfile.id}</strong></div>
-                <div className="profile-management-meta"><span>Email Verified</span><strong>Unavailable</strong></div>
+                <div className="profile-management-meta"><span>Email Verified</span><strong>Not exposed</strong></div>
                 <div className="profile-management-meta"><span>Total Reviews</span><strong>{selectedProfileReviewCount === null ? 'Unavailable' : selectedProfileReviewCount}</strong></div>
                 <div className="profile-management-meta"><span>Created</span><strong>{new Date(selectedAdminProfile.created_at).toLocaleString()}</strong></div>
                 <div className="profile-management-meta"><span>Last updated</span><strong>{new Date(selectedAdminProfile.updated_at).toLocaleString()}</strong></div>
