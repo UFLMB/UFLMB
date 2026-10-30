@@ -44,6 +44,7 @@ jobs:
         with:
           path: ./dist
 
+  # Keep deployment isolated so a fresh Pages run can be retried independently.
   deploy:
     environment:
       name: github-pages
