@@ -6887,3 +6887,41 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .admin-shell .admin-intro .hero-copy {
   color: #cbd5e1 !important;
 }
+
+
+/* Admin-only Light Mode background restoration.
+   Public Light Mode intentionally hides rotating photos; the Admin Dashboard must still
+   reveal the configured stadium image behind its transparent shell. */
+:root[data-ui-theme="light"] body.has-background-images:has(.admin-shell) {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+:root[data-ui-theme="light"] body.has-background-images:has(.admin-shell)::after {
+  display: block !important;
+  content: "" !important;
+  background-image: var(--site-background-image) !important;
+}
+
+:root[data-ui-theme="light"] body.has-background-images:has(.admin-shell)::before {
+  display: block !important;
+  content: "" !important;
+  background: linear-gradient(
+    180deg,
+    rgba(5, 8, 14, .53) 0%,
+    rgba(5, 8, 14, .62) 48%,
+    rgba(5, 8, 14, .72) 100%
+  ) !important;
+}
+
+:root[data-ui-theme="light"] #root:has(.admin-shell) {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+:root[data-ui-theme="light"] body.has-background-images .admin-shell {
+  position: relative !important;
+  z-index: 2 !important;
+}
