@@ -56,7 +56,7 @@ export default function AccountManagement({ userId, accessToken, isAdmin, adminV
       return
     }
     const detail = action === 'delete'
-      ? 'This permanently deletes the Auth account, profile, preferences, support conversation and messages, and received warnings. Public reviews without an account link and the moderation audit trail are retained.'
+      ? 'This permanently deletes the Auth account, profile, preferences, support conversation and messages, and received warnings. Public review ratings and text are retained under the display name “Deleted member”; moderation queue identity and excerpt copies are cleared. The administrator audit trail retains the target account identifier and username.'
       : action === 'suspend'
         ? 'This blocks new sign-ins and restricts account-scoped access. Existing public, anonymous access to public content is not a ban from the public website.'
         : 'This restores sign-in and account-scoped access for this member.'
