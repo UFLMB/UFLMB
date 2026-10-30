@@ -1,1 +1,22 @@
-.account-management-panel{margin-top:18px}.account-lookup-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:12px;margin:16px 0}.account-lookup-form label,.account-management-target>label{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:600}.account-lookup-form input,.account-management-target input,.account-management-target textarea{width:100%;box-sizing:border-box;border:1px solid var(--border-color,rgba(128,140,155,.35));border-radius:9px;padding:10px 12px;background:var(--panel-bg,rgba(128,140,155,.07));color:inherit;font:inherit;font-weight:400}.account-management-target{display:grid;gap:14px;padding:16px;border:1px solid var(--border-color,rgba(128,140,155,.3));border-radius:12px;background:var(--panel-bg,rgba(128,140,155,.05))}.account-management-target-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.account-management-target-heading h3{margin:0;font-size:16px}.account-management-target-heading p{margin:5px 0 0;color:var(--muted-text,#8490a2);font-size:12px}.account-status{border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800}.account-status.active{color:#3d6815;background:rgba(163,230,53,.16)}.account-status.suspended{color:#b91c1c;background:rgba(239,68,68,.12)}.account-suspension-reason{margin:0;font-size:12px}.account-management-actions{display:flex;flex-wrap:wrap;gap:9px}.account-delete-button{margin-left:auto}.account-management-caution{margin:0;color:#d97706;font-size:12px;line-height:1.5}.account-management-error,.account-management-message{padding:10px 12px;border-radius:8px;font-size:12px}.account-management-error{color:#dc2626;background:rgba(239,68,68,.09)}.account-management-message{color:#4d7c0f;background:rgba(163,230,53,.1)}.account-management-footnote{color:var(--muted-text,#8490a2);font-size:10px}@media(max-width:600px){.account-lookup-form{grid-template-columns:1fr}.account-management-actions{display:grid;grid-template-columns:1fr}.account-delete-button{margin-left:0}.account-management-target{padding:12px}}
+.account-management-panel{display:grid;gap:12px;margin-top:18px;padding:16px;border:1px solid var(--border-color,rgba(128,140,155,.3));border-radius:12px;background:var(--panel-bg,rgba(128,140,155,.045))}
+.account-management-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.account-management-heading h3{margin:2px 0 0;font-size:15px}
+.account-management-heading .eyebrow{margin:0}
+.account-management-description{margin:0;color:var(--muted-text,#8490a2);font-size:12px;line-height:1.5}
+.account-management-field{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:600}
+.account-management-field small{font-size:11px;font-weight:400;color:var(--muted-text,#8490a2)}
+.account-management-field input,.account-management-field textarea{width:100%;box-sizing:border-box;border:1px solid var(--border-color,rgba(128,140,155,.35));border-radius:9px;padding:10px 12px;background:var(--panel-bg,rgba(128,140,155,.07));color:inherit;font:inherit;font-weight:400}
+.account-management-actions{display:flex;flex-wrap:wrap;gap:9px}
+.account-delete-button{margin-left:auto}
+.account-management-caution{margin:0;color:#d97706;font-size:12px;line-height:1.5}
+.account-status{border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800;white-space:nowrap}
+.account-status.active{color:#3d6815;background:rgba(163,230,53,.16)}
+.account-status.suspended{color:#b91c1c;background:rgba(239,68,68,.12)}
+.account-status.protected{color:#64748b;background:rgba(148,163,184,.16)}
+.account-suspension-reason{margin:0;font-size:12px}
+.account-management-error,.account-management-message,.account-management-loading{padding:10px 12px;border-radius:8px;font-size:12px;margin:0}
+.account-management-error{color:#dc2626;background:rgba(239,68,68,.09)}
+.account-management-message{color:#4d7c0f;background:rgba(163,230,53,.1)}
+.account-management-loading{color:var(--muted-text,#8490a2);background:rgba(128,140,155,.08)}
+.account-management-footnote{color:var(--muted-text,#8490a2);font-size:10px}
+@media(max-width:600px){.account-management-panel{padding:12px}.account-management-actions{display:grid;grid-template-columns:1fr}.account-delete-button{margin-left:0}.account-management-heading{align-items:flex-start;flex-wrap:wrap}}
