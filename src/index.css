@@ -6826,3 +6826,8 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .account-self-delete-confirm{color:#18202b}
 :root[data-ui-theme="light"] .account-self-delete-confirm input{background:#fff;border-color:rgba(180,35,24,.25);color:#18202b}
 @media(max-width:560px){.account-self-delete-actions{flex-direction:column}.account-self-delete-actions .button{width:100%}}
+
+:root[data-ui-theme="light"] .profile-management-role.member { color:#3f6212; border-color:rgba(63,98,18,.25); background:rgba(163,230,53,.17); }
+:root[data-ui-theme="light"] .profile-management-role.warn { color:#92400e; border-color:rgba(146,64,14,.24); background:rgba(251,191,36,.16); }
+:root[data-ui-theme="light"] .profile-management-role.suspended { color:#c2410c; border-color:rgba(194,65,12,.24); background:rgba(251,146,60,.16); }
+:root[data-ui-theme="light"] .profile-management-role.banned { color:#b91c1c; border-color:rgba(185,28,28,.24); background:rgba(248,113,113,.13); }
