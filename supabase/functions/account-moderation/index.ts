@@ -88,7 +88,7 @@ Deno.serve(async (req: Request) => {
         outcome, details: { deletion_source: "self_service", ...(deleteError ? { failure: "Auth account deletion was rejected." } : {}) },
       }).eq("id", log.id);
       if (deleteError) return json({ error: "Account deletion failed. Your account remains active; please contact support if this continues." }, 500);
-      if (updateError) return json({ error: "The account was deleted, but the audit status could not be finalized. The pending audit entry has been retained." }, 500);
+      if (updateError) return json({ message: "Your account has been permanently deleted. The audit entry is retained as pending for administrator review.", auditPending: true });
       return json({ message: "Your UFLMB account has been permanently deleted." });
     }
 
@@ -255,7 +255,10 @@ Deno.serve(async (req: Request) => {
       details: { reason, action_source: "admin_profile_management", deletion_behavior: action === "delete" ? "permanent_auth_deletion" : null, ...(actionError ? { failure: actionError } : {}) },
     }).eq("id", actionLog.id);
     if (actionError) return json({ error: actionError + (auditUpdateError || centralLogUpdateError ? " The audit entry remains pending." : "") }, 500);
-    if (auditUpdateError || centralLogUpdateError) return json({ error: "The action succeeded, but an audit status update failed. The pending audit entry has been retained; verify the account before retrying." }, 500);
+    if (auditUpdateError || centralLogUpdateError) {
+      if (action === "delete") return json({ message: "The account was permanently banned and deleted. Its audit entry remains pending for administrator review.", auditPending: true });
+      return json({ error: "The action succeeded, but an audit status update failed. The pending audit entry has been retained; verify the account before retrying." }, 500);
+    }
 
     return json({ message: action === "suspend" ? "Account suspended and new sign-ins blocked." : action === "restore" ? "Account restored." : "Account permanently banned and deleted." });
   } catch {
