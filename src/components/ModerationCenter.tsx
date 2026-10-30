@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import './ModerationCenter.css'
-import AccountManagement from './AccountManagement'
 
 type QueueItem = {
   id: string
@@ -152,6 +151,5 @@ export default function ModerationCenter({ userId, accessToken, isAdmin, adminVi
           {selected.user_id ? <form className="moderation-warning-form" onSubmit={issueWarning}><h4>Issue user warning</h4><label>Policy area<select value={warningArea} onChange={event => setWarningArea(event.target.value)}><option value="community_review">Community review</option><option value="username">Username</option><option value="harassment">Harassment</option><option value="spam">Spam</option><option value="impersonation">Impersonation</option><option value="other">Other</option></select></label><label>Reason<textarea value={warningReason} onChange={event => setWarningReason(event.target.value)} minLength={3} maxLength={500} rows={3} required placeholder="Explain the rule and how to correct the issue…" /></label><button type="submit" className="button primary" disabled={busy || warningReason.trim().length < 3}>Issue warning</button></form> : <p className="moderation-note">This report has no linked signed-in account, so an account warning is unavailable. Do not infer identity from a display name.</p>}
         </>}</div></div>
     </section>}
-    <AccountManagement userId={userId} accessToken={accessToken} isAdmin={isAdmin} adminView={adminView} />
   </>
 }
