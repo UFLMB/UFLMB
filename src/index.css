@@ -6847,3 +6847,26 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .profile-page .profile-password-panel .account-panel-description {
   color: #657181;
 }
+
+
+/* Admin Card Manager hero: remove the light surface and preserve dark-theme contrast. */
+.admin-shell {
+  background: transparent !important;
+}
+.admin-shell > .admin-intro {
+  background: rgba(15, 23, 42, 0.6) !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 18px;
+  padding: 42px 24px 28px;
+}
+.admin-shell > .admin-intro h1 {
+  color: #ffffff !important;
+}
+.admin-shell > .admin-intro h1 span {
+  color: var(--lime, #a3e635) !important;
+}
+.admin-shell > .admin-intro .hero-copy {
+  color: #94a3b8 !important;
+}
