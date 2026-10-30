@@ -7424,3 +7424,40 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] body.has-background-images .hero .filter-disclosure > summary {
   color: #263344 !important;
 }
+
+
+/* Light mode full-bleed hero layout — public and admin only. */
+/* Let only the hero surfaces break out of the centered app shell.
+   Keep their inner content padded and leave all Dark mode layout untouched. */
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-page {
+  padding-top: 0 !important;
+  row-gap: 4px !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-page > .home-overview,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-page > .home-featured {
+  margin-top: 16px !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .home-hero,
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .hero,
+:root[data-ui-theme="light"] body.has-background-images .admin-shell .admin-overview-shell {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: calc(50% - 50vw) !important;
+  margin-top: 0 !important;
+  margin-bottom: 4px !important;
+  box-sizing: border-box !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid rgba(24,32,43,.20) !important;
+  border-left: 0 !important;
+  border-radius: 0 !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .app-shell:not(.admin-shell) .hero {
+  padding-left: clamp(20px, 4.5vw, 64px) !important;
+  padding-right: clamp(20px, 4.5vw, 64px) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .admin-shell .admin-overview-shell {
+  margin-top: 0 !important;
+  margin-bottom: 4px !important;
+}
