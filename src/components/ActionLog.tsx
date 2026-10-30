@@ -38,6 +38,7 @@ export default function ActionLog({ accessToken }: Props) {
   const [offset, setOffset] = useState(0)
   const [category, setCategory] = useState('all')
   const [outcome, setOutcome] = useState('all')
+  const [systemActions, setSystemActions] = useState(false)
   const [search, setSearch] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -51,7 +52,7 @@ export default function ActionLog({ accessToken }: Props) {
       const response = await fetch(endpoint + '/functions/v1/account-moderation', {
         method: 'POST',
         headers: { apikey: anonKey, Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'list_action_logs', limit: 50, offset: nextOffset, category, outcome }),
+        body: JSON.stringify({ action: 'list_action_logs', limit: 50, offset: nextOffset, category, outcome, systemActions }),
         cache: 'no-store',
       })
       const result = await response.json() as { logs?: LogEntry[]; count?: number; error?: string }
@@ -64,7 +65,7 @@ export default function ActionLog({ accessToken }: Props) {
     } finally { setBusy(false) }
   }
 
-  useEffect(() => { void load(true) }, [accessToken, category, outcome, refreshKey])
+  useEffect(() => { void load(true) }, [accessToken, category, outcome, systemActions, refreshKey])
 
   const visibleLogs = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -85,6 +86,7 @@ export default function ActionLog({ accessToken }: Props) {
       <label className="action-log-search"><span aria-hidden="true">⌕</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search loaded events, users or IDs…" aria-label="Search action log" /></label>
       <label>Category<select value={category} onChange={event => { setCategory(event.target.value); setOffset(0) }}><option value="all">All categories</option><option value="auth">Authentication</option><option value="profile">Profiles</option><option value="moderation">Moderation</option><option value="community">Community</option><option value="support">Support</option><option value="content">Content</option><option value="system">System</option></select></label>
       <label>Outcome<select value={outcome} onChange={event => { setOutcome(event.target.value); setOffset(0) }}><option value="all">All outcomes</option><option value="success">Successful</option><option value="failed">Failed</option><option value="pending">Pending</option></select></label>
+      <label className="action-log-system-toggle"><span>SYSTEM actions</span><span className="action-log-switch"><input type="checkbox" checked={systemActions} onChange={event => { setSystemActions(event.target.checked); setOffset(0) }} aria-label="Show system authentication actions" /><i aria-hidden="true" /></span></label>
       <button type="button" className="button secondary" onClick={() => setRefreshKey(value => value + 1)} disabled={busy}>↻ Refresh</button>
     </div>
     {error && <p className="action-log-error" role="alert">{error}</p>}
