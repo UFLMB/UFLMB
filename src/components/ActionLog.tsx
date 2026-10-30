@@ -31,7 +31,7 @@ const labels: Record<string, string> = {
 const eventLabel = (key: string) => labels[key] || key.toLowerCase().replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase())
 const dateLabel = (value: string) => new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
 
-export default function ActionLog({ userId, accessToken }: Props) {
+export default function ActionLog({ accessToken }: Props) {
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [count, setCount] = useState(0)
   const [offset, setOffset] = useState(0)
