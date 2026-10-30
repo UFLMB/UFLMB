@@ -133,7 +133,7 @@ export default function AccountManagement({ userId, accessToken, isAdmin, adminV
       <div className="account-management-actions">
         {!account.suspended && <button type="button" className="button danger" disabled={busy || !reason.trim()} onClick={() => void runAction('suspend')}>Suspend account</button>}
         {account.suspended && <button type="button" className="button primary" disabled={busy || !reason.trim()} onClick={() => void runAction('restore')}>Restore account</button>}
-        <button type="button" className="button danger account-delete-button" disabled={busy || reason.trim().length < 10 || confirmation !== 'DELETE ' + account.username} onClick={() => void runAction('delete')}>Permanently delete</button>
+        <button type="button" className="button danger account-delete-button" disabled={busy || !reason.trim() || confirmation !== 'DELETE ' + account.username} onClick={() => void runAction('delete')}>Permanently delete</button>
       </div>
       <p className="account-management-caution">Permanent deletion cannot be undone. If the account owns Supabase Storage objects, deletion may be rejected until those objects are reassigned or removed.</p>
     </>}
