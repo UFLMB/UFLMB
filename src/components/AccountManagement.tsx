@@ -125,14 +125,14 @@ export default function AccountManagement({ userId, accessToken, isAdmin, adminV
     {account?.suspended && <p className="account-suspension-reason"><strong>Current suspension reason:</strong> {account.suspensionReason || 'No reason recorded'}</p>}
     {account && <>
       <label className="account-management-field">Reason for this action
-        <textarea value={reason} onChange={event => setReason(event.target.value)} minLength={10} maxLength={500} rows={3} required placeholder="Record the policy reason and context (10–500 characters)." />
+        <textarea value={reason} onChange={event => setReason(event.target.value)} minLength={1} maxLength={500} rows={3} required placeholder="Enter any reason for this action (up to 500 characters)." />
       </label>
       <label className="account-management-field">Permanent deletion confirmation <small>Only needed to permanently delete this account. Type exactly: DELETE {account.username}</small>
         <input value={confirmation} onChange={event => setConfirmation(event.target.value)} autoComplete="off" placeholder={'DELETE ' + account.username} />
       </label>
       <div className="account-management-actions">
-        {!account.suspended && <button type="button" className="button danger" disabled={busy || reason.trim().length < 10} onClick={() => void runAction('suspend')}>Suspend account</button>}
-        {account.suspended && <button type="button" className="button primary" disabled={busy || reason.trim().length < 10} onClick={() => void runAction('restore')}>Restore account</button>}
+        {!account.suspended && <button type="button" className="button danger" disabled={busy || !reason.trim()} onClick={() => void runAction('suspend')}>Suspend account</button>}
+        {account.suspended && <button type="button" className="button primary" disabled={busy || !reason.trim()} onClick={() => void runAction('restore')}>Restore account</button>}
         <button type="button" className="button danger account-delete-button" disabled={busy || reason.trim().length < 10 || confirmation !== 'DELETE ' + account.username} onClick={() => void runAction('delete')}>Permanently delete</button>
       </div>
       <p className="account-management-caution">Permanent deletion cannot be undone. If the account owns Supabase Storage objects, deletion may be rejected until those objects are reassigned or removed.</p>
