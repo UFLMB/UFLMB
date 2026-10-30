@@ -2278,6 +2278,12 @@ export default function App() {
         const result = await response.json().catch(() => ({})) as { message?: string; msg?: string; error_description?: string }
         throw new Error(result.message || result.msg || result.error_description || ('Could not update password (HTTP ' + response.status + ').'))
       }
+      void fetch(endpoint + '/functions/v1/account-moderation', {
+        method: 'POST',
+        headers: { apikey: anonKey, Authorization: 'Bearer ' + account.accessToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'record_password_change' }),
+        cache: 'no-store',
+      }).catch(() => { /* Password update remains successful if audit delivery is temporarily unavailable. */ })
       setProfilePassword('')
       setProfilePasswordConfirm('')
       setProfileMessage('Password updated successfully.')
