@@ -9,6 +9,7 @@ type Props = {
   adminView: boolean
   selectedAccount: SelectedAccount
   onDeleted?: () => void
+  onStatusChanged?: () => void
 }
 type Account = { id: string; username: string; createdAt: string | null; suspended: boolean; suspensionReason: string | null }
 type Action = 'suspend' | 'restore' | 'delete'
@@ -16,7 +17,7 @@ type Action = 'suspend' | 'restore' | 'delete'
 const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-export default function AccountManagement({ userId, accessToken, isAdmin, adminView, selectedAccount, onDeleted }: Props) {
+export default function AccountManagement({ userId, accessToken, isAdmin, adminView, selectedAccount, onDeleted, onStatusChanged }: Props) {
   const [reason, setReason] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [account, setAccount] = useState<Account | null>(null)
@@ -104,6 +105,7 @@ export default function AccountManagement({ userId, accessToken, isAdmin, adminV
         setAccount(current => current ? { ...current, suspended: action === 'suspend', suspensionReason: action === 'suspend' ? reason.trim() : null } : current)
         setConfirmation('')
         setMessage(result.message || (action === 'suspend' ? 'Account suspended.' : 'Account restored.'))
+        onStatusChanged?.()
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The account action failed.')
