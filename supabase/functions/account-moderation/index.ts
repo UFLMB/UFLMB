@@ -95,11 +95,12 @@ Deno.serve(async (req: Request) => {
     if (typeof body.username !== "string" || !usernamePattern.test(body.username.trim())) {
       return json({ error: "Invalid target username." }, 400);
     }
-    if (typeof body.reason !== "string" || body.reason.trim().length < 10 || body.reason.trim().length > 500) {
-      return json({ error: "A reason of 10–500 characters is required." }, 400);
+    if (typeof body.reason !== "string" || !body.reason.trim() || body.reason.trim().length > 500) {
+      return json({ error: "A non-empty reason of up to 500 characters is required." }, 400);
     }
-    const expectedConfirmation = action === "delete" ? "DELETE " + body.username.trim() : body.username.trim();
-    if (body.confirmation !== expectedConfirmation) return json({ error: "The explicit confirmation does not match." }, 400);
+    if (action === "delete" && body.confirmation !== "DELETE " + body.username.trim()) {
+      return json({ error: "The explicit deletion confirmation does not match." }, 400);
+    }
 
     const { data: target, error: targetError } = await adminClient
       .from("profiles").select("id, username, created_at")
