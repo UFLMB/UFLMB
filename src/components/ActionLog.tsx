@@ -80,9 +80,9 @@ export default function ActionLog({ accessToken }: Props) {
       <div><p className="eyebrow">SECURITY & ACCOUNTABILITY</p><h2>Action log</h2></div>
       <span className="count-label">{count.toLocaleString()} events</span>
     </div>
-    <p className="muted-copy">A chronological, append-only record of account, moderation, community, support and database activity. Private message contents, passwords and access tokens are never displayed here.</p>
+    <p className="muted-copy">A central, time-ordered audit record of account, moderation, community, support and database activity. Private message contents, passwords and access tokens are never displayed here.</p>
     <div className="action-log-toolbar">
-      <label className="action-log-search"><span aria-hidden="true">⌕</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search events, users or IDs…" aria-label="Search action log" /></label>
+      <label className="action-log-search"><span aria-hidden="true">⌕</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search loaded events, users or IDs…" aria-label="Search action log" /></label>
       <label>Category<select value={category} onChange={event => { setCategory(event.target.value); setOffset(0) }}><option value="all">All categories</option><option value="auth">Authentication</option><option value="profile">Profiles</option><option value="moderation">Moderation</option><option value="community">Community</option><option value="support">Support</option><option value="content">Content</option><option value="system">System</option></select></label>
       <label>Outcome<select value={outcome} onChange={event => { setOutcome(event.target.value); setOffset(0) }}><option value="all">All outcomes</option><option value="success">Successful</option><option value="failed">Failed</option><option value="pending">Pending</option></select></label>
       <button type="button" className="button secondary" onClick={() => setRefreshKey(value => value + 1)} disabled={busy}>↻ Refresh</button>
