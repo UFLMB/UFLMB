@@ -20,7 +20,8 @@ const labels: Record<string, string> = {
   ACCOUNT_CREATED: 'Account created', ACCOUNT_DELETED: 'Account deleted', ACCOUNT_BANNED: 'Account banned & deleted',
   ACCOUNT_SUSPENDED: 'Account suspended', ACCOUNT_RESTORED: 'Suspension lifted', ACCOUNT_PROFILE_REMOVED: 'Profile removed',
   PROFILE_UPDATED: 'Profile updated', WARNING_ISSUED: 'Warning issued', WARNING_REMOVED: 'Warning removed',
-  WARNING_UPDATED: 'Warning updated', LOGIN_SUCCESS: 'Successful sign-in', LOGOUT: 'Signed out',
+  WARNING_UPDATED: 'Warning updated', LOGIN_SUCCESS: 'Successful sign-in', LOGOUT: 'Signed out', PASSWORD_CHANGED: 'Password changed',
+  ADMIN_ACCESS_GRANTED: 'Admin access granted', ADMIN_ACCESS_REVOKED: 'Admin access revoked', APP_STATE_UPDATE: 'Shared application state updated',
   REVIEW_SUBMITTED: 'Review submitted', REVIEW_UPDATED: 'Review updated', REVIEW_DELETED: 'Review deleted',
   MODERATION_CASE_CREATED: 'Moderation case created', MODERATION_CASE_UPDATED: 'Moderation case updated',
   SUPPORT_CONVERSATION_CREATED: 'Support conversation opened', SUPPORT_CONVERSATION_UPDATED: 'Support conversation updated',
@@ -89,7 +90,7 @@ export default function ActionLog({ accessToken }: Props) {
     {error && <p className="action-log-error" role="alert">{error}</p>}
     <div className="action-log-list" aria-live="polite">
       {visibleLogs.length === 0 && <div className="action-log-empty">{busy ? 'Loading audit events…' : 'No matching events were found.'}</div>}
-      {visibleLogs.map(log => <article className="action-log-entry" key={log.id}>
+      {visibleLogs.map(log => <article className={log.event_key === 'ACCOUNT_BANNED' ? 'action-log-entry banned' : 'action-log-entry'} key={log.id}>
         <div className="action-log-entry-main">
           <div className="action-log-entry-title"><strong>{eventLabel(log.event_key)}</strong><span className={'action-log-outcome ' + log.outcome}>{log.outcome}</span></div>
           <p>{log.actor_username ? <><b>@{log.actor_username}</b> </> : 'System '}<span className="action-log-verb">{log.event_key === 'ACCOUNT_BANNED' ? 'permanently banned and deleted' : log.event_key === 'ACCOUNT_DELETED' ? 'deleted their account' : 'performed this action'}</span>{log.target_username && log.target_username !== log.actor_username ? <> · Target: <b>@{log.target_username}</b></> : ''}</p>
@@ -99,6 +100,6 @@ export default function ActionLog({ accessToken }: Props) {
       </article>)}
     </div>
     {offset < count && <div className="action-log-more"><button type="button" className="button secondary" onClick={() => void load(false)} disabled={busy}>{busy ? 'Loading…' : 'Load more events'}</button></div>}
-    <small className="action-log-footnote">Showing {visibleLogs.length.toLocaleString()} of {count.toLocaleString()} loaded events · Newest first</small>
+    <small className="action-log-footnote">Showing {visibleLogs.length.toLocaleString()} loaded entries · {count.toLocaleString()} total matching events · Newest first</small>
   </section>
 }
