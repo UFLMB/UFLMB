@@ -14,7 +14,7 @@ export default function PrivacyAnalytics() {
     if (existing) return
 
     const script = document.createElement('script')
-    script.type = 'text/javascript'
+    script.type = 'module'
     script.defer = true
     script.src = 'https://static.cloudflareinsights.com/beacon.min.js'
     script.dataset.uflmbCloudflareAnalytics = 'true'
