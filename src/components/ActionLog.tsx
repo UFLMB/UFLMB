@@ -13,7 +13,7 @@ type LogEntry = {
   outcome: 'success' | 'failed' | 'pending'
   created_at: string
 }
-type Props = { userId?: string; accessToken?: string }
+type Props = { accessToken?: string }
 const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 const labels: Record<string, string> = {
