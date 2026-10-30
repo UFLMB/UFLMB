@@ -389,7 +389,7 @@ export default function App() {
   const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
   const [compareIds, setCompareIds] = useState<string[]>(() => { try { const saved: unknown = JSON.parse(localStorage.getItem('uflmb.compare.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string').slice(0, 3) : [] } catch { return [] } })
   const [showCompare, setShowCompare] = useState(false)
-  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'assets' | 'cloud' | 'profiles' | 'moderation'>(() => { try { const saved = sessionStorage.getItem('uflmb.admin.tab.v1'); return saved === 'cards' || saved === 'quality' || saved === 'imports' || saved === 'appearance' || saved === 'assets' || saved === 'cloud' || saved === 'profiles' || saved === 'moderation' ? saved : 'cards' } catch { return 'cards' } })
+  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'assets' | 'cloud' | 'profiles' | 'moderation' | 'analytics'>(() => { try { const saved = sessionStorage.getItem('uflmb.admin.tab.v1'); return saved === 'cards' || saved === 'quality' || saved === 'imports' || saved === 'appearance' || saved === 'assets' || saved === 'cloud' || saved === 'profiles' || saved === 'moderation' || saved === 'analytics' ? saved : 'cards' } catch { return 'cards' } })
   const [adminProfiles, setAdminProfiles] = useState<AdminProfile[]>([])
   const [adminUserIds, setAdminUserIds] = useState<string[]>([])
   const [adminProfilesBusy, setAdminProfilesBusy] = useState(false)
@@ -1782,12 +1782,40 @@ export default function App() {
           ['cloud', '☁', 'Cloud sync', 'Admin sign-in and shared records'],
           ['profiles', '♙', 'Profile management', 'Manage registered accounts'],
           ['moderation', '⚑', 'Moderation & warnings', 'Review flags and issue warnings'],
+          ['analytics', '▥', 'Analytics', 'Traffic and visitor insights'],
         ] as const).map(([id, icon, label, description]) => (
           <button key={id} type="button" className={adminTab === id ? 'admin-tab active' : 'admin-tab'} onClick={() => setAdminTab(id)}>
             <span className="admin-tab-icon">{icon}</span><span className="admin-tab-copy"><strong>{label}</strong><small>{description}</small></span><span className="admin-tab-arrow">›</span>
           </button>
         ))}
       </nav>
+      {adminTab === 'analytics' && <section className="admin-panel analytics-management-panel">
+        <div className="assets-page-heading">
+          <div className="assets-page-icon" aria-hidden="true">▥</div>
+          <div><p className="eyebrow">PRIVACY-FIRST VISITOR INSIGHTS</p><h2>Website analytics</h2>
+            <p className="muted-copy">Understand aggregate visits, countries, devices, browsers, referring sites and page performance. UFLMB does not use advertising trackers or cross-site behavioural profiling.</p>
+          </div>
+          <span className="count-label">{import.meta.env.VITE_CF_WEB_ANALYTICS_TOKEN ? 'Beacon configured' : 'Setup required'}</span>
+        </div>
+        <div className="analytics-status-card">
+          <h3>{import.meta.env.VITE_CF_WEB_ANALYTICS_TOKEN ? 'Cloudflare beacon is included in this build' : 'Analytics is not active yet'}</h3>
+          <p>{import.meta.env.VITE_CF_WEB_ANALYTICS_TOKEN
+            ? 'The public site beacon token was supplied during the build. Open Cloudflare Web Analytics to review reported metrics. New data may take several minutes to appear.'
+            : 'No analytics script is loaded until the site owner adds the Cloudflare Web Analytics site token to the GitHub Actions variable. No visitor analytics are currently collected by UFLMB.'}</p>
+          <ol>
+            <li>Create a free Cloudflare account and add each live hostname in Web Analytics: <strong>uflmb.github.io</strong> and <strong>uflmb.web.app</strong>.</li>
+            <li>Copy the JavaScript beacon token for each site. If Cloudflare issues different tokens, both must be configured separately; this build currently supports one token per build.</li>
+            <li>Add the token as the GitHub Actions repository variable <code>CF_WEB_ANALYTICS_TOKEN</code>. Do not use an API token or account secret here.</li>
+            <li>Run the Pages and Firebase deployment workflows again. Confirm both hostnames appear in Cloudflare Web Analytics.</li>
+          </ol>
+          <div className="form-actions">
+            <a className="button primary" href="https://dash.cloudflare.com/" target="_blank" rel="noreferrer">Open Cloudflare dashboard ↗</a>
+            <a className="button secondary" href={`${import.meta.env.BASE_URL}privacy.html`}>Privacy notice</a>
+            <a className="button secondary" href={`${import.meta.env.BASE_URL}cookies.html`}>Storage & cookies</a>
+          </div>
+        </div>
+        <p className="muted-copy">This page does not display live metrics inside UFLMB. Cloudflare's own dashboard is the source of truth. A custom embedded analytics panel would require a separately secured server-side API integration and is intentionally not implemented with a browser-visible API token.</p>
+      </section>}
             {adminTab === 'assets' && <section className="admin-panel assets-management-panel">
         <div className="assets-page-heading">
           <div className="assets-page-icon" aria-hidden="true">▧</div>
@@ -2441,7 +2469,7 @@ export default function App() {
         </nav>,
         document.body,
       )}
-      <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><span className="footer-muted">Independent community project; not affiliated with or endorsed by the game’s publisher.</span><span className="footer-sdg">SDG - {new Date().getFullYear()}</span></footer>
+      <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><span className="footer-muted">Independent community project; not affiliated with or endorsed by the game’s publisher.</span><span className="footer-legal"><a href={`${import.meta.env.BASE_URL}privacy.html`}>Privacy</a><a href={`${import.meta.env.BASE_URL}cookies.html`}>Cookies & storage</a></span><span className="footer-sdg">SDG - {new Date().getFullYear()}</span></footer>
       </div>
     </main>
   )
