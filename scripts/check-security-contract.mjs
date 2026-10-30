@@ -59,6 +59,18 @@ const checks = [
     })(),
   },
   {
+    name: 'account deletion anonymises public reviews and clears moderation copies before Auth deletion',
+    pass: (() => {
+      const fn = read('../supabase/functions/account-moderation/index.ts')
+      return /reviewer_name: "Deleted member", user_id: null/.test(fn)
+        && /display_name: "Deleted member"/.test(fn)
+        && /content_excerpt: ""/.test(fn)
+        && /adminClient\.auth\.admin\.deleteUser\(target\.id\)/.test(fn)
+        && fn.indexOf('reviewer_name: "Deleted member"') < fn.indexOf('adminClient.auth.admin.deleteUser(target.id)')
+        && /Review and moderation changes were rolled back/.test(fn)
+    })(),
+  },
+  {
     name: 'backend deployment includes account moderation function',
     pass: /functions deploy account-moderation/i.test(read('../.github/workflows/supabase-deploy.yml')),
   },
