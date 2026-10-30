@@ -401,6 +401,7 @@ export default function App() {
   const [adminProfilesRefreshKey, setAdminProfilesRefreshKey] = useState(0)
   const [selectedAdminProfileId, setSelectedAdminProfileId] = useState<string | null>(null)
   const [selectedProfileReviewCount, setSelectedProfileReviewCount] = useState<number | null>(null)
+  const [selectedProfileEmailVerified, setSelectedProfileEmailVerified] = useState<boolean | null>(null)
   const selectedAdminProfile = adminProfiles.find(profile => profile.id === selectedAdminProfileId) ?? null
   const filteredAdminProfiles = adminProfiles
     .filter(profile => profile.username.toLowerCase().includes(adminProfilesSearch.trim().toLowerCase()))
@@ -488,6 +489,7 @@ export default function App() {
   useEffect(() => {
     if (!selectedAdminProfile || !account?.accessToken) {
       setSelectedProfileReviewCount(null)
+      setSelectedProfileEmailVerified(null)
       return
     }
     let cancelled = false
@@ -495,26 +497,32 @@ export default function App() {
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
     if (!endpoint || !anonKey) {
       setSelectedProfileReviewCount(null)
+      setSelectedProfileEmailVerified(null)
       return
     }
     setSelectedProfileReviewCount(null)
+    setSelectedProfileEmailVerified(null)
     void (async () => {
       try {
-        const response = await fetch(endpoint + '/rest/v1/card_reviews?select=id&user_id=eq.' + encodeURIComponent(selectedAdminProfile.id), {
-          method: 'HEAD',
-          headers: {
-            apikey: anonKey,
-            Authorization: 'Bearer ' + account.accessToken,
-            Prefer: 'count=exact',
-          },
+        const response = await fetch(endpoint + '/functions/v1/account-moderation', {
+          method: 'POST',
+          headers: { apikey: anonKey, Authorization: 'Bearer ' + account.accessToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'profile_details', userId: selectedAdminProfile.id }),
           cache: 'no-store',
         })
-        if (!response.ok) throw new Error('Review count is unavailable')
-        const range = response.headers.get('content-range') || ''
-        const match = range.match(/\/(\d+)$/)
-        if (!cancelled) setSelectedProfileReviewCount(match ? Number(match[1]) : 0)
+        const result = await response.json() as { emailVerified?: boolean; totalReviews?: number }
+        if (!response.ok || typeof result.emailVerified !== 'boolean' || typeof result.totalReviews !== 'number') {
+          throw new Error('Profile details are unavailable')
+        }
+        if (!cancelled) {
+          setSelectedProfileEmailVerified(result.emailVerified)
+          setSelectedProfileReviewCount(result.totalReviews)
+        }
       } catch {
-        if (!cancelled) setSelectedProfileReviewCount(null)
+        if (!cancelled) {
+          setSelectedProfileReviewCount(null)
+          setSelectedProfileEmailVerified(null)
+        }
       }
     })()
     return () => { cancelled = true }
@@ -1855,7 +1863,7 @@ export default function App() {
               <div className="profile-management-readonly-identity">
                 <div className="profile-management-meta"><span>Username</span><strong>@{selectedAdminProfile.username}</strong></div>
                 <div className="profile-management-meta"><span>User ID (UUID)</span><strong className="profile-management-uuid">{selectedAdminProfile.id}</strong></div>
-                <div className="profile-management-meta"><span>Email Verified</span><strong>Not exposed</strong></div>
+                <div className="profile-management-meta"><span>Email Verified</span><strong>{selectedProfileEmailVerified === null ? 'Unavailable' : selectedProfileEmailVerified ? 'Yes' : 'No'}</strong></div>
                 <div className="profile-management-meta"><span>Total Reviews</span><strong>{selectedProfileReviewCount === null ? 'Unavailable' : selectedProfileReviewCount}</strong></div>
                 <div className="profile-management-meta"><span>Created</span><strong>{new Date(selectedAdminProfile.created_at).toLocaleString()}</strong></div>
                 <div className="profile-management-meta"><span>Last updated</span><strong>{new Date(selectedAdminProfile.updated_at).toLocaleString()}</strong></div>
