@@ -71,7 +71,7 @@ export default function ActionLog({ accessToken }: Props) {
     if (!term) return logs
     return logs.filter(log => [
       log.event_key, eventLabel(log.event_key), log.actor_username, log.target_username,
-      log.actor_user_id, log.target_user_id, log.details?.reason,
+      log.actor_user_id, log.target_user_id, log.details?.reason, JSON.stringify(log.details ?? {}),
     ].some(value => String(value ?? '').toLowerCase().includes(term)))
   }, [logs, search])
 
@@ -95,7 +95,12 @@ export default function ActionLog({ accessToken }: Props) {
           <div className="action-log-entry-title"><strong>{eventLabel(log.event_key)}</strong><span className={'action-log-outcome ' + log.outcome}>{log.outcome}</span></div>
           <p>{log.actor_username ? <><b>@{log.actor_username}</b> </> : 'System '}<span className="action-log-verb">{log.event_key === 'ACCOUNT_BANNED' ? 'permanently banned and deleted' : log.event_key === 'ACCOUNT_DELETED' ? 'deleted their account' : 'performed this action'}</span>{log.target_username && log.target_username !== log.actor_username ? <> · Target: <b>@{log.target_username}</b></> : ''}</p>
           {typeof log.details?.reason === 'string' && <small className="action-log-reason">Reason: {log.details.reason}</small>}
-          <small className="action-log-meta">{log.category} · {dateLabel(log.created_at)} · {log.id.slice(0, 8)}</small>
+          <small className="action-log-meta">{log.category} · {dateLabel(log.created_at)} · Event {log.id.slice(0, 8)}</small>
+          <details className="action-log-details"><summary>Event details &amp; identifiers</summary><dl>
+            {Object.entries(log.details ?? {}).filter(([key, value]) => key !== 'reason' && value !== null && value !== '').map(([key, value]) => <div key={key}><dt>{key.replaceAll('_', ' ')}</dt><dd>{typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}
+            {log.actor_user_id && <div><dt>Actor UUID</dt><dd>{log.actor_user_id}</dd></div>}
+            {log.target_user_id && <div><dt>Target UUID</dt><dd>{log.target_user_id}</dd></div>}
+          </dl></details>
         </div>
       </article>)}
     </div>
