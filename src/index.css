@@ -4073,15 +4073,16 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] ::selection{background:rgba(163,230,53,.35)!important;color:#18202b!important}
 
 
-/* Final theme rules requested: hide the rotating photo completely in light mode. */
-:root[data-ui-theme="light"] body.has-background-images::before,
-:root[data-ui-theme="light"] body.has-background-images::after {
+/* Light Mode hides rotating photos on public pages only.
+   Admin Dashboard is deliberately excluded so its configured stadium background remains visible. */
+:root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell))::before,
+:root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell))::after {
   display: none !important;
   content: none !important;
   background-image: none !important;
 }
-:root[data-ui-theme="light"] body,
-:root[data-ui-theme="light"] #root {
+:root[data-ui-theme="light"] body:not(:has(.admin-shell)),
+:root[data-ui-theme="light"] #root:not(:has(.admin-shell)) {
   background: #f4f6f8 !important;
   background-image: none !important;
 }
@@ -6889,10 +6890,16 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Admin-only Light Mode background restoration.
-   Public Light Mode intentionally hides rotating photos; the Admin Dashboard must still
-   reveal the configured stadium image behind its transparent shell. */
-:root[data-ui-theme="light"] body.has-background-images:has(.admin-shell) {
+/* Admin Dashboard Light Mode: explicitly restore the stadium background.
+   This is not a specificity contest: the public-only Light Mode rules above exclude admin. */
+:root[data-ui-theme="light"] body:has(.admin-shell) {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+:root[data-ui-theme="light"] body:has(.admin-shell) #root,
+:root[data-ui-theme="light"] #root:has(> .admin-shell) {
   background: transparent !important;
   background-color: transparent !important;
   background-image: none !important;
@@ -6901,27 +6908,28 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] body.has-background-images:has(.admin-shell)::after {
   display: block !important;
   content: "" !important;
+  opacity: .35 !important;
   background-image: var(--site-background-image) !important;
+  background-size: cover !important;
+  background-position: center 42% !important;
+  background-repeat: no-repeat !important;
+  z-index: 0 !important;
 }
 
 :root[data-ui-theme="light"] body.has-background-images:has(.admin-shell)::before {
   display: block !important;
   content: "" !important;
+  opacity: 1 !important;
   background: linear-gradient(
     180deg,
-    rgba(5, 8, 14, .53) 0%,
-    rgba(5, 8, 14, .62) 48%,
-    rgba(5, 8, 14, .72) 100%
+    rgba(5, 8, 14, .38) 0%,
+    rgba(5, 8, 14, .48) 48%,
+    rgba(5, 8, 14, .58) 100%
   ) !important;
+  z-index: 1 !important;
 }
 
-:root[data-ui-theme="light"] #root:has(.admin-shell) {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
-}
-
-:root[data-ui-theme="light"] body.has-background-images .admin-shell {
+:root[data-ui-theme="light"] body:has(.admin-shell) .admin-shell {
   position: relative !important;
   z-index: 2 !important;
 }
