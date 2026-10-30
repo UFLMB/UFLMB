@@ -82,7 +82,7 @@ const parseEventTypeBackgrounds = (value: unknown): Record<string, string> => {
   ))
 }
 type ProfileLogo = 'default' | 'star' | 'ball' | 'bolt' | 'shield' | 'admin' | 'striker' | 'keeper' | 'defender' | 'playmaker' | 'boots' | 'jersey' | 'stadium' | 'trophy' | 'goal'
-type AdminProfile = { id: string; username: string; profile_logo: string; created_at: string; updated_at: string }
+type AdminProfile = { id: string; username: string; profile_logo: string; created_at: string; updated_at: string; moderationStatus?: 'member' | 'warned' | 'banned' }
 const profileLogoOptions: Array<{ value: ProfileLogo; label: string; glyph: string; adminOnly?: boolean }> = [
   // Keep legacy database values valid, while ensuring every named option has a distinct symbol.
   { value: 'default', label: 'Player', glyph: '👤' },
@@ -473,8 +473,21 @@ export default function App() {
         if (cancelled) return
         const validProfiles = profiles.filter(profile => typeof profile.id === 'string' && typeof profile.username === 'string')
         const adminIds = admins.map(item => item.user_id).filter((id): id is string => typeof id === 'string')
+        let moderationStatuses: Record<string, 'member' | 'warned' | 'banned'> = {}
+        if (validProfiles.length) {
+          const statusResponse = await fetch(endpoint + '/functions/v1/account-moderation', {
+            method: 'POST',
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'profile_statuses', userIds: validProfiles.map(profile => profile.id) }),
+            cache: 'no-store',
+          })
+          const statusResult = await statusResponse.json() as { statuses?: Record<string, 'member' | 'warned' | 'banned'>; error?: string }
+          if (!statusResponse.ok || !statusResult.statuses) throw new Error(statusResult.error || 'Profile moderation statuses could not be loaded.')
+          moderationStatuses = statusResult.statuses
+        }
+        const profilesWithStatus = validProfiles.map(profile => ({ ...profile, moderationStatus: moderationStatuses[profile.id] ?? 'member' }))
         setAdminUserIds(adminIds)
-        setAdminProfiles(validProfiles)
+        setAdminProfiles(profilesWithStatus)
         setSelectedAdminProfileId(current => current && validProfiles.some(profile => profile.id === current) ? current : null)
         setAdminProfilesMessage(validProfiles.length ? `Loaded ${validProfiles.length} profiles securely.` : 'No registered profiles were found.')
       } catch {
@@ -1846,11 +1859,12 @@ export default function App() {
               filteredAdminProfiles.map(profile => {
                 const isAdminProfile = adminUserIds.includes(profile.id)
                 const selected = selectedAdminProfileId === profile.id
+                const moderationStatus = profile.moderationStatus ?? 'member'
                 const logoOption = profileLogoOptions.find(option => option.value === profile.profile_logo)
                 return <button key={profile.id} type="button" className={selected ? 'profile-management-user active' : 'profile-management-user'} onClick={() => selectAdminProfile(profile)} aria-pressed={selected}>
                   <span className={isAdminProfile ? 'profile-management-avatar admin' : 'profile-management-avatar'}>{isAdminProfile ? <svg className="profile-admin-logo" viewBox="0 0 24 24" aria-label="Admin logo"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : logoOption?.glyph || '👤'}</span>
                   <span className="profile-management-user-copy"><strong>{profile.username}</strong><small>Joined {new Date(profile.created_at).toLocaleDateString()}</small></span>
-                  <span className={isAdminProfile ? 'profile-management-role admin' : 'profile-management-role'}>{isAdminProfile ? 'ADMIN' : 'MEMBER'}</span>
+                  <span className={isAdminProfile ? 'profile-management-role admin' : `profile-management-role ${moderationStatus}`}>{isAdminProfile ? 'ADMIN' : moderationStatus.toUpperCase()}</span>
                 </button>
               })}
           </div>
@@ -1868,7 +1882,7 @@ export default function App() {
                 <div className="profile-management-meta"><span>Created</span><strong>{new Date(selectedAdminProfile.created_at).toLocaleString()}</strong></div>
                 <div className="profile-management-meta"><span>Last updated</span><strong>{new Date(selectedAdminProfile.updated_at).toLocaleString()}</strong></div>
               </div>
-            <AccountManagement userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'profiles')} selectedAccount={{ id: selectedAdminProfile.id, username: selectedAdminProfile.username, createdAt: selectedAdminProfile.created_at, isAdmin: adminUserIds.includes(selectedAdminProfile.id) }} onDeleted={() => { setAdminProfiles(current => current.filter(profile => profile.id !== selectedAdminProfile.id)); setSelectedAdminProfileId(null); setAdminProfilesMessage('Account permanently deleted.') }} /></div> : <div className="profile-management-empty profile-management-editor-empty"><span className="profile-management-empty-icon">◎</span><strong>Select a profile</strong><span>Choose an account from the list to review and manage its public profile.</span></div>}
+            <AccountManagement userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'profiles')} selectedAccount={{ id: selectedAdminProfile.id, username: selectedAdminProfile.username, createdAt: selectedAdminProfile.created_at, isAdmin: adminUserIds.includes(selectedAdminProfile.id) }} onDeleted={() => { setAdminProfiles(current => current.filter(profile => profile.id !== selectedAdminProfile.id)); setSelectedAdminProfileId(null); setAdminProfilesMessage('Account permanently deleted.') }} onStatusChanged={() => setAdminProfilesRefreshKey(value => value + 1)} /></div> : <div className="profile-management-empty profile-management-editor-empty"><span className="profile-management-empty-icon">◎</span><strong>Select a profile</strong><span>Choose an account from the list to review and manage its public profile.</span></div>}
           </div>
         </div>
       </section>}
