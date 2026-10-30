@@ -104,7 +104,7 @@ Deno.serve(async (req: Request) => {
       let query = adminClient.from("action_logs").select("*", { count: "exact" }).order("created_at", { ascending: false }).range(offset, offset + limit - 1);
       if (typeof body.category === "string" && ["auth","profile","moderation","community","support","content","system"].includes(body.category)) query = query.eq("category", body.category);
       if (typeof body.outcome === "string" && ["success","failed","pending"].includes(body.outcome)) query = query.eq("outcome", body.outcome);
-      if (body.systemActions !== true) query = query.not("event_key", "in", '("LOGIN_SUCCESS","SESSION_RESTORED","LOGOUT")');
+      if (body.systemActions !== true) query = query.not("event_key", "in", '("LOGIN_SUCCESS","SESSION_RESTORED","LOGOUT","PASSWORD_CHANGED")');
       const { data: logs, count, error } = await query;
       if (error) return json({ error: "The action log could not be loaded." }, 500);
       return json({ logs: logs ?? [], count: count ?? 0, limit, offset });
