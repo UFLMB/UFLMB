@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0d12">
+  <title>Cookies & Browser Storage | UFLMB</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b0d12;--text:#f3f5f8;--muted:#a0a6b2;--line:#292e39;--lime:#a3e635}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.75 system-ui,-apple-system,Segoe UI,sans-serif}
+    main{width:min(900px,calc(100% - 32px));margin:48px auto 80px}a{color:var(--lime)}.brand{font-weight:900;letter-spacing:.08em;color:var(--text);text-decoration:none}.brand span{color:var(--lime)}
+    h1{font-size:clamp(30px,5vw,44px);line-height:1.1;margin:28px 0 8px}h2{font-size:21px;margin:32px 0 8px}p,li{color:#c4cad3}.meta{color:var(--muted);font-size:13px}
+    table{width:100%;border-collapse:collapse;margin:16px 0}th,td{text-align:left;vertical-align:top;padding:12px;border-bottom:1px solid var(--line)}th{color:var(--lime)}td{color:#c4cad3}
+    .notice{padding:16px;border:1px solid #a3e63566;border-radius:12px;background:#a3e6350d}.back{display:inline-block;margin-top:32px}
+  </style>
+</head>
+<body><main>
+  <a class="brand" href="./">UFL<span>MB</span></a>
+  <h1>Cookies & Browser Storage</h1>
+  <p class="meta">Last updated: 30 October 2026</p>
+  <p>UFLMB aims to use only the browser storage needed to operate the service and remember your preferences. It does not use advertising cookies or cross-site advertising trackers.</p>
+  <div class="notice"><strong>Current implementation:</strong> the application uses localStorage and sessionStorage for interface preferences and sign-in session state. These are browser storage mechanisms; they are not necessarily HTTP cookies.</div>
+
+  <h2>Storage used by the application</h2>
+  <table><thead><tr><th>Category</th><th>Purpose</th><th>Storage</th></tr></thead><tbody>
+    <tr><td>Theme preference</td><td>Remember dark, light or system appearance.</td><td>localStorage</td></tr>
+    <tr><td>Interface preferences</td><td>Remember selected page, browse filters, favourites/comparison state and other convenience settings.</td><td>localStorage</td></tr>
+    <tr><td>Authentication session</td><td>Keep the current sign-in session available for the active browser tab/session.</td><td>sessionStorage</td></tr>
+    <tr><td>Temporary admin state</td><td>Remember the selected admin section and dashboard state during the browser session.</td><td>sessionStorage</td></tr>
+  </tbody></table>
+  <p>Storage keys and exact values may change as the application evolves. Clearing site data in your browser removes locally stored preferences and may sign you out. Shared account and community data stored by the service provider is not deleted by clearing browser storage.</p>
+
+  <h2>Analytics</h2>
+  <p>UFLMB has an optional integration point for Cloudflare Web Analytics. It is inactive unless the site owner configures the relevant site beacon token in the deployment environment. Cloudflare describes Web Analytics as cookie-free and states that it does not collect or use visitors' personal data. Its documentation describes collection of navigation and page-performance timing metrics. Cloudflare states that unsampled beacon data is retained for 7 days and is then aggregated to around 10%. The beacon is optional and is only loaded in the Firebase production build when the site-specific build variable is configured.</p>
+  <p>UFLMB does not use Google Analytics, advertising pixels, session replay or cross-site behavioural advertising trackers in the current implementation. If the analytics provider or configuration changes, this notice will be updated before activation.</p>
+
+  <h2>Managing browser storage</h2>
+  <p>You can view or clear website storage through your browser's site settings. Blocking all storage may affect sign-in and saved preferences. The exact controls vary by browser and device.</p>
+
+  <h2>Contact</h2>
+  <p>For questions about privacy or browser storage, contact UFLMB at <a href="mailto:uflmb.dev@gmail.com">uflmb.dev@gmail.com</a> or through the in-site Support chat. See the <a href="./privacy.html">Privacy Notice</a>.</p>
+  <a class="back" href="./">← Back to UFLMB</a>
+</main></body></html>

@@ -1,11 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import PrivacyAnalytics from './components/PrivacyAnalytics'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <>
+    <PrivacyAnalytics />
     <App />
+  </>
   </StrictMode>,
 )
 

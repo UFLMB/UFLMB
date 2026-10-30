@@ -132,11 +132,108 @@ Deno.serve(async (req: Request) => {
         }
       }
     } else {
-      const { error: deleteError } = await adminClient.auth.admin.deleteUser(target.id);
-      if (deleteError) {
-        actionError = "Deletion was rejected. The account may own Storage objects that must be reassigned or removed first.";
+      // Read every affected row in bounded pages before changing any data.
+      // PostgREST's default row cap must never silently truncate rollback snapshots.
+      const pageSize = 500;
+      const readAllForUser = async (table: string, columns: string) => {
+        const rows: Record<string, unknown>[] = [];
+        for (let offset = 0; ; offset += pageSize) {
+          const { data, error } = await adminClient
+            .from(table)
+            .select(columns)
+            .eq("user_id", target.id)
+            .order("id", { ascending: true })
+            .range(offset, offset + pageSize - 1);
+          if (error || !data) return { rows: null, error };
+          rows.push(...data);
+          if (data.length < pageSize) return { rows, error: null };
+        }
+      };
+      const reviewSnapshot = await readAllForUser("card_reviews", "id, reviewer_name, user_id");
+      const queueSnapshot = await readAllForUser(
+        "moderation_queue",
+        "id, user_id, display_name, content_excerpt, admin_note",
+      );
+
+      const chunks = <T,>(items: T[], size = 200) =>
+        Array.from({ length: Math.ceil(items.length / size) }, (_, i) => items.slice(i * size, (i + 1) * size));
+      const updateRows = async (
+        table: string,
+        rows: Record<string, unknown>[],
+        values: (row: Record<string, unknown>) => Record<string, unknown>,
+      ) => {
+        for (const batch of chunks(rows)) {
+          const results = await Promise.all(batch.map(row =>
+            adminClient.from(table).update(values(row)).eq("id", row.id)
+          ));
+          if (results.some(result => result.error)) return false;
+        }
+        return true;
+      };
+      const reviewRows = reviewSnapshot.rows;
+      const queueRows = queueSnapshot.rows;
+
+      if (reviewSnapshot.error || queueSnapshot.error || !reviewRows || !queueRows) {
+        actionError = "Could not safely read every review and moderation record for anonymisation. No account data was deleted.";
       } else {
-        await adminClient.from("account_suspensions").delete().eq("user_id", target.id);
+        const reviewsAnonymised = await updateRows(
+          "card_reviews",
+          reviewRows,
+          () => ({ reviewer_name: "Deleted member", user_id: null }),
+        );
+        if (!reviewsAnonymised) {
+          actionError = "Could not anonymise every public review. No account data was deleted.";
+        } else {
+          const queueAnonymised = await updateRows(
+            "moderation_queue",
+            queueRows,
+            () => ({
+              user_id: null,
+              display_name: "Deleted member",
+              content_excerpt: "",
+              admin_note: null,
+            }),
+          );
+
+          if (!queueAnonymised) {
+            const restored = await updateRows(
+              "card_reviews",
+              reviewRows,
+              row => ({ reviewer_name: row.reviewer_name, user_id: row.user_id }),
+            );
+            actionError = restored
+              ? "Could not anonymise moderation records. Review changes were rolled back; no account data was deleted."
+              : "Could not anonymise moderation records, and review rollback was incomplete. WARNING: inspect affected records before retrying.";
+          } else {
+            const { error: deleteError } = await adminClient.auth.admin.deleteUser(target.id);
+            if (deleteError) {
+              const rollbackResults = await Promise.all([
+                updateRows(
+                  "card_reviews",
+                  reviewRows,
+                  row => ({ reviewer_name: row.reviewer_name, user_id: row.user_id }),
+                ),
+                updateRows(
+                  "moderation_queue",
+                  queueRows,
+                  row => ({
+                    user_id: row.user_id,
+                    display_name: row.display_name,
+                    content_excerpt: row.content_excerpt,
+                    admin_note: row.admin_note,
+                  }),
+                ),
+              ]);
+              const rollbackFailed = rollbackResults.some(result => !result);
+              actionError = "Deletion was rejected. The account may own Storage objects that must be reassigned or removed first."
+                + (rollbackFailed
+                  ? " WARNING: some review/moderation data could not be restored; inspect the records before retrying."
+                  : " Review and moderation changes were rolled back.");
+            } else {
+              await adminClient.from("account_suspensions").delete().eq("user_id", target.id);
+            }
+          }
+        }
       }
     }
 
