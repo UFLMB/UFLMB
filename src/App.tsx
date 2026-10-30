@@ -1774,13 +1774,13 @@ export default function App() {
         <a className="brand" href={import.meta.env.BASE_URL} onClick={() => { setAdminDashboardOpen(false); try { sessionStorage.setItem('uflmb.admin.dashboard.v1', 'closed') } catch { /* Navigation should still work without session storage. */ } }} aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
         <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Admin access verified</span><a className="back-link" href={import.meta.env.BASE_URL} onClick={() => { setAdminDashboardOpen(false); try { sessionStorage.setItem('uflmb.admin.dashboard.v1', 'closed') } catch { /* Navigation should still work without session storage. */ } }}>Public database ↗</a><button type="button" className="public-refresh-toggle" aria-label="Refresh UFLMB" title="Refresh" onClick={() => window.location.reload()}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></button><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setAdminDashboardOpen} onProfileChange={() => { setPage('profile'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }} /></div>
       </header>
+      <div className="admin-overview-shell">
       <section className="admin-intro">
         <p className="eyebrow">CONTENT MANAGEMENT</p>
         <h1><span className="admin-title-main">Card</span> <span>manager.</span></h1>
         <p className="hero-copy">Manually add, edit, save, and export cards, images, stats, and verification sources.</p>
         {notice && <div className="notice">{notice}</div>}
       </section>
-      <div className="admin-overview-shell">
       <nav className="admin-tabs" aria-label="Admin sections">
         {([
           ['cards', '▣', 'Card manager', 'Add, edit and manage records'],
