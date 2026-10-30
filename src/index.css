@@ -6831,3 +6831,19 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .profile-management-role.warn { color:#92400e; border-color:rgba(146,64,14,.24); background:rgba(251,191,36,.16); }
 :root[data-ui-theme="light"] .profile-management-role.suspended { color:#c2410c; border-color:rgba(194,65,12,.24); background:rgba(251,146,60,.16); }
 :root[data-ui-theme="light"] .profile-management-role.banned { color:#b91c1c; border-color:rgba(185,28,28,.24); background:rgba(248,113,113,.13); }
+
+/* Your Profile — one consistent light-mode surface across every profile section.
+   Account Details and Personalization define the reference treatment. */
+:root[data-ui-theme="light"] .profile-page .account-profile-hero,
+:root[data-ui-theme="light"] .profile-page .account-panel {
+  background: #f7f9f4 !important;
+  border-color: rgba(20,30,45,.13) !important;
+  color: #18202b;
+  box-shadow: 0 12px 35px rgba(0,0,0,.045);
+}
+:root[data-ui-theme="light"] .profile-page .account-panel-description {
+  color: #657181;
+}
+:root[data-ui-theme="light"] .profile-page .profile-password-panel .account-panel-description {
+  color: #657181;
+}
