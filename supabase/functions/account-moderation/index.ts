@@ -51,6 +51,27 @@ Deno.serve(async (req: Request) => {
       .from("admin_users").select("user_id").eq("user_id", actor.id).maybeSingle();
     if (adminError || !adminRow) return json({ error: "Administrator authorization is required." }, 403);
 
+    if (body.action === "profile_statuses") {
+      if (!Array.isArray(body.userIds) || body.userIds.length > 500 ||
+          body.userIds.some((id) => typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id))) {
+        return json({ error: "A valid list of up to 500 profile IDs is required." }, 400);
+      }
+      const userIds = [...new Set(body.userIds as string[])];
+      if (userIds.length === 0) return json({ statuses: {} });
+      const [{ data: suspensions, error: suspensionError }, { data: warnings, error: warningsError }] = await Promise.all([
+        adminClient.from("account_suspensions").select("user_id").in("user_id", userIds),
+        adminClient.from("user_warnings").select("user_id").in("user_id", userIds),
+      ]);
+      if (suspensionError || warningsError) {
+        return json({ error: "Could not load profile moderation statuses." }, 500);
+      }
+      const statuses: Record<string, "member" | "warned" | "banned"> = {};
+      for (const id of userIds) statuses[id] = "member";
+      for (const warning of warnings ?? []) statuses[warning.user_id] = "warned";
+      for (const suspension of suspensions ?? []) statuses[suspension.user_id] = "banned";
+      return json({ statuses });
+    }
+
     if (body.action === "profile_details") {
       if (typeof body.userId !== "string" || !/^[0-9a-f-]{36}$/i.test(body.userId)) {
         return json({ error: "A valid profile ID is required." }, 400);
