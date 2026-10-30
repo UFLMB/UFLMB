@@ -33,7 +33,7 @@ export default function AccountSelfDeletion({ username, accessToken }: Props) {
   return <section className="account-panel account-self-delete-panel">
     <p className="eyebrow">ACCOUNT OWNERSHIP</p>
     <h3>Delete your account</h3>
-    <p className="account-panel-description">Permanently delete your UFLMB account and profile. This cannot be undone. Your submitted public reviews may remain without a linked account, while support conversations and account preferences are removed. A minimal deletion record is retained in the administrator action log.</p>
+    <p className="account-panel-description">Permanently delete your UFLMB account and profile. This cannot be undone. Your submitted public reviews may remain without a linked account, while support conversations and account preferences are removed. A minimal deletion record is retained in the action log.</p>
     {!expanded ? <button type="button" className="button danger" onClick={() => setExpanded(true)}>Delete my account</button> : <>
       <div className="account-self-delete-warning" role="alert"><strong>This action is permanent.</strong><span>To confirm, type exactly: <b>{expected}</b></span></div>
       <label className="account-self-delete-confirm">Confirmation<input autoComplete="off" value={confirmation} onChange={event => setConfirmation(event.target.value)} placeholder={expected} /></label>
