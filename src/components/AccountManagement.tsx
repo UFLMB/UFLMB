@@ -120,7 +120,7 @@ export default function AccountManagement({ userId, accessToken, isAdmin, adminV
       {account && <span className={account.suspended ? 'account-status suspended' : 'account-status active'}>{account.suspended ? 'Suspended' : 'Active'}</span>}
       {selectedAccount.isAdmin && <span className="account-status protected">Protected admin</span>}
     </div>
-    <p className="account-management-description">Manage this selected account here. Every privileged action is checked by the server and recorded in the moderation audit log.</p>
+    <p className="account-management-description">Manage this selected account here. Every privileged action is verified by the server and recorded in the central action log.</p>
     {error && <p className="account-management-error" role="alert">{error}</p>}
     {message && <p className="account-management-message" role="status">{message}</p>}
     {busy && <p className="account-management-loading" role="status">Verifying account status…</p>}
