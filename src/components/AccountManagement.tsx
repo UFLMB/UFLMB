@@ -80,7 +80,7 @@ export default function AccountManagement({ userId, accessToken, isAdmin, adminV
       return
     }
     const detail = action === 'delete'
-      ? 'This permanently deletes the Auth account, profile, preferences, support conversation and messages, and received warnings. Public reviews without an account link and the moderation audit trail are retained.'
+      ? 'This permanently bans and deletes the Auth account and profile. Public reviews are retained without an account link, while the reason and permanent-ban event remain in the audit log.'
       : action === 'suspend'
         ? 'This blocks new sign-ins and restricts account-scoped access. Existing public, anonymous access to public content is not a ban from the public website.'
         : 'This restores sign-in and account-scoped access for this member.'
@@ -129,15 +129,15 @@ export default function AccountManagement({ userId, accessToken, isAdmin, adminV
       <label className="account-management-field">Reason for this action
         <textarea value={reason} onChange={event => setReason(event.target.value)} minLength={1} maxLength={500} rows={3} required placeholder="Enter any reason for this action (up to 500 characters)." />
       </label>
-      <label className="account-management-field">Permanent deletion confirmation <small>Only needed to permanently delete this account. Type exactly: DELETE {account.username}</small>
+      <label className="account-management-field">Permanent ban confirmation <small>Only needed to permanently ban and delete this account. Type exactly: DELETE {account.username}</small>
         <input value={confirmation} onChange={event => setConfirmation(event.target.value)} autoComplete="off" placeholder={'DELETE ' + account.username} />
       </label>
       <div className="account-management-actions">
         {!account.suspended && <button type="button" className="button danger" disabled={busy || !reason.trim()} onClick={() => void runAction('suspend')}>Suspend account</button>}
         {account.suspended && <button type="button" className="button primary" disabled={busy || !reason.trim()} onClick={() => void runAction('restore')}>Restore account</button>}
-        <button type="button" className="button danger account-delete-button" disabled={busy || !reason.trim() || confirmation !== 'DELETE ' + account.username} onClick={() => void runAction('delete')}>Permanently delete</button>
+        <button type="button" className="button danger account-delete-button" disabled={busy || !reason.trim() || confirmation !== 'DELETE ' + account.username} onClick={() => void runAction('delete')}>Ban &amp; permanently delete</button>
       </div>
-      <p className="account-management-caution">Permanent deletion cannot be undone. If the account owns Supabase Storage objects, deletion may be rejected until those objects are reassigned or removed.</p>
+      <p className="account-management-caution">A permanent ban deletes the account and cannot be undone. If the account owns Supabase Storage objects, deletion may be rejected until those objects are reassigned or removed.</p>
     </>}
     <small className="account-management-footnote">Selected account: @{selectedAccount.username} · {selectedAccount.createdAt ? 'Registered ' + new Date(selectedAccount.createdAt).toLocaleDateString() : 'Registration date unavailable'} · {userId ? 'administrator session verified' : 'session unavailable'}</small>
   </div>
