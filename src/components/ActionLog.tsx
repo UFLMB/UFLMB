@@ -14,6 +14,19 @@ type LogEntry = {
   created_at: string
 }
 type Props = { accessToken?: string }
+type AuditUser = { id: string; username: string }
+const findAuditUsers = async (term: string, accessToken?: string): Promise<AuditUser[]> => {
+  if (!endpoint || !anonKey || !accessToken || term.trim().length < 2) return []
+  const response = await fetch(endpoint + '/functions/v1/account-moderation', {
+    method: 'POST',
+    headers: { apikey: anonKey, Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'search_audit_users', query: term.trim() }),
+    cache: 'no-store',
+  })
+  const result = await response.json() as { users?: AuditUser[]; error?: string }
+  if (!response.ok || !Array.isArray(result.users)) throw new Error(result.error || 'Audit user search failed.')
+  return result.users
+}
 const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 const labels: Record<string, string> = {
@@ -39,6 +52,12 @@ export default function ActionLog({ accessToken }: Props) {
   const [category, setCategory] = useState('all')
   const [outcome, setOutcome] = useState('all')
   const [systemActions, setSystemActions] = useState(false)
+  const [executorSearch, setExecutorSearch] = useState('')
+  const [targetSearch, setTargetSearch] = useState('')
+  const [executorUser, setExecutorUser] = useState<AuditUser | null>(null)
+  const [targetUser, setTargetUser] = useState<AuditUser | null>(null)
+  const [executorOptions, setExecutorOptions] = useState<AuditUser[]>([])
+  const [targetOptions, setTargetOptions] = useState<AuditUser[]>([])
   const [search, setSearch] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -52,7 +71,7 @@ export default function ActionLog({ accessToken }: Props) {
       const response = await fetch(endpoint + '/functions/v1/account-moderation', {
         method: 'POST',
         headers: { apikey: anonKey, Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'list_action_logs', limit: 50, offset: nextOffset, category, outcome, systemActions }),
+        body: JSON.stringify({ action: 'list_action_logs', limit: 50, offset: nextOffset, category, outcome, systemActions, actorUserId: executorUser?.id ?? null, targetUserId: targetUser?.id ?? null }),
         cache: 'no-store',
       })
       const result = await response.json() as { logs?: LogEntry[]; count?: number; error?: string }
@@ -65,7 +84,29 @@ export default function ActionLog({ accessToken }: Props) {
     } finally { setBusy(false) }
   }
 
-  useEffect(() => { void load(true) }, [accessToken, category, outcome, systemActions, refreshKey])
+  useEffect(() => { void load(true) }, [accessToken, category, outcome, systemActions, executorUser?.id, targetUser?.id, refreshKey])
+
+  useEffect(() => {
+    let cancelled = false
+    if (executorUser || executorSearch.trim().length < 2) { setExecutorOptions([]); return }
+    const timer = window.setTimeout(() => {
+      void findAuditUsers(executorSearch, accessToken)
+        .then(users => { if (!cancelled) setExecutorOptions(users) })
+        .catch(() => { if (!cancelled) setExecutorOptions([]) })
+    }, 250)
+    return () => { cancelled = true; window.clearTimeout(timer) }
+  }, [executorSearch, executorUser, accessToken])
+
+  useEffect(() => {
+    let cancelled = false
+    if (targetUser || targetSearch.trim().length < 2) { setTargetOptions([]); return }
+    const timer = window.setTimeout(() => {
+      void findAuditUsers(targetSearch, accessToken)
+        .then(users => { if (!cancelled) setTargetOptions(users) })
+        .catch(() => { if (!cancelled) setTargetOptions([]) })
+    }, 250)
+    return () => { cancelled = true; window.clearTimeout(timer) }
+  }, [targetSearch, targetUser, accessToken])
 
   const visibleLogs = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -86,6 +127,32 @@ export default function ActionLog({ accessToken }: Props) {
       <label className="action-log-search"><span aria-hidden="true">⌕</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search loaded events, users or IDs…" aria-label="Search action log" /></label>
       <label>Category<select value={category} onChange={event => { setCategory(event.target.value); setOffset(0) }}><option value="all">All categories</option><option value="auth">Authentication</option><option value="profile">Profiles</option><option value="moderation">Moderation</option><option value="community">Community</option><option value="support">Support</option><option value="content">Content</option><option value="system">System</option></select></label>
       <label>Outcome<select value={outcome} onChange={event => { setOutcome(event.target.value); setOffset(0) }}><option value="all">All outcomes</option><option value="success">Successful</option><option value="failed">Failed</option><option value="pending">Pending</option></select></label>
+      <div className="action-log-user-filter">
+        <label htmlFor="action-log-executor">Executor</label>
+        <div className="action-log-user-input-wrap">
+          <input id="action-log-executor" value={executorSearch} onChange={event => { setExecutorSearch(event.target.value); setExecutorUser(null); setOffset(0) }} placeholder="Search username or UUID…" autoComplete="off" />
+          {executorUser && <button type="button" onClick={() => { setExecutorUser(null); setExecutorSearch(''); setOffset(0) }} aria-label="Clear executor filter">×</button>}
+        </div>
+        {executorUser && <small className="action-log-user-selected">UUID: {executorUser.id}</small>}
+        {executorOptions.length > 0 && <div className="action-log-user-results" role="listbox" aria-label="Executor search results">
+          {executorOptions.map(user => <button type="button" role="option" aria-selected="false" key={user.id} onClick={() => { setExecutorUser(user); setExecutorSearch(user.username); setExecutorOptions([]); setOffset(0) }}>
+            <strong>@{user.username}</strong><small>{user.id}</small>
+          </button>)}
+        </div>}
+      </div>
+      <div className="action-log-user-filter">
+        <label htmlFor="action-log-target">Targeted user</label>
+        <div className="action-log-user-input-wrap">
+          <input id="action-log-target" value={targetSearch} onChange={event => { setTargetSearch(event.target.value); setTargetUser(null); setOffset(0) }} placeholder="Search username or UUID…" autoComplete="off" />
+          {targetUser && <button type="button" onClick={() => { setTargetUser(null); setTargetSearch(''); setOffset(0) }} aria-label="Clear targeted-user filter">×</button>}
+        </div>
+        {targetUser && <small className="action-log-user-selected">UUID: {targetUser.id}</small>}
+        {targetOptions.length > 0 && <div className="action-log-user-results" role="listbox" aria-label="Targeted-user search results">
+          {targetOptions.map(user => <button type="button" role="option" aria-selected="false" key={user.id} onClick={() => { setTargetUser(user); setTargetSearch(user.username); setTargetOptions([]); setOffset(0) }}>
+            <strong>@{user.username}</strong><small>{user.id}</small>
+          </button>)}
+        </div>}
+      </div>
       <label className="action-log-system-toggle"><span>SYSTEM actions</span><span className="action-log-switch"><input type="checkbox" checked={systemActions} onChange={event => { setSystemActions(event.target.checked); setOffset(0) }} aria-label="Show system authentication actions" /><i aria-hidden="true" /></span></label>
       <button type="button" className="button secondary" onClick={() => setRefreshKey(value => value + 1)} disabled={busy}>↻ Refresh</button>
     </div>
