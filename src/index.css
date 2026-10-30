@@ -7307,8 +7307,8 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   border: 1px solid rgba(255,255,255,.72) !important;
   border-radius: 20px !important;
   box-shadow: 0 14px 38px rgba(20,30,45,.10), inset 0 1px 0 rgba(255,255,255,.62) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(118%) !important;
-  backdrop-filter: blur(14px) saturate(118%) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 :root[data-ui-theme="light"] body.has-background-images .home-hero,
 :root[data-ui-theme="light"] body.has-background-images .hero {
