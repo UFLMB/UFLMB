@@ -35,6 +35,15 @@ Deno.serve(async (req: Request) => {
       return new Response(JSON.stringify({ error: "The username or password is incorrect." }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    const { data: suspension, error: suspensionError } = await admin
+      .from("account_suspensions").select("user_id").eq("user_id", profile.id).maybeSingle();
+    if (suspensionError) {
+      return new Response(JSON.stringify({ error: "Account status could not be verified. Please try again later." }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (suspension) {
+      return new Response(JSON.stringify({ error: "Account is suspended." }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const client = createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data, error } = await client.auth.signInWithPassword({ email, password });
     if (error || !data.session || !data.user) {
