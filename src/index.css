@@ -6849,24 +6849,34 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Admin Card Manager hero: remove the light surface and preserve dark-theme contrast. */
-.admin-shell {
+/* Admin Card Manager hero: transparent background and explicit title colors. */
+.admin-shell .admin-intro {
   background: transparent !important;
-}
-.admin-shell > .admin-intro {
-  background: rgba(15, 23, 42, 0.6) !important;
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  border-radius: 18px;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border-radius: 0 !important;
   padding: 42px 24px 28px;
 }
-.admin-shell > .admin-intro h1 {
+
+/* Keep the complete title visible with independent colors. */
+.admin-shell .admin-intro h1 {
   color: #ffffff !important;
 }
-.admin-shell > .admin-intro h1 span {
-  color: var(--lime, #a3e635) !important;
+
+.admin-shell .admin-intro h1 .admin-title-main {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
-.admin-shell > .admin-intro .hero-copy {
+
+.admin-shell .admin-intro h1 span:not(.admin-title-main) {
+  color: var(--lime, #a3e635) !important;
+  -webkit-text-fill-color: var(--lime, #a3e635) !important;
+}
+
+/* Description text */
+.admin-shell .admin-intro .hero-copy {
   color: #94a3b8 !important;
 }
