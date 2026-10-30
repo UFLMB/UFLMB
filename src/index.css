@@ -6806,3 +6806,15 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .assets-page-heading .count-label{grid-column:2;justify-self:start}
   .assets-perk-trait-editor{padding:14px}
 }
+
+
+/* Analytics admin panel and legal footer links. */
+.analytics-management-panel{display:grid;gap:18px}
+.analytics-status-card{display:grid;gap:12px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--panel-bg,rgba(255,255,255,.015))}
+.analytics-status-card h3{margin:0;font-size:17px}
+.analytics-status-card p,.analytics-status-card li{color:var(--muted-text,#a0a6b2);font-size:13px;line-height:1.65}
+.analytics-status-card ol{display:grid;gap:8px;margin:0;padding-left:22px}
+.analytics-status-card code{padding:2px 5px;border-radius:5px;background:rgba(163,230,53,.1);color:var(--accent,#a3e635)}
+.footer-legal{display:inline-flex;gap:12px;justify-content:center}
+.footer-legal a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:600px){.analytics-status-card{padding:14px}.footer-legal{flex-wrap:wrap}}
