@@ -46,3 +46,5 @@
 :root[data-ui-theme="light"] .action-log-details{border-color:rgba(20,30,45,.1)}
 :root[data-ui-theme="light"] .action-log-details dd{color:#18202b}
 @media(max-width:480px){.action-log-details dl{grid-template-columns:1fr}}
+
+:root[data-ui-theme="light"] .action-log-entry.banned .action-log-entry-title strong{color:#b91c1c}
