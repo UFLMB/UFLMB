@@ -49,7 +49,7 @@ Deno.serve(async (req: Request) => {
 
     if (body.action === "record_login" || body.action === "record_logout" || body.action === "record_password_change") {
       const { data: profile } = await adminClient.from("profiles").select("username").eq("id", actor.id).maybeSingle();
-      const eventKey = body.action === "record_login" ? "LOGIN_SUCCESS" : body.action === "record_logout" ? "LOGOUT" : "PASSWORD_CHANGED";
+      const eventKey = body.action === "record_login" ? (body.method === "session_restore" ? "SESSION_RESTORED" : "LOGIN_SUCCESS") : body.action === "record_logout" ? "LOGOUT" : "PASSWORD_CHANGED";
       const { error: logError } = await adminClient.from("action_logs").insert({
         event_key: eventKey,
         category: "auth",
