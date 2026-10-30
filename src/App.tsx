@@ -1776,7 +1776,7 @@ export default function App() {
       </header>
       <section className="admin-intro">
         <p className="eyebrow">CONTENT MANAGEMENT</p>
-        <h1>Card <span>manager.</span></h1>
+        <h1><span className="admin-title-main">Card</span> <span>manager.</span></h1>
         <p className="hero-copy">Manually add, edit, save, and export cards, images, stats, and verification sources.</p>
         {notice && <div className="notice">{notice}</div>}
       </section>
