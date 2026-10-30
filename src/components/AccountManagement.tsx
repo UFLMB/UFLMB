@@ -83,7 +83,7 @@ export default function AccountManagement({ userId, accessToken, isAdmin, adminV
       : action === 'suspend'
         ? 'This blocks new sign-ins and restricts account-scoped access. Existing public, anonymous access to public content is not a ban from the public website.'
         : 'This restores sign-in and account-scoped access for this member.'
-    if (!window.confirm((action === 'delete' ? 'PERMANENT ACCOUNT DELETION' : action === 'suspend' ? 'Suspend account' : 'Restore account') + '\n\n' + detail + '\n\nTarget: @' + account.username + '\nReason: ' + reason.trim())) return
+    if (action !== 'delete' && !window.confirm((action === 'suspend' ? 'Suspend account' : 'Restore account') + '\\n\\n' + detail + '\\n\\nTarget: @' + account.username + '\\nReason: ' + reason.trim())) return
 
     setBusy(true); setError(''); setMessage('')
     try {
