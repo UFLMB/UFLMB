@@ -31,4 +31,4 @@ The Admin > Analytics page links to the Cloudflare dashboard and reports whether
 
 ## Required legal completion before public launch
 
-The policy pages are a technically aligned draft, not a legal certification. The operator must complete the controller's full legal name and direct privacy contact, confirm provider processing locations and contractual safeguards, and set precise retention/deletion periods for account, support, moderation and provider log data. Review the final text with a Hungarian/EU privacy professional if it will be relied on as the production GDPR notice.
+The policy pages are a technically aligned draft, not a legal certification. The controller identity and privacy contact have been added. Before public launch, confirm provider processing locations and contractual safeguards, determine and document justified retention/deletion periods for account, support, moderation and provider log data, and verify that the actual deletion processes match the published policy. Review the final text with a Hungarian/EU privacy professional if it will be relied on as the production GDPR notice.
