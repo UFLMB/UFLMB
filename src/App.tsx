@@ -9,6 +9,8 @@ import SharedDatabasePanel from './components/SharedDatabasePanel'
 import SupportChat from './components/SupportChat'
 import ModerationCenter from './components/ModerationCenter'
 import AccountManagement from './components/AccountManagement'
+import ActionLog from './components/ActionLog'
+import AccountSelfDeletion from './components/AccountSelfDeletion'
 import { validateUsernamePolicy } from './lib/usernamePolicy'
 import { matchCardImageFilename } from './lib/cardImageImport'
 
@@ -82,7 +84,7 @@ const parseEventTypeBackgrounds = (value: unknown): Record<string, string> => {
   ))
 }
 type ProfileLogo = 'default' | 'star' | 'ball' | 'bolt' | 'shield' | 'admin' | 'striker' | 'keeper' | 'defender' | 'playmaker' | 'boots' | 'jersey' | 'stadium' | 'trophy' | 'goal'
-type AdminProfile = { id: string; username: string; profile_logo: string; created_at: string; updated_at: string; moderationStatus?: 'member' | 'warned' | 'banned' }
+type AdminProfile = { id: string; username: string; profile_logo: string; created_at: string; updated_at: string; moderationStatus?: 'member' | 'warn' | 'suspended' }
 const profileLogoOptions: Array<{ value: ProfileLogo; label: string; glyph: string; adminOnly?: boolean }> = [
   // Keep legacy database values valid, while ensuring every named option has a distinct symbol.
   { value: 'default', label: 'Player', glyph: '👤' },
@@ -390,7 +392,7 @@ export default function App() {
   const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
   const [compareIds, setCompareIds] = useState<string[]>(() => { try { const saved: unknown = JSON.parse(localStorage.getItem('uflmb.compare.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string').slice(0, 3) : [] } catch { return [] } })
   const [showCompare, setShowCompare] = useState(false)
-  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'assets' | 'cloud' | 'profiles' | 'moderation'>(() => { try { const saved = sessionStorage.getItem('uflmb.admin.tab.v1'); return saved === 'cards' || saved === 'quality' || saved === 'imports' || saved === 'appearance' || saved === 'assets' || saved === 'cloud' || saved === 'profiles' || saved === 'moderation' ? saved : 'cards' } catch { return 'cards' } })
+  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'assets' | 'cloud' | 'profiles' | 'moderation' | 'action-log'>(() => { try { const saved = sessionStorage.getItem('uflmb.admin.tab.v1'); return saved === 'cards' || saved === 'quality' || saved === 'imports' || saved === 'appearance' || saved === 'assets' || saved === 'cloud' || saved === 'profiles' || saved === 'moderation' || saved === 'action-log' ? saved : 'cards' } catch { return 'cards' } })
   const [adminProfiles, setAdminProfiles] = useState<AdminProfile[]>([])
   const [adminUserIds, setAdminUserIds] = useState<string[]>([])
   const [adminProfilesBusy, setAdminProfilesBusy] = useState(false)
@@ -473,7 +475,7 @@ export default function App() {
         if (cancelled) return
         const validProfiles = profiles.filter(profile => typeof profile.id === 'string' && typeof profile.username === 'string')
         const adminIds = admins.map(item => item.user_id).filter((id): id is string => typeof id === 'string')
-        let moderationStatuses: Record<string, 'member' | 'warned' | 'banned'> = {}
+        let moderationStatuses: Record<string, 'member' | 'warn' | 'suspended'> = {}
         if (validProfiles.length) {
           const statusResponse = await fetch(endpoint + '/functions/v1/account-moderation', {
             method: 'POST',
@@ -481,7 +483,7 @@ export default function App() {
             body: JSON.stringify({ action: 'profile_statuses', userIds: validProfiles.map(profile => profile.id) }),
             cache: 'no-store',
           })
-          const statusResult = await statusResponse.json() as { statuses?: Record<string, 'member' | 'warned' | 'banned'>; error?: string }
+          const statusResult = await statusResponse.json() as { statuses?: Record<string, 'member' | 'warn' | 'suspended'>; error?: string }
           if (!statusResponse.ok || !statusResult.statuses) throw new Error(statusResult.error || 'Profile moderation statuses could not be loaded.')
           moderationStatuses = statusResult.statuses
         }
@@ -1788,6 +1790,7 @@ export default function App() {
           ['cloud', '☁', 'Cloud sync', 'Admin sign-in and shared records'],
           ['profiles', '♙', 'Profile management', 'Manage registered accounts'],
           ['moderation', '⚑', 'Moderation & warnings', 'Review flags and issue warnings'],
+          ['action-log', '≡', 'Action log', 'Complete account and platform audit trail'],
         ] as const).map(([id, icon, label, description]) => (
           <button key={id} type="button" className={adminTab === id ? 'admin-tab active' : 'admin-tab'} onClick={() => setAdminTab(id)}>
             <span className="admin-tab-icon">{icon}</span><span className="admin-tab-copy"><strong>{label}</strong><small>{description}</small></span><span className="admin-tab-arrow">›</span>
@@ -1830,6 +1833,7 @@ export default function App() {
             {perkTraitImageStatus && <p className="muted-copy" role="status">{perkTraitImageStatus}</p>}
           </section>
       </section>}
+      {adminTab === 'action-log' && <ActionLog userId={account?.userId} accessToken={account?.accessToken} />}
       {adminTab === 'profiles' && <section className="admin-panel profile-management-panel">
         <div className="section-heading"><div><p className="eyebrow">ACCOUNT CONTROL</p><h2>Profile management</h2></div><span className="count-label">{adminProfiles.length} profiles</span></div>
         <p className="muted-copy">A clear overview of registered members and trusted administrators. Select any profile to view its public identity and manage its account status, including suspension, restoration and permanent deletion. Trusted administrator access remains protected by the database allowlist.</p>
@@ -2355,6 +2359,7 @@ export default function App() {
               <button className="button primary" type="submit" disabled={profileBusy || !profilePassword || !profilePasswordConfirm}>{profileBusy ? 'Updating…' : 'Update password'}</button>
             </form>
           </section>
+          {!isAdminSession && account && <AccountSelfDeletion username={account.username} accessToken={account.accessToken} />}
           {profileMessage && <p className={profileMessageType === 'error' ? 'profile-feedback error' : 'profile-feedback success'} role="status" aria-live="polite">{profileMessage}</p>}
         </> : <div className="account-signin-note"><span aria-hidden="true">✦</span><div><strong>Make yourself at home</strong><p>Create an account or sign in from the account button above to change your username, password and user logo.</p></div></div>}
       </section>}
