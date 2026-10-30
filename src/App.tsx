@@ -1803,10 +1803,10 @@ export default function App() {
             ? 'The public site beacon token was supplied during the build. Open Cloudflare Web Analytics to review reported metrics. New data may take several minutes to appear.'
             : 'No analytics script is loaded until the site owner adds the Cloudflare Web Analytics site token to the GitHub Actions variable. No visitor analytics are currently collected by UFLMB.'}</p>
           <ol>
-            <li>Create a free Cloudflare account and add each live hostname in Web Analytics: <strong>uflmb.github.io</strong> and <strong>uflmb.web.app</strong>.</li>
-            <li>Copy the JavaScript beacon token for each site. Each deployment has its own token variable because the two hostnames are configured as separate analytics sites.</li>
-            <li>Add the GitHub Actions repository variables <code>CF_WEB_ANALYTICS_TOKEN_PAGES</code> and <code>CF_WEB_ANALYTICS_TOKEN_FIREBASE</code> with the matching site tokens. These are public beacon identifiers, not API tokens or account secrets.</li>
-            <li>Run the Pages and Firebase deployment workflows again. Confirm both hostnames appear in Cloudflare Web Analytics.</li>
+            <li>Create a free Cloudflare account and add the public Firebase hostname in Web Analytics: <strong>uflmb.web.app</strong>.</li>
+            <li>Copy the JavaScript beacon token for the Firebase Hosting site.</li>
+            <li>Add the GitHub Actions repository variable <code>CF_WEB_ANALYTICS_TOKEN_FIREBASE</code> with this site token. It is a public beacon identifier, not an API token or account secret.</li>
+            <li>Run the Firebase deployment workflow again. Confirm <strong>uflmb.web.app</strong> appears in Cloudflare Web Analytics.</li>
           </ol>
           <div className="form-actions">
             <a className="button primary" href="https://dash.cloudflare.com/" target="_blank" rel="noreferrer">Open Cloudflare dashboard ↗</a>
