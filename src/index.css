@@ -7200,3 +7200,44 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   background-color: transparent !important;
   background-image: none !important;
 }
+
+
+/* Public Light Mode: re-enable the stadium photo layer.
+   The legacy public-only rule above hides both body pseudo-elements; this
+   later, equally scoped rule restores them without touching the admin shell. */
+:root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell)) {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+:root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell))::after {
+  display: block !important;
+  content: "" !important;
+  opacity: 1 !important;
+  background-image: var(--site-background-image) !important;
+  background-size: cover !important;
+  background-position: center 42% !important;
+  background-repeat: no-repeat !important;
+  filter: contrast(1.04) saturate(.92) brightness(1.04) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell))::before {
+  display: block !important;
+  content: "" !important;
+  opacity: 1 !important;
+  background: linear-gradient(
+    180deg,
+    rgba(248,250,252,.38) 0%,
+    rgba(248,250,252,.48) 48%,
+    rgba(248,250,252,.58) 100%
+  ) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell)) #root,
+:root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell)) .app-shell,
+:root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell)) .app-content-scroll,
+:root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell)) .home-page,
+:root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell)) .database-section,
+:root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell)) .gate-shell {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
