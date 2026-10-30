@@ -51,6 +51,22 @@ Deno.serve(async (req: Request) => {
       .from("admin_users").select("user_id").eq("user_id", actor.id).maybeSingle();
     if (adminError || !adminRow) return json({ error: "Administrator authorization is required." }, 403);
 
+    if (body.action === "profile_details") {
+      if (typeof body.userId !== "string" || !/^[0-9a-f-]{36}$/i.test(body.userId)) {
+        return json({ error: "A valid profile ID is required." }, 400);
+      }
+      const [{ data: targetUser, error: targetUserError }, { count: reviewCount, error: reviewCountError }] = await Promise.all([
+        adminClient.auth.admin.getUserById(body.userId),
+        adminClient.from("card_reviews").select("id", { count: "exact", head: true }).eq("user_id", body.userId),
+      ]);
+      if (targetUserError || !targetUser.user) return json({ error: "Could not verify the selected account." }, 404);
+      if (reviewCountError) return json({ error: "Could not load the selected account's review count." }, 500);
+      return json({
+        emailVerified: Boolean(targetUser.user.email_confirmed_at),
+        totalReviews: reviewCount ?? 0,
+      });
+    }
+
     if (body.action === "lookup") {
       if (typeof body.username !== "string" || !usernamePattern.test(body.username.trim())) {
         return json({ error: "Enter one exact registered username." }, 400);
