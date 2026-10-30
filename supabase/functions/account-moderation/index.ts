@@ -55,7 +55,7 @@ Deno.serve(async (req: Request) => {
         category: "auth",
         actor_user_id: actor.id,
         actor_username: profile?.username ?? actor.email?.split("@")[0] ?? null,
-        details: { method: typeof body.method === "string" && ["email_password","username_password","session_restore"].includes(body.method) ? body.method : "password" },
+        details: { method: body.action === "record_password_change" ? "password_change" : body.action === "record_logout" ? "session_end" : typeof body.method === "string" && ["email_password","username_password","session_restore"].includes(body.method) ? body.method : "password" },
         outcome: "success",
       });
       if (logError) return json({ error: "The authentication event could not be recorded." }, 500);
