@@ -1,0 +1,31 @@
+name: Validate privacy and analytics changes
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --no-audit --no-fund
+      - run: npm run check:security
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://ujuptqzlpubcdelrjmja.supabase.co
+          VITE_SUPABASE_ANON_KEY: sb_publishable_mI4mGppqhAbG3T2H3b7z3Q_PK09LaD_
+          VITE_SITE_URL: https://uflmb.github.io/UFLMB/
+      - run: npm run build:firebase
+        env:
+          VITE_SUPABASE_URL: https://ujuptqzlpubcdelrjmja.supabase.co
+          VITE_SUPABASE_ANON_KEY: sb_publishable_mI4mGppqhAbG3T2H3b7z3Q_PK09LaD_
+          VITE_SITE_URL: https://uflmb.web.app/
