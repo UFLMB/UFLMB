@@ -392,7 +392,7 @@ export default function App() {
   const [brandingPublishBusy, setBrandingPublishBusy] = useState(false)
   const [compareIds, setCompareIds] = useState<string[]>(() => { try { const saved: unknown = JSON.parse(localStorage.getItem('uflmb.compare.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string').slice(0, 3) : [] } catch { return [] } })
   const [showCompare, setShowCompare] = useState(false)
-  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'assets' | 'cloud' | 'profiles' | 'moderation' | 'action-log'>(() => { try { const saved = sessionStorage.getItem('uflmb.admin.tab.v1'); return saved === 'cards' || saved === 'quality' || saved === 'imports' || saved === 'appearance' || saved === 'assets' || saved === 'cloud' || saved === 'profiles' || saved === 'moderation' || saved === 'action-log' ? saved : 'cards' } catch { return 'cards' } })
+  const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'assets' | 'cloud' | 'profiles' | 'moderation' | 'action-log' | 'support'>(() => { try { const saved = sessionStorage.getItem('uflmb.admin.tab.v1'); return saved === 'cards' || saved === 'quality' || saved === 'imports' || saved === 'appearance' || saved === 'assets' || saved === 'cloud' || saved === 'profiles' || saved === 'moderation' || saved === 'action-log' || saved === 'support' ? saved : 'cards' } catch { return 'cards' } })
   const [adminProfiles, setAdminProfiles] = useState<AdminProfile[]>([])
   const [adminUserIds, setAdminUserIds] = useState<string[]>([])
   const [adminProfilesBusy, setAdminProfilesBusy] = useState(false)
@@ -1791,6 +1791,7 @@ export default function App() {
           ['profiles', '♙', 'Profile management', 'Manage registered accounts'],
           ['moderation', '⚑', 'Moderation & warnings', 'Review flags and issue warnings'],
           ['action-log', '≡', 'Action log', 'Complete account and platform audit trail'],
+          ['support', '✉', 'Support', 'Manage member support conversations'],
         ] as const).map(([id, icon, label, description]) => (
           <button key={id} type="button" className={adminTab === id ? 'admin-tab active' : 'admin-tab'} onClick={() => setAdminTab(id)}>
             <span className="admin-tab-icon">{icon}</span><span className="admin-tab-copy"><strong>{label}</strong><small>{description}</small></span><span className="admin-tab-arrow">›</span>
@@ -1834,6 +1835,7 @@ export default function App() {
           </section>
       </section>}
       {adminTab === 'action-log' && <ActionLog accessToken={account?.accessToken} />}
+      {adminTab === 'support' && <SupportChat adminDashboardView />}
       {adminTab === 'profiles' && <section className="admin-panel profile-management-panel">
         <div className="section-heading"><div><p className="eyebrow">ACCOUNT CONTROL</p><h2>Profile management</h2></div><span className="count-label">{adminProfiles.length} profiles</span></div>
         <p className="muted-copy">A clear overview of registered members and trusted administrators. Select any profile to view its public identity and manage its account status, including suspension, restoration and permanent deletion. Trusted administrator access remains protected by the database allowlist.</p>
@@ -2049,7 +2051,7 @@ export default function App() {
               </nav>,
         document.body,
       )}
-      <SupportChat />
+      {adminDashboardOpen && adminTab === 'support' ? null : <SupportChat />}
       <ModerationCenter userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'moderation')} />
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href={import.meta.env.BASE_URL} onClick={() => { setAdminDashboardOpen(false); try { sessionStorage.setItem('uflmb.admin.dashboard.v1', 'closed') } catch { /* Navigation should still work without session storage. */ } }}>Back to home</a></footer>
     </main>
