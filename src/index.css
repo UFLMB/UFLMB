@@ -7247,7 +7247,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
    These selectors are Light-mode-only; both Dark-mode layers remain untouched. */
 :root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell))::after,
 :root[data-ui-theme="light"] body.has-background-images:has(.admin-shell)::after {
-  opacity: .48 !important;
+  opacity: .55 !important;
   filter: contrast(1.03) saturate(.88) brightness(1.02) !important;
 }
 :root[data-ui-theme="light"] body.has-background-images:not(:has(.admin-shell))::before,
@@ -7257,9 +7257,9 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   opacity: 1 !important;
   background: linear-gradient(
     180deg,
-    rgba(248,250,252,.36) 0%,
-    rgba(248,250,252,.46) 48%,
-    rgba(248,250,252,.56) 100%
+    rgba(248,250,252,.46) 0%,
+    rgba(248,250,252,.56) 48%,
+    rgba(248,250,252,.66) 100%
   ) !important;
 }
 
