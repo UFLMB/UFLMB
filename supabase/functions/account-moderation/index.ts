@@ -96,15 +96,40 @@ Deno.serve(async (req: Request) => {
       .from("admin_users").select("user_id").eq("user_id", actor.id).maybeSingle();
     if (adminError || !adminRow) return json({ error: "Administrator authorization is required." }, 403);
 
+    if (body.action === "search_audit_users") {
+      const searchTerm = typeof body.query === "string" ? body.query.trim() : "";
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(searchTerm);
+      if (!isUuid && !/^[A-Za-z0-9_]{2,24}$/.test(searchTerm)) {
+        return json({ error: "Enter at least two username characters or a complete user UUID." }, 400);
+      }
+      let userQuery = adminClient.from("profiles").select("id, username").order("username", { ascending: true }).limit(12);
+      userQuery = isUuid
+        ? userQuery.eq("id", searchTerm)
+        : userQuery.ilike("username_normalized", "%" + searchTerm.toLowerCase() + "%");
+      const { data: users, error: usersError } = await userQuery;
+      if (usersError) return json({ error: "Audit user search could not be completed." }, 500);
+      return json({ users: users ?? [] });
+    }
+
     if (body.action === "list_action_logs") {
       const requestedLimit = Number(body.limit);
       const requestedOffset = Number(body.offset);
       const limit = Number.isInteger(requestedLimit) ? Math.min(100, Math.max(1, requestedLimit)) : 50;
       const offset = Number.isInteger(requestedOffset) ? Math.min(100000, Math.max(0, requestedOffset)) : 0;
-      let query = adminClient.from("action_logs").select("*", { count: "exact" }).order("created_at", { ascending: false }).range(offset, offset + limit - 1);
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (body.actorUserId != null && (typeof body.actorUserId !== "string" || !uuidPattern.test(body.actorUserId))) {
+        return json({ error: "The executor filter must contain a valid user UUID." }, 400);
+      }
+      if (body.targetUserId != null && (typeof body.targetUserId !== "string" || !uuidPattern.test(body.targetUserId))) {
+        return json({ error: "The targeted-user filter must contain a valid user UUID." }, 400);
+      }
+      let query = adminClient.from("action_logs").select("*", { count: "exact" }).order("created_at", { ascending: false });
       if (typeof body.category === "string" && ["auth","profile","moderation","community","support","content","system"].includes(body.category)) query = query.eq("category", body.category);
       if (typeof body.outcome === "string" && ["success","failed","pending"].includes(body.outcome)) query = query.eq("outcome", body.outcome);
       if (body.systemActions !== true) query = query.not("event_key", "in", '("LOGIN_SUCCESS","SESSION_RESTORED","LOGOUT","PASSWORD_CHANGED")');
+      if (typeof body.actorUserId === "string") query = query.eq("actor_user_id", body.actorUserId);
+      if (typeof body.targetUserId === "string") query = query.eq("target_user_id", body.targetUserId);
+      query = query.range(offset, offset + limit - 1);
       const { data: logs, count, error } = await query;
       if (error) return json({ error: "The action log could not be loaded." }, 500);
       return json({ logs: logs ?? [], count: count ?? 0, limit, offset });
