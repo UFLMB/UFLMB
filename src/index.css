@@ -6547,6 +6547,9 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .profile-management-role.admin { border-color:rgba(163,230,53,.3); background:rgba(163,230,53,.08); color:var(--accent,#a3e635); }
 .profile-management-role.banned { border-color:rgba(248,113,113,.34); background:rgba(248,113,113,.1); color:#f87171; }
 .profile-management-role.warned { border-color:rgba(251,191,36,.34); background:rgba(251,191,36,.1); color:#fbbf24; }
+.profile-management-role.member { border-color:rgba(163,230,53,.32); background:rgba(163,230,53,.09); color:#a3e635; }
+.profile-management-role.warn { border-color:rgba(251,191,36,.36); background:rgba(251,191,36,.1); color:#fbbf24; }
+.profile-management-role.suspended { border-color:rgba(251,146,60,.38); background:rgba(251,146,60,.11); color:#fb923c; }
 .profile-management-editor { padding:clamp(16px,2.5vw,24px); }
 .profile-management-editor form { display:grid; gap:17px; }
 .profile-management-editor-heading { display:flex; align-items:center; gap:14px; padding-bottom:17px; border-bottom:1px solid var(--line,rgba(255,255,255,.12)); }
