@@ -42,6 +42,7 @@ jobs:
           VITE_SUPABASE_URL: https://ujuptqzlpubcdelrjmja.supabase.co
           VITE_SUPABASE_ANON_KEY: sb_publishable_mI4mGppqhAbG3T2H3b7z3Q_PK09LaD_
           VITE_SITE_URL: https://uflmb.web.app/
+          VITE_CF_WEB_ANALYTICS_TOKEN: ${{ vars.CF_WEB_ANALYTICS_TOKEN_FIREBASE }}
         run: npm run build:firebase
 
       - name: Deploy to Firebase Hosting
