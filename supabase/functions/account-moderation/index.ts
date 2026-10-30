@@ -79,6 +79,10 @@ Deno.serve(async (req: Request) => {
       if (logError || !log) return json({ error: "The deletion could not be securely logged, so no account change was made." }, 500);
 
       const { error: deleteError } = await adminClient.auth.admin.deleteUser(actor.id);
+      if (!deleteError) {
+        // account_suspensions has no auth.users foreign key; remove any orphaned active lock after deletion.
+        await adminClient.from("account_suspensions").delete().eq("user_id", actor.id);
+      }
       const outcome = deleteError ? "failed" : "success";
       const { error: updateError } = await adminClient.from("action_logs").update({
         outcome, details: { deletion_source: "self_service", ...(deleteError ? { failure: "Auth account deletion was rejected." } : {}) },
