@@ -20,7 +20,7 @@ const labels: Record<string, string> = {
   ACCOUNT_CREATED: 'Account created', ACCOUNT_DELETED: 'Account deleted', ACCOUNT_BANNED: 'Account banned & deleted',
   ACCOUNT_SUSPENDED: 'Account suspended', ACCOUNT_RESTORED: 'Suspension lifted', ACCOUNT_PROFILE_REMOVED: 'Profile removed',
   PROFILE_UPDATED: 'Profile updated', WARNING_ISSUED: 'Warning issued', WARNING_REMOVED: 'Warning removed',
-  WARNING_UPDATED: 'Warning updated', LOGIN_SUCCESS: 'Successful sign-in', LOGOUT: 'Signed out', PASSWORD_CHANGED: 'Password changed',
+  WARNING_UPDATED: 'Warning updated', LOGIN_SUCCESS: 'Successful sign-in', SESSION_RESTORED: 'Session restored', LOGOUT: 'Signed out', PASSWORD_CHANGED: 'Password changed',
   ADMIN_ACCESS_GRANTED: 'Admin access granted', ADMIN_ACCESS_REVOKED: 'Admin access revoked', APP_STATE_UPDATE: 'Shared application state updated',
   REVIEW_SUBMITTED: 'Review submitted', REVIEW_UPDATED: 'Review updated', REVIEW_DELETED: 'Review deleted',
   MODERATION_CASE_CREATED: 'Moderation case created', MODERATION_CASE_UPDATED: 'Moderation case updated',
