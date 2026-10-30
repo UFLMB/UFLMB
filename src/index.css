@@ -7445,7 +7445,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   margin-left: calc(50% - 50vw) !important;
   margin-right: calc(50% - 50vw) !important;
   margin-top: 0 !important;
-  margin-bottom: 4px !important;
+  margin-bottom: 8px !important;
   box-sizing: border-box !important;
   border-top: 0 !important;
   border-right: 0 !important;
@@ -7459,5 +7459,5 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 :root[data-ui-theme="light"] body.has-background-images .admin-shell .admin-overview-shell {
   margin-top: 0 !important;
-  margin-bottom: 4px !important;
+  margin-bottom: 8px !important;
 }
