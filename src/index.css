@@ -7292,3 +7292,103 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   backdrop-filter: blur(10px) saturate(112%) !important;
 }
 
+
+
+/* Final Light Mode heading + navigation glass containers.
+   Public page introductions and the complete admin overview use one shared
+   translucent surface treatment; Dark mode remains unchanged. */
+:root[data-ui-theme="light"] body.has-background-images .home-hero,
+:root[data-ui-theme="light"] body.has-background-images .hero,
+:root[data-ui-theme="light"] body.has-background-images .account-page-heading,
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell {
+  color: #18202b !important;
+  background: rgba(247,249,244,.80) !important;
+  background-image: none !important;
+  border: 1px solid rgba(255,255,255,.72) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 14px 38px rgba(20,30,45,.10), inset 0 1px 0 rgba(255,255,255,.62) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(118%) !important;
+  backdrop-filter: blur(14px) saturate(118%) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .home-hero,
+:root[data-ui-theme="light"] body.has-background-images .hero {
+  padding: clamp(24px, 4.5vw, 46px) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .account-page-heading {
+  padding: clamp(20px, 3.5vw, 34px) !important;
+  margin-bottom: 22px !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .home-hero h1,
+:root[data-ui-theme="light"] body.has-background-images .hero h1,
+:root[data-ui-theme="light"] body.has-background-images .account-page-heading h1,
+:root[data-ui-theme="light"] body.has-background-images .admin-intro h1 {
+  color: #18202b !important;
+  text-shadow: none !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .home-hero h1 span,
+:root[data-ui-theme="light"] body.has-background-images .hero h1 span,
+:root[data-ui-theme="light"] body.has-background-images .account-page-heading h1 span,
+:root[data-ui-theme="light"] body.has-background-images .admin-intro h1 span {
+  color: #5f8f12 !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .home-hero .eyebrow,
+:root[data-ui-theme="light"] body.has-background-images .hero .eyebrow,
+:root[data-ui-theme="light"] body.has-background-images .account-page-heading .eyebrow,
+:root[data-ui-theme="light"] body.has-background-images .admin-intro .eyebrow {
+  color: #557b18 !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .home-hero .hero-copy,
+:root[data-ui-theme="light"] body.has-background-images .hero .hero-copy,
+:root[data-ui-theme="light"] body.has-background-images .account-page-heading .hero-copy,
+:root[data-ui-theme="light"] body.has-background-images .admin-intro .hero-copy {
+  color: #465263 !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0 28px;
+  padding: clamp(14px, 2.2vw, 24px) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell .admin-intro {
+  padding: 8px 8px 0 !important;
+  margin: 0 !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell .admin-tabs {
+  margin: 0 !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell .admin-tab {
+  color: #18202b !important;
+  background: rgba(255,255,255,.48) !important;
+  border-color: rgba(112,128,144,.24) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.62) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell .admin-tab:hover,
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell .admin-tab.active {
+  background: rgba(255,255,255,.78) !important;
+  border-color: rgba(111,153,35,.52) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell .admin-tab-copy strong {
+  color: #18202b !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell .admin-tab-copy small {
+  color: #586575 !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell .admin-tab-icon {
+  color: #527d12 !important;
+  background: rgba(163,230,53,.22) !important;
+}
+:root[data-ui-theme="light"] body.has-background-images .admin-overview-shell .admin-tab-arrow {
+  color: #527d12 !important;
+}
+@media (max-width: 650px) {
+  :root[data-ui-theme="light"] body.has-background-images .admin-overview-shell {
+    gap: 12px;
+    padding: 12px !important;
+    border-radius: 16px !important;
+  }
+  :root[data-ui-theme="light"] body.has-background-images .home-hero,
+  :root[data-ui-theme="light"] body.has-background-images .hero,
+  :root[data-ui-theme="light"] body.has-background-images .account-page-heading {
+    border-radius: 16px !important;
+  }
+}
