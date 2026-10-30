@@ -1,5 +1,5 @@
 .action-log-panel{min-width:0}
-.action-log-toolbar{display:grid;grid-template-columns:minmax(180px,1fr) minmax(130px,.45fr) minmax(130px,.45fr) auto;align-items:end;gap:10px;margin:20px 0 16px}
+.action-log-toolbar{display:grid;grid-template-columns:minmax(180px,1fr) minmax(130px,.45fr) minmax(130px,.45fr) minmax(130px,.4fr) auto;align-items:end;gap:10px;margin:20px 0 16px}
 .action-log-toolbar label{display:grid;gap:6px;color:var(--muted,#9299a8);font-size:10px;font-weight:700}
 .action-log-toolbar input,.action-log-toolbar select{width:100%;min-width:0;min-height:42px;padding:10px 12px;border:1px solid var(--line,rgba(255,255,255,.14));border-radius:10px;background:rgba(0,0,0,.15);color:var(--text-color,#f3f5f8);font:inherit;font-size:11px}
 .action-log-search{position:relative;display:flex!important;align-items:center}
@@ -48,3 +48,13 @@
 @media(max-width:480px){.action-log-details dl{grid-template-columns:1fr}}
 
 :root[data-ui-theme="light"] .action-log-entry.banned .action-log-entry-title strong{color:#b91c1c}
+
+.action-log-system-toggle{display:flex!important;align-items:center;justify-content:space-between;gap:10px;min-height:42px;padding:0 10px;border:1px solid var(--line,rgba(255,255,255,.14));border-radius:10px;background:rgba(0,0,0,.15)}
+.action-log-switch{position:relative;display:inline-flex;flex:0 0 auto;width:34px;height:19px}
+.action-log-switch input{position:absolute;width:1px;height:1px;opacity:0}
+.action-log-switch i{position:absolute;inset:0;border-radius:999px;background:#667085;transition:background .18s}
+.action-log-switch i:before{content:'';position:absolute;top:3px;left:3px;width:13px;height:13px;border-radius:50%;background:#fff;transition:transform .18s}
+.action-log-switch input:checked+i{background:var(--accent,#a3e635)}
+.action-log-switch input:checked+i:before{transform:translateX(15px);background:#17200c}
+.action-log-switch input:focus-visible+i{outline:2px solid var(--accent,#a3e635);outline-offset:3px}
+:root[data-ui-theme="light"] .action-log-system-toggle{background:#f6f8f3;border-color:rgba(20,30,45,.16)}
