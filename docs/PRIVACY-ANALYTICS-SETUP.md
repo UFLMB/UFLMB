@@ -3,7 +3,7 @@
 ## What is implemented
 
 - Optional Cloudflare Web Analytics beacon, loaded only in production when a site-specific beacon token is present at build time.
-- Separate build variables for GitHub Pages and Firebase Hosting.
+- Cloudflare Web Analytics is configured only for the public Firebase Hosting site, `uflmb.web.app`.
 - Admin > Analytics setup/status panel.
 - Public Privacy Notice and Cookies & Browser Storage Notice.
 - No advertising pixels, session replay, Google Analytics or custom visitor-identification code is added.
@@ -12,16 +12,14 @@
 ## Activate Cloudflare Web Analytics
 
 1. Create/sign in to a Cloudflare account.
-2. Open **Web Analytics** and add `uflmb.github.io` as a site. Copy the JavaScript beacon token shown by Cloudflare.
-3. Add `uflmb.web.app` as a second site and copy its beacon token.
-4. In GitHub, open **UFLMB/UFLMB → Settings → Secrets and variables → Actions → Variables**.
-5. Create these repository variables:
-   - `CF_WEB_ANALYTICS_TOKEN_PAGES` — token for `uflmb.github.io`
+2. In **Web Analytics**, add `uflmb.web.app` as a site and copy its JavaScript beacon token.
+3. In GitHub, open **UFLMB/UFLMB → Settings → Secrets and variables → Actions → Variables**.
+4. Create this repository variable:
    - `CF_WEB_ANALYTICS_TOKEN_FIREBASE` — token for `uflmb.web.app`
-6. Re-run the **Deploy UFLMB to GitHub Pages** and **Deploy UFLMB to Firebase Hosting** workflows. The regular build will include the corresponding beacon.
-7. Verify both hostnames in the Cloudflare Web Analytics dashboard. Initial metrics may take several minutes to appear.
+5. Run the **Deploy UFLMB to Firebase Hosting** workflow (or push a reviewed change to `main`). The Firebase production build will include the beacon.
+6. Verify `uflmb.web.app` in the Cloudflare Web Analytics dashboard. Initial metrics may take several minutes to appear.
 
-The beacon token is a public site identifier, not an account API token. Never create or expose a Cloudflare API token for this integration. No DNS change, Cloudflare proxy, custom Worker or paid plan is required for the manual snippet setup.
+GitHub Pages is intentionally not configured for analytics. The beacon token is a public site identifier, not an account API token. Never create or expose a Cloudflare API token for this integration. No DNS change, Cloudflare proxy, custom Worker or paid plan is required for the manual snippet setup.
 
 ## Consent and storage approach
 
