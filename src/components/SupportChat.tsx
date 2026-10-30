@@ -34,10 +34,11 @@ const readSession = (): StoredSession | null => {
 }
 const friendlyDate = (value: string) => new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
 
-export default function SupportChat() {
+export default function SupportChat({ adminDashboardView = false }: { adminDashboardView?: boolean }) {
   const [open, setOpen] = useState(false)
   const [adminView, setAdminView] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [adminCheckComplete, setAdminCheckComplete] = useState(false)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -91,13 +92,16 @@ export default function SupportChat() {
 
   useEffect(() => {
     setIsAdmin(false)
-    setAdminView(false)
+    setAdminCheckComplete(false)
+    setAdminView(adminDashboardView)
+    setOpen(adminDashboardView)
+    setAdminCheckComplete(false)
     setConversations([])
     setSelectedId('')
     setMessages([])
     setError('')
     setNotice('')
-  }, [token, userId])
+  }, [token, userId, adminDashboardView])
 
   useEffect(() => {
     if (!open || !token || !userId || !endpoint || !anonKey) return
@@ -109,9 +113,9 @@ export default function SupportChat() {
           cache: 'no-store',
         })
         const rows = response.ok ? await response.json() as Array<{ user_id: string }> : []
-        if (!cancelled) setIsAdmin(rows.some(row => row.user_id === userId))
+        if (!cancelled) { setIsAdmin(rows.some(row => row.user_id === userId)); setAdminCheckComplete(true) }
       } catch {
-        if (!cancelled) setIsAdmin(false)
+        if (!cancelled) { setIsAdmin(false); setAdminCheckComplete(true) }
       }
     })()
     return () => { cancelled = true }
@@ -225,18 +229,20 @@ export default function SupportChat() {
     }
   }
 
+  if (adminDashboardView && (!token || !userId)) return <section className="admin-panel support-admin-panel"><div className="section-heading"><div><p className="eyebrow">UFLMB HELP DESK</p><h2>Support</h2></div></div><div className="support-empty"><strong>Administrator sign-in required</strong><p>Sign in with an authorized administrator account to access support conversations.</p></div></section>
+
   return <>
-    <button className="support-launcher" type="button" onClick={() => { setOpen(value => !value); setError(''); setNotice('') }} aria-expanded={open} aria-controls="uflmb-support-panel">
+    {!adminDashboardView && <button className="support-launcher" type="button" onClick={() => { setOpen(value => !value); setError(''); setNotice('') }} aria-expanded={open} aria-controls="uflmb-support-panel">
       <span aria-hidden="true">✉</span> Support
-    </button>
-    {open && <section className="support-panel" id="uflmb-support-panel" role="dialog" aria-modal="false" aria-label="UFLMB customer support">
+    </button>}
+    {(open || adminDashboardView) && <section className={adminDashboardView ? 'support-panel support-admin-dashboard' : 'support-panel'} id="uflmb-support-panel" role="dialog" aria-modal="false" aria-label="UFLMB customer support">
       <header className="support-header">
-        <div><p className="support-eyebrow">UFLMB HELP DESK</p><h2>{adminView && isAdmin ? 'Support inbox' : 'How can we help?'}</h2></div>
-        <button type="button" className="support-close" onClick={() => setOpen(false)} aria-label="Close support">×</button>
+        <div><p className="support-eyebrow">UFLMB HELP DESK</p><h2>{adminDashboardView || (adminView && isAdmin) ? 'Support inbox' : 'How can we help?'}</h2></div>
+        {!adminDashboardView && <button type="button" className="support-close" onClick={() => setOpen(false)} aria-label="Close support">×</button>}
       </header>
-      {!token || !userId ? <div className="support-empty"><strong>Sign in to contact support</strong><p>Your support conversations are private to your account.</p></div> : <>
-        {isAdmin && <div className="support-mode-switch"><button type="button" className={!adminView ? 'active' : ''} onClick={() => { setAdminView(false); setSelectedId(''); setNotice(''); setError('') }}>My requests</button><button type="button" className={adminView ? 'active' : ''} onClick={() => { setAdminView(true); setSelectedId(''); setNotice(''); setError('') }}>Admin inbox</button></div>}
-        {!adminView && <form className="support-new-form" onSubmit={createConversation}>
+      {!token || !userId ? <div className="support-empty"><strong>Sign in to contact support</strong><p>Your support conversations are private to your account.</p></div> : adminDashboardView && !adminCheckComplete ? <div className="support-empty"><strong>Verifying administrator access…</strong><p>Checking the trusted administrator allowlist.</p></div> : adminDashboardView && !isAdmin ? <div className="support-empty"><strong>Administrator access required</strong><p>This inbox is available only to authorized administrators.</p></div> : <>
+        {!adminDashboardView && isAdmin && <div className="support-mode-switch"><button type="button" className={!adminView ? 'active' : ''} onClick={() => { setAdminView(false); setSelectedId(''); setNotice(''); setError('') }}>My requests</button><button type="button" className={adminView ? 'active' : ''} onClick={() => { setAdminView(true); setSelectedId(''); setNotice(''); setError('') }}>Admin inbox</button></div>}
+        {!adminDashboardView && !adminView && <form className="support-new-form" onSubmit={createConversation}>
           <label>New request <input value={subject} onChange={event => setSubject(event.target.value)} maxLength={120} minLength={3} placeholder="Briefly describe the issue" required /></label>
           <label>Category <select value={category} onChange={event => setCategory(event.target.value)}><option value="general">General question</option><option value="bug">Report a bug</option><option value="account">Account help</option><option value="feedback">Feedback</option></select></label>
           <button className="support-primary" type="submit" disabled={creating}>{creating ? 'Opening…' : 'Open request'}</button>
@@ -266,7 +272,7 @@ export default function SupportChat() {
       </>}
       {notice && <p className="support-notice" role="status">{notice}</p>}
       {error && <p className="support-error" role="alert">{error}</p>}
-      <p className="support-privacy-note">Support messages are private to the requester and authorized administrators. They are not automatically used to issue community warnings.</p>
+      {!adminDashboardView && <p className="support-privacy-note">Support messages are private to the requester and authorized administrators. They are not automatically used to issue community warnings.</p>}
     </section>}
   </>
 }
