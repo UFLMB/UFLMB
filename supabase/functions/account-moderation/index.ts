@@ -132,11 +132,68 @@ Deno.serve(async (req: Request) => {
         }
       }
     } else {
-      const { error: deleteError } = await adminClient.auth.admin.deleteUser(target.id);
-      if (deleteError) {
-        actionError = "Deletion was rejected. The account may own Storage objects that must be reassigned or removed first.";
+      // Preserve useful public review content while removing the deleted member's identity.
+      // Snapshot rows first so the changes can be rolled back if Auth deletion fails.
+      const { data: reviewRows, error: reviewReadError } = await adminClient
+        .from("card_reviews")
+        .select("id, reviewer_name, user_id")
+        .eq("user_id", target.id);
+      const { data: queueRows, error: queueReadError } = await adminClient
+        .from("moderation_queue")
+        .select("id, user_id, display_name, content_excerpt, admin_note")
+        .eq("user_id", target.id);
+
+      if (reviewReadError || queueReadError || !reviewRows || !queueRows) {
+        actionError = "Could not safely prepare the member's review and moderation data for anonymisation. No account data was deleted.";
       } else {
-        await adminClient.from("account_suspensions").delete().eq("user_id", target.id);
+        const { error: reviewUpdateError } = await adminClient
+          .from("card_reviews")
+          .update({ reviewer_name: "Deleted member", user_id: null })
+          .eq("user_id", target.id);
+        if (reviewUpdateError) {
+          actionError = "Could not anonymise the member's public reviews. No account data was deleted.";
+        } else {
+          const { error: queueUpdateError } = await adminClient
+            .from("moderation_queue")
+            .update({
+              user_id: null,
+              display_name: "Deleted member",
+              content_excerpt: "",
+              admin_note: null,
+            })
+            .eq("user_id", target.id);
+
+          if (queueUpdateError) {
+            await Promise.all(reviewRows.map(row =>
+              adminClient.from("card_reviews")
+                .update({ reviewer_name: row.reviewer_name, user_id: row.user_id })
+                .eq("id", row.id)
+            ));
+            actionError = "Could not anonymise moderation records. The review changes were rolled back; no account data was deleted.";
+          } else {
+            const { error: deleteError } = await adminClient.auth.admin.deleteUser(target.id);
+            if (deleteError) {
+              const rollback = await Promise.all([
+                ...reviewRows.map(row => adminClient.from("card_reviews")
+                  .update({ reviewer_name: row.reviewer_name, user_id: row.user_id }).eq("id", row.id)),
+                ...queueRows.map(row => adminClient.from("moderation_queue")
+                  .update({
+                    user_id: row.user_id,
+                    display_name: row.display_name,
+                    content_excerpt: row.content_excerpt,
+                    admin_note: row.admin_note,
+                  }).eq("id", row.id)),
+              ]);
+              const rollbackFailed = rollback.some(result => result.error);
+              actionError = "Deletion was rejected. The account may own Storage objects that must be reassigned or removed first."
+                + (rollbackFailed
+                  ? " WARNING: some review/moderation data could not be restored; inspect the records before retrying."
+                  : " Review and moderation changes were rolled back.");
+            } else {
+              await adminClient.from("account_suspensions").delete().eq("user_id", target.id);
+            }
+          }
+        }
       }
     }
 
