@@ -29,3 +29,7 @@
 :root[data-ui-theme="light"] .action-log-entry p b{color:#18202b}
 @media(max-width:760px){.action-log-toolbar{grid-template-columns:1fr 1fr}.action-log-search{grid-column:1/-1}.action-log-toolbar .button{width:100%}}
 @media(max-width:420px){.action-log-toolbar{grid-template-columns:1fr}.action-log-search{grid-column:auto}.action-log-entry{padding:12px}}
+
+.action-log-entry.banned{border-color:rgba(248,113,113,.34);background:linear-gradient(100deg,rgba(248,113,113,.065),rgba(248,113,113,.015))}
+.action-log-entry.banned .action-log-entry-title strong{color:#f87171}
+:root[data-ui-theme="light"] .action-log-entry.banned{border-color:rgba(180,35,24,.25);background:rgba(248,113,113,.045)}
