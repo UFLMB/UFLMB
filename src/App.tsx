@@ -8,6 +8,7 @@ import AuthAccess from './components/AuthAccess'
 import SharedDatabasePanel from './components/SharedDatabasePanel'
 import SupportChat from './components/SupportChat'
 import ModerationCenter from './components/ModerationCenter'
+import AccountManagement from './components/AccountManagement'
 import { validateUsernamePolicy } from './lib/usernamePolicy'
 import { matchCardImageFilename } from './lib/cardImageImport'
 
@@ -1862,7 +1863,7 @@ export default function App() {
               })}
           </div>
           <div className="profile-management-editor">
-            {selectedAdminProfile ? <form onSubmit={saveAdminProfile}>
+            {selectedAdminProfile ? <div className="profile-management-selected"><form onSubmit={saveAdminProfile}>
               <div className="profile-management-editor-heading">
                 <span className={adminUserIds.includes(selectedAdminProfile.id) ? 'profile-management-avatar large admin' : 'profile-management-avatar large'}>{adminUserIds.includes(selectedAdminProfile.id) ? <svg className="profile-admin-logo" viewBox="0 0 24 24" aria-label="Admin logo"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg> : profileLogoOptions.find(option => option.value === selectedAdminProfile.profile_logo)?.glyph || '👤'}</span>
                 <div><p className="eyebrow">{adminUserIds.includes(selectedAdminProfile.id) ? 'TRUSTED ADMIN ACCOUNT' : 'REGISTERED MEMBER'}</p><h3>{selectedAdminProfile.username}</h3><span>{adminUserIds.includes(selectedAdminProfile.id) ? 'Administrator access is managed separately.' : 'Profile details and public identity'}</span></div>
@@ -1882,7 +1883,7 @@ export default function App() {
               <div className="profile-management-meta"><span>Created</span><strong>{new Date(selectedAdminProfile.created_at).toLocaleString()}</strong></div>
               <div className="profile-management-meta"><span>Last updated</span><strong>{new Date(selectedAdminProfile.updated_at).toLocaleString()}</strong></div>
               <div className="form-actions profile-management-actions"><button className="button primary" type="submit" disabled={adminProfileSaveBusy || (adminProfileUsernameDraft.trim() === selectedAdminProfile.username && adminProfileLogoDraft === (adminUserIds.includes(selectedAdminProfile.id) ? 'admin' : selectedAdminProfile.profile_logo))}>{adminProfileSaveBusy ? 'Saving…' : 'Save profile changes'}</button><button className="button secondary" type="button" onClick={() => selectAdminProfile(selectedAdminProfile)} disabled={adminProfileSaveBusy}>Reset</button></div>
-            </form> : <div className="profile-management-empty profile-management-editor-empty"><span className="profile-management-empty-icon">◎</span><strong>Select a profile</strong><span>Choose an account from the list to review and manage its public profile.</span></div>}
+            </form><AccountManagement userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'profiles')} selectedAccount={{ id: selectedAdminProfile.id, username: selectedAdminProfile.username, createdAt: selectedAdminProfile.created_at, isAdmin: adminUserIds.includes(selectedAdminProfile.id) }} onDeleted={() => { setAdminProfiles(current => current.filter(profile => profile.id !== selectedAdminProfile.id)); setSelectedAdminProfileId(null); setAdminProfilesMessage('Account permanently deleted.') }} /></div> : <div className="profile-management-empty profile-management-editor-empty"><span className="profile-management-empty-icon">◎</span><strong>Select a profile</strong><span>Choose an account from the list to review and manage its public profile.</span></div>}
           </div>
         </div>
       </section>}
