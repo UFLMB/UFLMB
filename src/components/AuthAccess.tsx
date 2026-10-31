@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { FormEvent } from 'react'
 import { validateUsernamePolicy } from '../lib/usernamePolicy'
-import NotificationCenter from './NotificationCenter'
+import NotificationCenter, { ToastHost } from './NotificationCenter'
 
 type AuthUser = { id: string; email?: string }
 type AuthSession = {
@@ -458,6 +458,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
 
   return (
     <>
+      <ToastHost />
       <div className="auth-account-wrap" ref={accountMenuRef}>
         <button className={session ? 'auth-trigger account-trigger' : 'button primary auth-trigger'} type="button" aria-haspopup={session ? 'menu' : 'dialog'} aria-expanded={session ? accountMenuOpen : open} onClick={() => {
           if (session) { setAccountMenuOpen(value => !value); setOpen(false) }
