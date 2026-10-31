@@ -3790,8 +3790,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .featured-player:not(.admin-shell *),
 :root[data-ui-theme="light"] .home-overview article:not(.admin-shell *),
 :root[data-ui-theme="light"] .profile-modal:not(.admin-shell *),
-:root[data-ui-theme="light"] .auth-modal:not(.admin-shell *),
-:root[data-ui-theme="light"] .account-dropdown:not(.admin-shell *){
+:root[data-ui-theme="light"] .auth-modal:not(.admin-shell *){
   color:#18202b!important;
   background:#ffffff!important;
   background-image:none!important;
@@ -7104,31 +7103,46 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   border-color: rgba(197,244,103,.35) !important;
   box-shadow: 0 5px 18px rgba(0,0,0,.2) !important;
 }
+/* Admin account dropdown in Light mode: match the public menu's restrained,
+   translucent treatment. Keep these rules scoped to the admin topbar only. */
 :root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .account-dropdown {
-  color: #edf1f7 !important;
-  background: rgba(17,22,31,.98) !important;
-  border-color: rgba(222,232,245,.12) !important;
-  box-shadow: 0 18px 50px rgba(0,0,0,.55) !important;
+  color: #263140 !important;
+  background: rgba(247,249,244,.94) !important;
+  border-color: rgba(24,32,43,.13) !important;
+  box-shadow: 0 14px 36px rgba(24,32,43,.14) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(125%) !important;
+  backdrop-filter: blur(16px) saturate(125%) !important;
 }
-:root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .account-menu-label { color: #8f9bac !important; }
+:root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .account-menu-label { color: #748093 !important; }
 :root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .theme-mode-button {
-  color: #c5cfdd !important;
-  background: #171e29 !important;
-  border-color: rgba(222,232,245,.11) !important;
+  color: #596579 !important;
+  background: rgba(255,255,255,.48) !important;
+  border-color: rgba(24,32,43,.12) !important;
 }
 :root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .theme-mode-button:hover,
 :root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .theme-mode-button.active {
-  color: #d8ff91 !important;
-  background: rgba(197,244,103,.12) !important;
-  border-color: rgba(197,244,103,.5) !important;
+  color: #365314 !important;
+  background: rgba(163,230,53,.16) !important;
+  border-color: rgba(101,133,42,.42) !important;
 }
-:root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .account-menu-item { color: #e0e6ef !important; }
+:root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .account-menu-item {
+  color: #344054 !important;
+  background: transparent !important;
+}
 :root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .account-menu-item:hover {
-  color: #e3ffb1 !important;
-  background: rgba(197,244,103,.08) !important;
+  color: #263b12 !important;
+  background: rgba(163,230,53,.13) !important;
 }
-:root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .account-menu-item.logout-item { color: #ff9b9b !important; }
-:root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .account-menu-divider { background: rgba(222,232,245,.1) !important; }
+:root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .account-menu-item.logout-item {
+  color: #b42323 !important;
+}
+:root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .account-menu-item.logout-item:hover {
+  color: #8f1d1d !important;
+  background: rgba(220,38,38,.08) !important;
+}
+:root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar .account-menu-divider {
+  background: rgba(24,32,43,.10) !important;
+}
 
 @media (max-width: 650px) {
   :root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar {
