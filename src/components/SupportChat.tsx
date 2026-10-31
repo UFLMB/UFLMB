@@ -43,6 +43,8 @@ function SupportChatWidget({ adminDashboardView = false }: { adminDashboardView?
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
+  const [pendingMessageId, setPendingMessageId] = useState('')
+  const [highlightedMessageId, setHighlightedMessageId] = useState('')
   const [subject, setSubject] = useState('')
   const [category, setCategory] = useState('general')
   const [draft, setDraft] = useState('')
@@ -133,6 +135,32 @@ function SupportChatWidget({ adminDashboardView = false }: { adminDashboardView?
   useEffect(() => {
     if (open) void loadConversations()
   }, [open, loadConversations])
+
+  useEffect(() => {
+    const openFromNotification = (event: Event) => {
+      const detail = (event as CustomEvent<{ conversationId?: string; messageId?: string }>).detail
+      if (!detail?.conversationId) return
+      setAdminView(false)
+      setPendingMessageId(detail.messageId || '')
+      setOpen(true)
+      setSelectedId(detail.conversationId)
+      void loadConversations(detail.conversationId)
+    }
+    window.addEventListener('uflmb:open-public-support-notification', openFromNotification)
+    return () => window.removeEventListener('uflmb:open-public-support-notification', openFromNotification)
+  }, [loadConversations])
+
+  useEffect(() => {
+    if (!open || !pendingMessageId || !messages.some(message => message.id === pendingMessageId)) return
+    const target = Array.from(document.querySelectorAll<HTMLElement>('[data-support-message-id]'))
+      .find(element => element.dataset.supportMessageId === pendingMessageId)
+    if (!target) return
+    setHighlightedMessageId(pendingMessageId)
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    setPendingMessageId('')
+    const timer = window.setTimeout(() => setHighlightedMessageId(''), 2400)
+    return () => window.clearTimeout(timer)
+  }, [open, pendingMessageId, messages])
 
   useEffect(() => {
     if (!open || !selectedId || !token || !userId) {
@@ -269,7 +297,7 @@ function SupportChatWidget({ adminDashboardView = false }: { adminDashboardView?
                 {adminView && isAdmin && <select aria-label="Conversation status" value={selected.status} onChange={event => void changeStatus(event.target.value as Conversation['status'])} disabled={busy}><option value="open">Open</option><option value="in_progress">In progress</option><option value="resolved">Resolved</option></select>}
               </div>
               <div className="support-messages" aria-live="polite">
-                {messages.length === 0 ? <p className="support-muted">No messages yet. Send a message below.</p> : messages.map(message => <article key={message.id} className={message.sender_role === 'admin' ? 'support-message support-message-admin' : 'support-message'}>
+                {messages.length === 0 ? <p className="support-muted">No messages yet. Send a message below.</p> : messages.map(message => <article key={message.id} data-support-message-id={message.id} className={`${message.sender_role === 'admin' ? 'support-message support-message-admin' : 'support-message'}${highlightedMessageId === message.id ? ' support-message-notification-target' : ''}`}>
                   <div className="support-message-meta"><strong>{message.sender_role === 'admin' ? 'UFLMB Support' : message.sender_id === userId ? 'You' : 'Member'}</strong><time>{friendlyDate(message.created_at)}</time></div>
                   <p>{message.body}</p>
                 </article>)}
