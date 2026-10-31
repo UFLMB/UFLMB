@@ -226,7 +226,7 @@ export default function AdminSupportInbox() {
               <button type="button" className="support-mini-open" onClick={() => { setSelectedId(item.id); setError(''); setNotice('') }}>
                 <span className={`support-mini-read-dot ${unread ? 'unread' : 'read'}`} aria-label={unread ? 'Unread' : 'Read'}>{unread ? '●' : '✓'}</span>
                 <span className="support-mini-row-copy"><strong>{item.subject}</strong><small>{item.category.replace('_', ' ')} · {item.status.replace('_', ' ')}</small><time>{friendlyDate(item.updated_at)}</time></span>
-                <span className="support-mini-flags" aria-label={['Starred','Archived'].filter((label, index) => index === 0 ? state.is_starred : state.is_archived).join(', ')}>
+                <span className="support-mini-flags" aria-label={[state.is_starred ? 'Starred' : '', state.is_archived ? 'Archived' : ''].filter(Boolean).join(', ')}>
                   {state.is_starred && <span title="Starred" aria-label="Starred">★</span>}
                   {state.is_archived && <span title="Archived" aria-label="Archived">▣</span>}
                 </span>
