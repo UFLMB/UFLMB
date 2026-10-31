@@ -7475,3 +7475,9 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   margin-top: 0 !important;
   margin-bottom: 8px !important;
 }
+
+
+/* Profile Appearance icons: use a dark foreground in Light mode for clear contrast. */
+:root[data-ui-theme="light"] .settings-theme-option > span {
+  color: #18202b !important;
+}
