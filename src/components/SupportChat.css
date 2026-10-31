@@ -237,3 +237,8 @@
 :root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-folderbar{color:#596579}
 :root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-folderbar button{color:#456c0d;background:rgba(163,230,53,.18);border-color:rgba(111,153,35,.35)}
 :root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-message-read.read{color:#687588}
+
+.support-mini-archive{align-self:center;border:0;border-radius:7px;background:transparent;color:#9aa5b5;padding:8px 9px;font-size:15px}
+.support-mini-archive:hover{background:rgba(163,230,53,.10);color:#a3e635}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-archive{color:#687588}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-archive:hover{background:rgba(163,230,53,.18);color:#456c0d}
