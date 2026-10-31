@@ -465,7 +465,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
           {session && isAdmin
             ? <svg className="auth-trigger-icon auth-admin-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor" stroke="none"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
             : <svg className="auth-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4" fill="currentColor" stroke="none" /><path d="M4 21v-2.2a8 8 0 0 1 16 0V21z" fill="currentColor" stroke="none" /></svg>}
-          <span>{session ? isAdmin ? 'ADMIN' : sessionUsername || 'Account' : 'Sign In/Up'}</span>
+          <span className="auth-trigger-label">{session ? isAdmin ? 'ADMIN' : sessionUsername || 'Account' : 'Sign In/Up'}</span>
           {session && notificationUnreadCount > 0 && <span className="auth-unread-badge" aria-label={notificationUnreadCount + ' unread notifications'}>{notificationUnreadCount > 99 ? '99+' : notificationUnreadCount}</span>}
           {session && <svg className={accountMenuOpen ? 'account-chevron is-open' : 'account-chevron'} viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>}
         </button>
