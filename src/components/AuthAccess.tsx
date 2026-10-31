@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { FormEvent } from 'react'
 import { validateUsernamePolicy } from '../lib/usernamePolicy'
+import NotificationCenter from './NotificationCenter'
 
 type AuthUser = { id: string; email?: string }
 type AuthSession = {
@@ -33,6 +34,7 @@ type Props = {
   onThemeModeChange: (value: 'dark' | 'light' | 'system') => void
   onDashboardChange: (value: boolean) => void
   onProfileChange: () => void
+  dashboardOpen: boolean
 }
 
 const SESSION_KEY = 'uflmb.auth.session.v1'
@@ -193,7 +195,7 @@ async function restoreSession(): Promise<AuthSession | null> {
   }
 }
 
-export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, themeMode, onThemeModeChange, onDashboardChange, onProfileChange }: Props) {
+export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, themeMode, onThemeModeChange, onDashboardChange, onProfileChange, dashboardOpen }: Props) {
   const [open, setOpen] = useState(false)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const accountMenuRef = useRef<HTMLDivElement>(null)
@@ -211,6 +213,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
   const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info')
   const [sessionEmail, setSessionEmail] = useState('')
   const [session, setSession] = useState<AuthSession | null>(null)
+  const [notificationUnreadCount, setNotificationUnreadCount] = useState(0)
 
   useEffect(() => {
     const updateUsername = (event: Event) => {
@@ -255,6 +258,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
   const showMessage = (text: string, type: 'success' | 'error' | 'info' = 'info') => {
     setMessage(text)
     setMessageType(type)
+    window.dispatchEvent(new CustomEvent('uflmb:toast', { detail: { title: type === 'success' ? 'Completed' : type === 'error' ? 'Action failed' : 'UFLMB', message: text, kind: type } }))
   }
 
   useEffect(() => {
@@ -463,6 +467,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
             ? <svg className="auth-trigger-icon auth-admin-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor" stroke="none"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
             : <svg className="auth-trigger-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4" fill="currentColor" stroke="none" /><path d="M4 21v-2.2a8 8 0 0 1 16 0V21z" fill="currentColor" stroke="none" /></svg>}
           <span>{session ? isAdmin ? 'ADMIN' : sessionUsername || 'Account' : 'Sign In/Up'}</span>
+          {session && notificationUnreadCount > 0 && <span className="auth-unread-badge" aria-label={notificationUnreadCount + ' unread notifications'}>{notificationUnreadCount > 99 ? '99+' : notificationUnreadCount}</span>}
           {session && <svg className={accountMenuOpen ? 'account-chevron is-open' : 'account-chevron'} viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>}
         </button>
         {!session && <button className="public-theme-toggle" type="button" aria-label={currentlyDark ? 'Switch to light theme' : 'Switch to dark theme'} title={currentlyDark ? 'Light theme' : 'Dark theme'} onClick={() => onThemeModeChange(currentlyDark ? 'light' : 'dark')}>
@@ -483,6 +488,8 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2" fill="none" stroke="currentColor" strokeWidth="1.8"/><path d="M8 21h8m-4-4v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
             </button>
           </div>
+          <NotificationCenter userId={session?.user.id} accessToken={session?.access_token} username={sessionUsername} isAdmin={isAdmin} dashboardOpen={dashboardOpen} menuOpen={accountMenuOpen} onUnreadCountChange={setNotificationUnreadCount} />
+          <div className="account-menu-divider" />
           <button className="account-menu-item" type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); onProfileChange() }}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" strokeWidth="1.8"/><path d="M4 21v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
             <span>Profile</span>
