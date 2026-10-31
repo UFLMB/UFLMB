@@ -40,8 +40,16 @@ export default function AdminSupportInbox() {
   const [query, setQuery] = useState('')
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const [error, setErrorState] = useState('')
+  const [notice, setNoticeState] = useState('')
+  const setError = useCallback((value: string) => {
+    setErrorState(value)
+    if (value.trim()) window.dispatchEvent(new CustomEvent('uflmb:toast', { detail: { title: 'Support inbox error', message: value, kind: 'error' } }))
+  }, [])
+  const setNotice = useCallback((value: string) => {
+    setNoticeState(value)
+    if (value.trim()) window.dispatchEvent(new CustomEvent('uflmb:toast', { detail: { title: 'Support inbox updated', message: value, kind: 'success' } }))
+  }, [])
   const selected = conversations.find(item => item.id === selectedId) || null
   const selectedState = adminStates.find(item => item.conversation_id === selectedId)
   const headers = useCallback((extra: Record<string, string> = {}) => ({
