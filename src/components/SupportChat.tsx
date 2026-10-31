@@ -272,7 +272,6 @@ export default function SupportChat({ adminDashboardView = false }: { adminDashb
       </>}
       {notice && <p className="support-notice" role="status">{notice}</p>}
       {error && <p className="support-error" role="alert">{error}</p>}
-      {!adminDashboardView && <p className="support-privacy-note">Support messages are private to the requester and authorized administrators. They are not automatically used to issue community warnings.</p>}
     </section>}
   </>
 }
