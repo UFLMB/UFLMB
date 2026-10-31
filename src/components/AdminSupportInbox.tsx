@@ -270,7 +270,7 @@ export default function AdminSupportInbox() {
   if (!verified) return <section className="admin-panel support-admin-panel"><div className="section-heading"><div><p className="eyebrow">UFLMB HELP DESK</p><h2>Support</h2></div></div><div className="support-empty"><strong>Verifying administrator access…</strong><p>Checking the trusted administrator allowlist.</p></div></section>
   if (!isAdmin) return <section className="admin-panel support-admin-panel"><div className="section-heading"><div><p className="eyebrow">UFLMB HELP DESK</p><h2>Support</h2></div></div><div className="support-empty"><strong>Administrator access required</strong><p>This inbox is available only to authorized administrators.</p></div></section>
 
-  const unreadCount = conversations.filter(item => !stateFor(item.id).is_archived && unreadFor(item)).length
+  const inboxCount = conversations.filter(item => !stateFor(item.id).is_archived).length
   const archivedCount = conversations.filter(item => stateFor(item.id).is_archived).length
   const selectedUnread = selected ? messages.some(message => message.sender_role === 'user' &&
     (!selectedState?.read_at || new Date(message.created_at).getTime() > new Date(selectedState.read_at).getTime())) : false
@@ -281,7 +281,7 @@ export default function AdminSupportInbox() {
     </header>
     <div className="support-mini-toolbar">
       <div className="support-mini-folders" role="tablist" aria-label="Support folders">
-        <button type="button" role="tab" aria-selected={folder === 'inbox'} className={folder === 'inbox' ? 'active' : ''} onClick={() => { setFolder('inbox'); setSelectedId(''); setNotice(''); setError('') }}>Inbox <span>{unreadCount}</span></button>
+        <button type="button" role="tab" aria-selected={folder === 'inbox'} className={folder === 'inbox' ? 'active' : ''} onClick={() => { setFolder('inbox'); setSelectedId(''); setNotice(''); setError('') }}>Inbox <span>{inboxCount}</span></button>
         <button type="button" role="tab" aria-selected={folder === 'archive'} className={folder === 'archive' ? 'active' : ''} onClick={() => { setFolder('archive'); setSelectedId(''); setNotice(''); setError('') }}>Archived <span>{archivedCount}</span></button>
       </div>
       <label className="support-mini-search"><span aria-hidden="true">⌕</span><input value={query} onChange={event => setQuery(event.target.value)} placeholder={folder === 'archive' ? 'Search archived…' : 'Search inbox…'} aria-label="Search conversations" /></label>
@@ -295,15 +295,15 @@ export default function AdminSupportInbox() {
             const unread = unreadFor(item)
             return <div key={item.id} className={`support-mini-row ${selectedId === item.id ? 'active' : ''} ${state.is_starred ? 'starred' : ''} ${unread ? 'unread' : ''}`}>
               <button type="button" className="support-mini-open" onClick={() => { setSelectedId(item.id); setError(''); setNotice('') }}>
-                <span className={`support-mini-read-dot ${unread ? 'unread' : 'read'}`} aria-label={unread ? 'Unread' : 'Read'}>{unread ? '●' : '✓'}</span>
+                <span className={`support-mini-read-dot ${unread ? 'unread' : 'read'}`} role="img" aria-label={unread ? 'Unread' : 'Read'}>{unread ? <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" fill="currentColor" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="m8 12 2.5 2.5L16 9" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}</span>
                 <span className="support-mini-row-copy"><strong>{item.subject}</strong><small>{item.category.replace('_', ' ')} · {item.status.replace('_', ' ')}</small><time>{friendlyDate(item.updated_at)}</time></span>
                 <span className="support-mini-flags" aria-label={[state.is_starred ? 'Starred' : '', state.is_archived ? 'Archived' : ''].filter(Boolean).join(', ')}>
-                  {state.is_starred && <span title="Starred" aria-label="Starred">★</span>}
-                  {state.is_archived && <span title="Archived" aria-label="Archived">▣</span>}
+                  {state.is_starred && <span title="Starred" aria-label="Starred"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" fill="currentColor" /></svg></span>}
+                  {state.is_archived && <span title="Archived" aria-label="Archived"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v4H4zM5.5 9v10h13V9M9 13h6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></span>}
                 </span>
               </button>
-              <button type="button" className={`support-mini-star ${state.is_starred ? 'active' : ''}`} aria-label={state.is_starred ? 'Remove star' : 'Star conversation'} title={state.is_starred ? 'Remove star' : 'Star conversation'} onClick={async () => { setBusy(true); try { await saveState(item.id, { is_starred: !state.is_starred }) } catch (err) { setError(err instanceof Error ? err.message : 'Could not update star.') } finally { setBusy(false) } }}>{state.is_starred ? '★' : '☆'}</button>
-              <button type="button" className="support-mini-archive" aria-label={folder === 'archive' ? 'Restore conversation to inbox' : 'Archive conversation'} title={folder === 'archive' ? 'Restore to inbox' : 'Archive conversation'} onClick={async () => { setBusy(true); try { await saveState(item.id, { is_archived: folder !== 'archive' }); if (selectedId === item.id) setSelectedId(''); setNotice(folder === 'archive' ? 'Conversation restored to the inbox.' : 'Conversation moved to the archive.') } catch (err) { setError(err instanceof Error ? err.message : 'Could not archive conversation.') } finally { setBusy(false) } }}>{folder === 'archive' ? '↩' : '▣'}</button>
+              <button type="button" className={`support-mini-star ${state.is_starred ? 'active' : ''}`} aria-label={state.is_starred ? 'Remove star' : 'Star conversation'} title={state.is_starred ? 'Remove star' : 'Star conversation'} onClick={async () => { setBusy(true); try { await saveState(item.id, { is_starred: !state.is_starred }) } catch (err) { setError(err instanceof Error ? err.message : 'Could not update star.') } finally { setBusy(false) } }><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" fill={state.is_starred ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /></svg></button>
+              <button type="button" className="support-mini-archive" aria-label={folder === 'archive' ? 'Restore conversation to inbox' : 'Archive conversation'} title={folder === 'archive' ? 'Restore to inbox' : 'Archive conversation'} onClick={async () => { setBusy(true); try { await saveState(item.id, { is_archived: folder !== 'archive' }); if (selectedId === item.id) setSelectedId(''); setNotice(folder === 'archive' ? 'Conversation restored to the inbox.' : 'Conversation moved to the archive.') } catch (err) { setError(err instanceof Error ? err.message : 'Could not archive conversation.') } finally { setBusy(false) }}>{folder === 'archive' ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v4H4zM5.5 9v10h13V9M9 14l3-3 3 3M12 11v6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v4H4zM5.5 9v10h13V9M9 13h6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}</button>
             </div>
           })}
       </aside>
@@ -314,7 +314,7 @@ export default function AdminSupportInbox() {
               <span className="support-mini-thread-flags">{selectedState?.is_starred && <span>★ Starred</span>}{selectedState?.is_archived && <span>▣ Archived</span>}{selectedUnread && <span className="unread-label">● Unread messages</span>}</span>
             </div>
             <div className="support-mini-actions">
-              <button type="button" className="support-mini-star-action" onClick={() => void toggleMarker('is_starred')} disabled={busy} aria-label={selectedState?.is_starred ? 'Remove star' : 'Star conversation'} title={selectedState?.is_starred ? 'Remove star' : 'Star conversation'}>{selectedState?.is_starred ? '★' : '☆'}</button>
+              <button type="button" className="support-mini-star-action" onClick={() => void toggleMarker('is_starred')} disabled={busy} aria-label={selectedState?.is_starred ? 'Remove star' : 'Star conversation'} title={selectedState?.is_starred ? 'Remove star' : 'Star conversation'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" fill={selectedState?.is_starred ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /></svg></button>
               <button type="button" className="support-mini-archive-action" onClick={() => void toggleMarker('is_archived')} disabled={busy} aria-label={folder === 'archive' ? 'Restore conversation to inbox' : 'Archive conversation'} title={folder === 'archive' ? 'Restore to inbox' : 'Archive conversation'}>
                 {folder === 'archive' ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v4H4zM5 8v12h14V8M9 14l3-3 3 3M12 11v6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v4H3zM5 8v12h14V8M9 12h6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
               </button>
@@ -332,7 +332,7 @@ export default function AdminSupportInbox() {
               </article>
             })}
           </div>
-          <form className="support-reply-form" onSubmit={sendMessage}><label className="support-sr-only" htmlFor="support-admin-message-input">Message</label><textarea id="support-admin-message-input" value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={3} placeholder="Write your reply…" required /><button className="support-primary" type="submit" disabled={busy || !draft.trim()}>{busy ? 'Sending…' : 'Send'}</button></form>
+          <form className="support-reply-form" onSubmit={sendMessage}><label className="support-sr-only" htmlFor="support-admin-message-input">Message</label><textarea id="support-admin-message-input" value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={3} placeholder="Write your reply…" required /><button className="support-send-icon" type="submit" disabled={busy || !draft.trim()} aria-label={busy ? 'Sending message' : 'Send message'} title={busy ? 'Sending…' : 'Send message'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3 10.8 13.2M21 3l-6.5 18-3.7-7.3L3 10.5 21 3Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></button></form>
         </>}
       </div>
     </div>
