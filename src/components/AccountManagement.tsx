@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import './AccountManagement.css'
 
 type SelectedAccount = { id: string; username: string; createdAt: string | null; isAdmin: boolean }
@@ -22,8 +22,16 @@ export default function AccountManagement({ userId, accessToken, isAdmin, adminV
   const [confirmation, setConfirmation] = useState('')
   const [account, setAccount] = useState<Account | null>(null)
   const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
+  const [message, setMessageState] = useState('')
+  const [error, setErrorState] = useState('')
+  const setMessage = useCallback((value: string) => {
+    setMessageState(value)
+    if (value.trim()) window.dispatchEvent(new CustomEvent('uflmb:toast', { detail: { title: 'Account updated', message: value, kind: 'success' } }))
+  }, [])
+  const setError = useCallback((value: string) => {
+    setErrorState(value)
+    if (value.trim()) window.dispatchEvent(new CustomEvent('uflmb:toast', { detail: { title: 'Account action failed', message: value, kind: 'error' } }))
+  }, [])
 
   const call = async (payload: Record<string, string>) => {
     if (!endpoint || !anonKey || !accessToken) throw new Error('A valid administrator session is required.')
