@@ -369,7 +369,17 @@ export default function App() {
   const [activeSquad, setActiveSquad] = useState<'A' | 'B'>('A')
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [notice, setNotice] = useState('')
+  const [notice, setNoticeState] = useState('')
+  const setNotice = (value: string) => {
+    setNoticeState(value)
+    const normalized = value.toLowerCase()
+    const kind = /(failed|failure|could not|cannot|invalid|error|not completed|cancelled|must be|only .* can|too large|no worksheet|no data)/.test(normalized)
+      ? 'error'
+      : /(complete|success|saved|added|updated|deleted|imported|uploaded|exported|synced|cleared|loaded|finished)/.test(normalized)
+        ? 'success'
+        : 'info'
+    if (value.trim()) window.dispatchEvent(new CustomEvent('uflmb:toast', { detail: { title: kind === 'error' ? 'Action failed' : kind === 'success' ? 'Completed' : 'UFLMB update', message: value, kind } }))
+  }
   const [importText, setImportText] = useState('')
   const [adminSearch, setAdminSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
