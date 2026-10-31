@@ -403,6 +403,18 @@ export default function App() {
   const [compareIds, setCompareIds] = useState<string[]>(() => { try { const saved: unknown = JSON.parse(localStorage.getItem('uflmb.compare.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string').slice(0, 3) : [] } catch { return [] } })
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'assets' | 'cloud' | 'profiles' | 'moderation' | 'action-log' | 'support'>(() => { try { const saved = sessionStorage.getItem('uflmb.admin.tab.v1'); return saved === 'cards' || saved === 'quality' || saved === 'imports' || saved === 'appearance' || saved === 'assets' || saved === 'cloud' || saved === 'profiles' || saved === 'moderation' || saved === 'action-log' || saved === 'support' ? saved : 'cards' } catch { return 'cards' } })
+
+  useEffect(() => {
+    const openAdminSupportFromNotification = (event: Event) => {
+      const detail = (event as CustomEvent<{ conversationId?: string; messageId?: string }>).detail
+      if (!detail?.conversationId) return
+      try { sessionStorage.setItem('uflmb.pending.support.notification.v1', JSON.stringify(detail)) } catch { /* The inbox event still works when storage is unavailable. */ }
+      setAdminDashboardOpen(true)
+      setAdminTab('support')
+    }
+    window.addEventListener('uflmb:open-admin-support-notification', openAdminSupportFromNotification)
+    return () => window.removeEventListener('uflmb:open-admin-support-notification', openAdminSupportFromNotification)
+  }, [])
   const [adminProfiles, setAdminProfiles] = useState<AdminProfile[]>([])
   const [adminUserIds, setAdminUserIds] = useState<string[]>([])
   const [adminProfilesBusy, setAdminProfilesBusy] = useState(false)
