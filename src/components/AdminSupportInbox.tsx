@@ -332,7 +332,7 @@ export default function AdminSupportInbox() {
               </article>
             })}
           </div>
-          <form className="support-reply-form" onSubmit={sendMessage}><label className="support-sr-only" htmlFor="support-admin-message-input">Message</label><textarea id="support-admin-message-input" value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={2} placeholder="Write your reply…" required /><button className="support-send-icon" type="submit" disabled={busy || !draft.trim()} aria-label={busy ? 'Sending message' : 'Send message'} title={busy ? 'Sending…' : 'Send message'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3 10.8 13.2M21 3l-6.5 18-3.7-7.3L3 10.5 21 3Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></button></form>
+          <form className="support-reply-form" onSubmit={sendMessage}><label className="support-sr-only" htmlFor="support-admin-message-input">Message</label><textarea id="support-admin-message-input" value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={3} placeholder="Write your reply…" required /><button className="support-send-icon" type="submit" disabled={busy || !draft.trim()} aria-label={busy ? 'Sending message' : 'Send message'} title={busy ? 'Sending…' : 'Send message'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3 10.8 13.2M21 3l-6.5 18-3.7-7.3L3 10.5 21 3Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></button></form>
         </>}
       </div>
     </div>
