@@ -2053,7 +2053,8 @@ export default function App() {
               </nav>,
         document.body,
       )}
-      {adminDashboardOpen && adminTab === 'support' ? null : <SupportChat />}
+      {/* Public support launcher only; the admin dashboard uses its dedicated Support tab. */}
+      {!adminDashboardOpen && <SupportChat />}
       <ModerationCenter userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'moderation')} />
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href={import.meta.env.BASE_URL} onClick={() => { setAdminDashboardOpen(false); try { sessionStorage.setItem('uflmb.admin.dashboard.v1', 'closed') } catch { /* Navigation should still work without session storage. */ } }}>Back to home</a></footer>
     </main>
