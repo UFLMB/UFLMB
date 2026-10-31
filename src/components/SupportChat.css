@@ -15,3 +15,79 @@
 .support-admin-dashboard .support-workspace{min-height:440px}
 .support-admin-dashboard .support-messages{max-height:none}
 @media(max-width:600px){.support-panel.support-admin-dashboard{min-height:620px;max-height:none;width:100%;border-radius:12px}.support-admin-dashboard .support-workspace{min-height:500px}}
+
+
+/* Admin dashboard support inbox — align the Light mode surfaces with the
+   dashboard's soft glass panels while keeping the public support chat intact. */
+:root[data-ui-theme="light"] .admin-shell .support-panel.support-admin-dashboard {
+  color: #18202b !important;
+  background: rgba(247,249,244,.78) !important;
+  border-color: rgba(255,255,255,.72) !important;
+  box-shadow: 0 10px 30px rgba(20,30,45,.075), inset 0 1px 0 rgba(255,255,255,.52) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(112%) !important;
+  backdrop-filter: blur(10px) saturate(112%) !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-header {
+  background: rgba(255,255,255,.42) !important;
+  border-color: rgba(24,32,43,.10) !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-eyebrow,
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-message-meta strong {
+  color: #5f8f12 !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-workspace {
+  background: rgba(247,249,244,.30) !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-conversation-list {
+  background: rgba(255,255,255,.34) !important;
+  border-right-color: rgba(24,32,43,.10) !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-list-heading {
+  background: rgba(247,249,244,.94) !important;
+  color: #465263 !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-conversation {
+  color: #18202b !important;
+  background: rgba(255,255,255,.30) !important;
+  border-top-color: rgba(24,32,43,.08) !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-conversation:hover {
+  background: rgba(255,255,255,.72) !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-conversation.active {
+  background: rgba(163,230,53,.18) !important;
+  border-left-color: #78ad20 !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-thread-heading,
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-reply-form {
+  background: rgba(255,255,255,.38) !important;
+  border-color: rgba(24,32,43,.10) !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-messages {
+  background: rgba(247,249,244,.42) !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-message {
+  background: rgba(255,255,255,.84) !important;
+  border-color: rgba(24,32,43,.10) !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-message-admin {
+  background: rgba(163,230,53,.16) !important;
+  border-color: rgba(111,153,35,.28) !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-message-meta time {
+  color: #738092 !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-empty {
+  background: rgba(255,255,255,.30) !important;
+  color: #18202b !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-empty p,
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-muted {
+  color: #667286 !important;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-thread-heading select,
+:root[data-ui-theme="light"] .admin-shell .support-admin-dashboard .support-reply-form textarea {
+  color: #18202b !important;
+  background: rgba(255,255,255,.92) !important;
+  border-color: rgba(24,32,43,.16) !important;
+}
