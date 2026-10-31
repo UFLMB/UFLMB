@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import './SupportChat.css'
 
-type StoredSession = { access_token?: string; user?: { id?: string } }
+type StoredSession = { access_token?: string; user?: { id?: string; is_anonymous?: boolean } }
 type Conversation = {
   id: string
   user_id: string
@@ -27,7 +27,7 @@ const readSession = (): StoredSession | null => {
   try {
     const raw = sessionStorage.getItem('uflmb.auth.session.v1')
     const value = raw ? JSON.parse(raw) as StoredSession : null
-    return value?.access_token && value.user?.id ? value : null
+    return value?.access_token && value.user?.id && value.user.is_anonymous !== true ? value : null
   } catch {
     return null
   }
