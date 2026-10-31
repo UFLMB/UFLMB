@@ -225,6 +225,16 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
   }, [])
 
   useEffect(() => {
+    const closeForSupportNavigation = () => setAccountMenuOpen(false)
+    window.addEventListener('uflmb:open-public-support-notification', closeForSupportNavigation)
+    window.addEventListener('uflmb:open-admin-support-notification', closeForSupportNavigation)
+    return () => {
+      window.removeEventListener('uflmb:open-public-support-notification', closeForSupportNavigation)
+      window.removeEventListener('uflmb:open-admin-support-notification', closeForSupportNavigation)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!accountMenuOpen) return
     const closeOnOutside = (event: PointerEvent) => {
       if (event.target instanceof Node && !accountMenuRef.current?.contains(event.target)) setAccountMenuOpen(false)
