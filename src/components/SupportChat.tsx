@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import './SupportChat.css'
+import AdminSupportInbox from './AdminSupportInbox'
 
 type StoredSession = { access_token?: string; user?: { id?: string; is_anonymous?: boolean } }
 type Conversation = {
@@ -34,7 +35,7 @@ const readSession = (): StoredSession | null => {
 }
 const friendlyDate = (value: string) => new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
 
-export default function SupportChat({ adminDashboardView = false }: { adminDashboardView?: boolean }) {
+function SupportChatWidget({ adminDashboardView = false }: { adminDashboardView?: boolean }) {
   const [open, setOpen] = useState(false)
   const [adminView, setAdminView] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -274,4 +275,9 @@ export default function SupportChat({ adminDashboardView = false }: { adminDashb
       {error && <p className="support-error" role="alert">{error}</p>}
     </section>}
   </>
+}
+
+
+export default function SupportChat({ adminDashboardView = false }: { adminDashboardView?: boolean }) {
+  return adminDashboardView ? <AdminSupportInbox /> : <SupportChatWidget />
 }
