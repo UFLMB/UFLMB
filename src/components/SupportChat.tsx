@@ -46,6 +46,7 @@ function SupportChatWidget({ adminDashboardView = false }: { adminDashboardView?
   const [pendingMessageId, setPendingMessageId] = useState('')
   const [highlightedMessageId, setHighlightedMessageId] = useState('')
   const [subject, setSubject] = useState('')
+  const [newRequestOpen, setNewRequestOpen] = useState(false)
   const [category, setCategory] = useState('general')
   const [draft, setDraft] = useState('')
   const [creating, setCreating] = useState(false)
@@ -206,6 +207,7 @@ function SupportChatWidget({ adminDashboardView = false }: { adminDashboardView?
       if (!rows[0]) throw new Error('The support request was not confirmed by the database.')
       setSubject('')
       setCategory('general')
+      setNewRequestOpen(false)
       setNotice('Support request created.')
       await loadConversations(rows[0].id)
     } catch (err) {
@@ -279,12 +281,15 @@ function SupportChatWidget({ adminDashboardView = false }: { adminDashboardView?
       </header>
       {!token || !userId ? <div className="support-empty"><strong>Sign in to contact support</strong><p>Only registered, signed-in users can create support requests or send messages. Sign in to continue.</p></div> : adminDashboardView && !adminCheckComplete ? <div className="support-empty"><strong>Verifying administrator access…</strong><p>Checking the trusted administrator allowlist.</p></div> : adminDashboardView && !isAdmin ? <div className="support-empty"><strong>Administrator access required</strong><p>This inbox is available only to authorized administrators.</p></div> : <>
         {!adminDashboardView && isAdmin && <div className="support-mode-switch"><button type="button" className={!adminView ? 'active' : ''} onClick={() => { setAdminView(false); setSelectedId(''); setNotice(''); setError('') }}>My requests</button><button type="button" className={adminView ? 'active' : ''} onClick={() => { setAdminView(true); setSelectedId(''); setNotice(''); setError('') }}>Admin inbox</button></div>}
-        {!adminDashboardView && !adminView && <form className="support-new-form" onSubmit={createConversation}>
+        {!adminDashboardView && !adminView && <>
+          <button type="button" className="support-new-request-toggle" aria-expanded={newRequestOpen} aria-controls="support-new-request-form" onClick={() => setNewRequestOpen(value => !value)}>{newRequestOpen ? '−' : '+'} New request</button>
+          <form id="support-new-request-form" className={`support-new-form${newRequestOpen ? ' mobile-open' : ''}`} onSubmit={createConversation}>
           <label>New request <input value={subject} onChange={event => setSubject(event.target.value)} maxLength={120} minLength={3} placeholder="Briefly describe the issue" required /></label>
           <label>Category <select value={category} onChange={event => setCategory(event.target.value)}><option value="general">General question</option><option value="bug">Report a bug</option><option value="account">Account help</option><option value="feedback">Feedback</option></select></label>
           <button className="support-primary" type="submit" disabled={creating}>{creating ? 'Opening…' : 'Open request'}</button>
-        </form>}
-        <div className="support-workspace">
+          </form>
+        </>}
+        <div className={`support-workspace${selected ? ' has-selection' : ''}`}>
           <aside className="support-conversation-list" aria-label="Conversations">
             <div className="support-list-heading">{adminView ? 'All requests' : 'Your requests'} <button type="button" onClick={() => void loadConversations()} disabled={busy} aria-label="Refresh conversations">↻</button></div>
             {conversations.length === 0 ? <p className="support-muted">{busy ? 'Loading…' : adminView ? 'No support requests yet.' : 'Your requests will appear here.'}</p> : conversations.map(item => <button type="button" key={item.id} className={selectedId === item.id ? 'support-conversation active' : 'support-conversation'} onClick={() => { setSelectedId(item.id); setError(''); setNotice('') }}>
@@ -293,7 +298,7 @@ function SupportChatWidget({ adminDashboardView = false }: { adminDashboardView?
           </aside>
           <div className="support-thread">
             {!selected ? <div className="support-empty"><p>Select a conversation to view messages.</p></div> : <>
-              <div className="support-thread-heading"><div><strong>{selected.subject}</strong><small>{selected.category.replace('_', ' ')} · {selected.status.replace('_', ' ')}</small></div>
+              <div className="support-thread-heading"><button type="button" className="support-back-to-requests" onClick={() => setSelectedId('')}>← Your requests</button><div><strong>{selected.subject}</strong><small>{selected.category.replace('_', ' ')} · {selected.status.replace('_', ' ')}</small></div>
                 {adminView && isAdmin && <select aria-label="Conversation status" value={selected.status} onChange={event => void changeStatus(event.target.value as Conversation['status'])} disabled={busy}><option value="open">Open</option><option value="in_progress">In progress</option><option value="resolved">Resolved</option></select>}
               </div>
               <div className="support-messages" aria-live="polite">
