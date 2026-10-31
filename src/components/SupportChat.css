@@ -428,3 +428,111 @@
 @media(prefers-reduced-motion:reduce){
   .support-message-notification-target{animation:none}
 }
+
+
+/* Admin inbox: compact adjacent icon actions and a bounded chat viewport. */
+.support-admin-mini .support-mini-actions{
+  display:grid;
+  grid-template-columns:38px 38px minmax(132px,150px);
+  flex:0 0 auto;
+  align-items:center;
+  gap:8px;
+}
+.support-admin-mini .support-mini-actions .support-mini-star-action,
+.support-admin-mini .support-mini-actions .support-mini-archive-action{
+  width:38px;
+  min-width:38px;
+  height:36px;
+  padding:0;
+}
+.support-admin-mini .support-mini-actions .support-mini-star-action{
+  color:#f4c84a;
+  font-size:18px;
+}
+.support-admin-mini .support-mini-actions .support-mini-archive-action svg{
+  display:block;
+  width:17px;
+  height:17px;
+}
+.support-admin-mini .support-mini-actions .support-mini-archive-action{
+  color:#cbd5e1;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-actions .support-mini-archive-action{
+  color:#344154;
+}
+.support-admin-mini .support-mini-workspace{
+  height:520px;
+  min-height:0;
+  flex:0 0 520px;
+  overflow:hidden;
+}
+.support-admin-mini .support-mini-workspace .support-thread{
+  min-height:0;
+  height:100%;
+  overflow:hidden;
+}
+.support-admin-mini .support-mini-workspace .support-messages{
+  flex:1 1 0;
+  height:0;
+  min-height:0;
+  max-height:none;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+@media(max-width:700px){
+  .support-admin-mini .support-mini-workspace{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:220px 440px;
+    width:100%;
+    height:660px;
+    min-height:0;
+    flex:0 0 660px;
+    overflow:hidden;
+  }
+  .support-admin-mini .support-mini-workspace .support-conversation-list{
+    height:220px;
+    max-height:none;
+    min-height:0;
+    overflow:auto;
+  }
+  .support-admin-mini .support-mini-workspace .support-thread{
+    height:440px;
+    min-height:0;
+    overflow:hidden;
+  }
+  .support-admin-mini .support-mini-workspace .support-messages{
+    height:0;
+    min-height:0;
+    max-height:none;
+    flex:1 1 0;
+    overflow-x:hidden;
+    overflow-y:auto;
+  }
+  .support-admin-mini .support-mini-actions{
+    display:grid;
+    grid-template-columns:38px 38px minmax(0,1fr);
+    width:100%;
+    gap:8px;
+  }
+  .support-admin-mini .support-mini-actions .support-mini-archive-action,
+  .support-admin-mini .support-mini-actions .support-mini-star-action{
+    width:38px;
+    min-width:38px;
+  }
+  .support-admin-mini .support-mini-actions select{
+    width:100%;
+    min-width:0;
+    max-width:none;
+  }
+}
+@media(max-width:380px){
+  .support-admin-mini .support-mini-actions{
+    grid-template-columns:38px 38px;
+  }
+  .support-admin-mini .support-mini-actions select{
+    grid-column:1/-1;
+  }
+}
