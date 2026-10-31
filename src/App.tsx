@@ -2053,8 +2053,6 @@ export default function App() {
               </nav>,
         document.body,
       )}
-      {/* Public support launcher only; the admin dashboard uses its dedicated Support tab. */}
-      {!adminDashboardOpen && <SupportChat />}
       <ModerationCenter userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'moderation')} />
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href={import.meta.env.BASE_URL} onClick={() => { setAdminDashboardOpen(false); try { sessionStorage.setItem('uflmb.admin.dashboard.v1', 'closed') } catch { /* Navigation should still work without session storage. */ } }}>Back to home</a></footer>
     </main>
@@ -2457,7 +2455,9 @@ export default function App() {
         </nav>,
         document.body,
       )}
-      <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><span className="footer-muted">Independent community project; not affiliated with or endorsed by the game’s publisher.</span><span className="footer-sdg">SDG - {new Date().getFullYear()}</span></footer>
+            <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><span className="footer-muted">Independent community project; not affiliated with or endorsed by the game’s publisher.</span><span className="footer-sdg">SDG - {new Date().getFullYear()}</span></footer>
+      {/* Public support launcher is portaled to the document body so it stays above the app layout and mobile navigation. */}
+      {createPortal(<SupportChat />, document.body)}
       </div>
     </main>
   )
