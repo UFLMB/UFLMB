@@ -59,24 +59,24 @@ export default function AdminSupportInbox() {
   const saveState = useCallback(async (id: string, patch: Partial<Pick<AdminState, 'is_archived' | 'is_starred' | 'read_at'>>) => {
     // Insert the default row without UPDATE-on-conflict. The database keeps
     // the primary key immutable and grants UPDATE only on marker columns.
-    const insertResponse = await fetch(\`\${endpoint}/rest/v1/support_admin_conversation_state?on_conflict=conversation_id\`, {
+    const insertResponse = await fetch(`${endpoint}/rest/v1/support_admin_conversation_state?on_conflict=conversation_id`, {
       method: 'POST',
       headers: headers({ Prefer: 'resolution=ignore-duplicates,return=minimal' }),
       body: JSON.stringify({ conversation_id: id }),
     })
     if (!insertResponse.ok) {
       const detail = await insertResponse.text().catch(() => '')
-      throw new Error(detail || \`Could not create the inbox marker (HTTP \${insertResponse.status}).\`)
+      throw new Error(detail || `Could not create the inbox marker (HTTP ${insertResponse.status}).`)
     }
 
-    const updateResponse = await fetch(\`\${endpoint}/rest/v1/support_admin_conversation_state?conversation_id=eq.\${encodeURIComponent(id)}\`, {
+    const updateResponse = await fetch(`${endpoint}/rest/v1/support_admin_conversation_state?conversation_id=eq.${encodeURIComponent(id)}`, {
       method: 'PATCH',
       headers: headers({ Prefer: 'return=representation' }),
       body: JSON.stringify({ ...patch, updated_at: new Date().toISOString() }),
     })
     if (!updateResponse.ok) {
       const detail = await updateResponse.text().catch(() => '')
-      throw new Error(detail || \`Could not update the inbox marker (HTTP \${updateResponse.status}).\`)
+      throw new Error(detail || `Could not update the inbox marker (HTTP ${updateResponse.status}).`)
     }
     const updatedRows = await updateResponse.json().catch(() => [])
     if (!Array.isArray(updatedRows) || updatedRows.length === 0) {
