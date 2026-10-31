@@ -51,3 +51,9 @@
 .admin-welcome-backdrop .admin-welcome-list strong{color:#fff}
 .admin-welcome-backdrop .admin-welcome-list p{color:#f1f5f9}
 .admin-welcome-backdrop .admin-welcome-list time{color:#d1d9e6}
+
+
+/* Activity Summary title: pure white in Light mode while preserving Dark mode styling. */
+:root[data-ui-theme="light"] .admin-welcome-backdrop .admin-welcome-modal h2{
+  color:#fff;
+}
