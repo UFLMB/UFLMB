@@ -51,7 +51,7 @@ export default function NotificationCenter({ userId, accessToken, username, isAd
     if (!userId || !accessToken) { setItems([]); onUnreadCountChange(0); return }
     setLoading(true)
     try {
-      const rows = await request('notifications?select=id,title,body,type,created_at,read_at,metadata&order=created_at.desc&limit=100') as NotificationRow[]
+      const rows = await request('notifications?select=id,title,body,type,created_at,read_at,metadata&order=created_at.desc') as NotificationRow[]
       setItems(rows)
       onUnreadCountChange(rows.filter(item => !item.read_at).length)
     } catch {
@@ -81,7 +81,7 @@ export default function NotificationCenter({ userId, accessToken, username, isAd
         const state = await request('admin_dashboard_visits?select=last_seen_at&user_id=eq.' + encodeURIComponent(userId) + '&limit=1') as Array<{ last_seen_at: string }>
         const lastSeen = state[0]?.last_seen_at
         const since = lastSeen || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-        const rows = await request('notifications?select=id,title,body,type,created_at,read_at,metadata&created_at=gt.' + encodeURIComponent(since) + '&order=created_at.desc&limit=50') as NotificationRow[]
+        const rows = await request('notifications?select=id,title,body,type,created_at,read_at,metadata&created_at=gt.' + encodeURIComponent(since) + '&order=created_at.desc') as NotificationRow[]
         if (cancelled) return
         if (rows.length) { setWelcome(rows); setWelcomeOpen(true) }
         const now = new Date().toISOString()
