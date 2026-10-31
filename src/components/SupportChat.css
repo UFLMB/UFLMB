@@ -161,3 +161,79 @@
   background: rgba(255,255,255,.92) !important;
   border-color: rgba(24,32,43,.16) !important;
 }
+
+
+/* Admin mini-Gmail support inbox — dark defaults. */
+.support-admin-mini{min-width:0;min-height:560px;overflow:hidden}
+.support-admin-mini .support-mini-refresh{border:1px solid rgba(163,230,53,.28);border-radius:8px;background:rgba(163,230,53,.08);color:#a3e635;padding:7px 12px;font-size:19px}
+.support-admin-mini .support-mini-refresh:disabled{opacity:.5}
+.support-mini-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.08)}
+.support-mini-folders{display:flex;align-items:center;gap:6px}
+.support-mini-folders button{display:flex;align-items:center;gap:8px;border:1px solid transparent;border-radius:8px;background:transparent;color:#aab2c0;padding:9px 12px;font-size:12px;font-weight:700}
+.support-mini-folders button.active{border-color:rgba(163,230,53,.35);background:rgba(163,230,53,.1);color:#c8f58b}
+.support-mini-folders button span{display:inline-grid;min-width:19px;height:19px;place-items:center;border-radius:999px;background:rgba(255,255,255,.1);font-size:10px}
+.support-mini-search{display:flex;align-items:center;gap:8px;width:min(280px,48%);border:1px solid rgba(255,255,255,.14);border-radius:9px;background:#171b24;color:#aab2c0;padding:0 10px}
+.support-mini-search>span{font-size:19px}.support-mini-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#f3f5f8;padding:9px 0;font:inherit;font-size:12px}
+.support-mini-workspace{min-height:440px}
+.support-mini-row{position:relative;display:flex;align-items:stretch;border-top:1px solid rgba(255,255,255,.07);border-left:4px solid transparent;background:transparent}
+.support-mini-row.active{background:rgba(163,230,53,.08);border-left-color:#a3e635}
+.support-mini-row.starred{border-left:5px solid #f4c84a}
+.support-mini-row.starred.active{border-left-color:#f4c84a;background:rgba(244,200,74,.09)}
+.support-mini-open{display:flex;flex:1;min-width:0;align-items:center;gap:9px;border:0;background:transparent;color:inherit;padding:11px 8px;text-align:left}
+.support-mini-read-dot{display:grid;flex:0 0 19px;width:19px;height:19px;place-items:center;font-size:10px}
+.support-mini-read-dot.unread{color:#a3e635}.support-mini-read-dot.read{color:#7f8a9a}
+.support-mini-row-copy{display:flex;min-width:0;flex:1;flex-direction:column;gap:4px}
+.support-mini-row-copy strong{overflow:hidden;color:#f3f5f8;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.support-mini-row-copy small,.support-mini-row-copy time{color:#aab2c0;font-size:10px;text-transform:capitalize}
+.support-mini-row.unread .support-mini-row-copy strong{font-weight:850}
+.support-mini-flags{display:flex;gap:5px;color:#f4c84a;font-size:13px}
+.support-mini-flags span[title="Archived"]{color:#9aa5b5}
+.support-mini-star{align-self:center;border:0;background:transparent;color:#8290a2;padding:8px 10px;font-size:18px}
+.support-mini-star.active{color:#f4c84a}
+.support-mini-thread-heading{align-items:flex-start}
+.support-mini-thread-heading>div:first-child{min-width:0;flex:1}
+.support-mini-thread-flags{display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;color:#f4c84a;font-size:10px}
+.support-mini-thread-flags .unread-label{color:#a3e635}
+.support-mini-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px}
+.support-mini-actions button{border:1px solid rgba(255,255,255,.14);border-radius:8px;background:rgba(255,255,255,.04);color:#dce2eb;padding:7px 9px;font-size:11px}
+.support-mini-actions button:first-child{color:#f4c84a;font-size:17px}
+.support-mini-actions select{max-width:120px}
+.support-mini-message-read{margin-left:auto;font-size:9px;white-space:nowrap}
+.support-mini-message-read.read{color:#7f8a9a}.support-mini-message-read.unread{color:#a3e635;font-weight:800}
+.support-mini-folderbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;border-top:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.10);padding:12px 16px;color:#aab2c0;font-size:11px}
+.support-mini-folderbar button{border:1px solid rgba(163,230,53,.35);border-radius:8px;background:rgba(163,230,53,.08);color:#c8f58b;padding:9px 12px;font-size:11px;font-weight:800}
+@media(max-width:700px){
+  .support-admin-mini{min-height:0}
+  .support-mini-toolbar{align-items:stretch;flex-direction:column}
+  .support-mini-folders{width:100%}
+  .support-mini-folders button{flex:1;justify-content:center}
+  .support-mini-search{width:100%}
+  .support-mini-workspace{grid-template-columns:minmax(0,1fr);min-height:0;overflow:visible}
+  .support-admin-mini .support-conversation-list{max-height:240px;border-right:0;border-bottom:1px solid rgba(255,255,255,.1)}
+  .support-admin-mini .support-thread{min-height:300px}
+  .support-admin-mini .support-messages{max-height:260px}
+  .support-mini-thread-heading{flex-direction:column}
+  .support-mini-actions{width:100%;justify-content:flex-start}
+  .support-mini-folderbar{align-items:stretch;flex-direction:column}
+  .support-mini-folderbar button{width:100%}
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-toolbar,
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-folderbar{background:rgba(255,255,255,.42);border-color:rgba(24,32,43,.10)}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-folders button{color:#596579}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-folders button.active{color:#456c0d;background:rgba(163,230,53,.2);border-color:rgba(111,153,35,.35)}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-search{background:rgba(255,255,255,.9);border-color:rgba(24,32,43,.16);color:#596579}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-search input{color:#18202b}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-row{background:rgba(255,255,255,.32);border-top-color:rgba(24,32,43,.08)}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-row.active{background:rgba(163,230,53,.17)}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-row.starred.active{background:rgba(244,200,74,.16)}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-row-copy strong{color:#18202b}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-row-copy small,
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-row-copy time{color:#687588}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-star{color:#78869a}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-star.active,
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-flags{color:#9a7100}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-actions button{color:#344154;background:rgba(255,255,255,.65);border-color:rgba(24,32,43,.15)}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-actions button:first-child{color:#9a7100}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-folderbar{color:#596579}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-folderbar button{color:#456c0d;background:rgba(163,230,53,.18);border-color:rgba(111,153,35,.35)}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-message-read.read{color:#687588}
