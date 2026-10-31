@@ -412,3 +412,19 @@
     grid-column:1/-1;
   }
 }
+
+
+/* Focus target reached from a support notification. */
+.support-message-notification-target{
+  outline:2px solid var(--lime,#a3e635);
+  outline-offset:3px;
+  box-shadow:0 0 0 5px rgba(163,230,53,.13),0 8px 24px rgba(0,0,0,.2);
+  animation:support-notification-focus 2.4s ease-out both;
+}
+@keyframes support-notification-focus{
+  0%,55%{outline-color:var(--lime,#a3e635);box-shadow:0 0 0 6px rgba(163,230,53,.2),0 8px 24px rgba(0,0,0,.2)}
+  100%{outline-color:transparent;box-shadow:0 0 0 0 rgba(163,230,53,0),0 2px 8px rgba(0,0,0,.12)}
+}
+@media(prefers-reduced-motion:reduce){
+  .support-message-notification-target{animation:none}
+}
