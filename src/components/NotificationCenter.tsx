@@ -24,10 +24,32 @@ const config = () => ({ url: (import.meta.env.VITE_SUPABASE_URL || '').replace(/
 const toastEvent = 'uflmb:toast'
 type Toast = { id: number; title: string; message: string; kind: 'success' | 'error' | 'info' }
 
+
+export function ToastHost() {
+  const [toasts, setToasts] = useState<Toast[]>([])
+  useEffect(() => {
+    const receive = (event: Event) => {
+      const detail = (event as CustomEvent<{ title?: string; message?: string; kind?: Toast['kind'] }>).detail || {}
+      const toast: Toast = { id: Date.now() + Math.random(), title: detail.title || (detail.kind === 'error' ? 'Something went wrong' : detail.kind === 'success' ? 'Completed' : 'UFLMB notification'), message: detail.message || '', kind: detail.kind || 'info' }
+      setToasts(current => [...current, toast].slice(-4))
+      window.setTimeout(() => setToasts(current => current.filter(item => item.id !== toast.id)), 4400)
+    }
+    window.addEventListener(toastEvent, receive)
+    return () => window.removeEventListener(toastEvent, receive)
+  }, [])
+  if (!toasts.length) return null
+  return createPortal(<div className="uflmb-toast-stack" aria-live="polite" aria-atomic="false">
+    {toasts.map(toast => <div key={toast.id} className={'uflmb-toast ' + toast.kind} role="status">
+      <span className="uflmb-toast-icon">{toast.kind === 'success' ? '✓' : toast.kind === 'error' ? '!' : 'i'}</span>
+      <span><strong>{toast.title}</strong>{toast.message && <small>{toast.message}</small>}</span>
+      <button type="button" aria-label="Dismiss notification" onClick={() => setToasts(current => current.filter(item => item.id !== toast.id))}>×</button>
+    </div>)}
+  </div>, document.body)
+}
+
 export default function NotificationCenter({ userId, accessToken, username, isAdmin, dashboardOpen, menuOpen, onUnreadCountChange }: Props) {
   const [items, setItems] = useState<NotificationRow[]>([])
   const [open, setOpen] = useState(false)
-  const [toasts, setToasts] = useState<Toast[]>([])
   const [welcome, setWelcome] = useState<NotificationRow[]>([])
   const [welcomeOpen, setWelcomeOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -71,17 +93,6 @@ export default function NotificationCenter({ userId, accessToken, username, isAd
   }, [refresh])
 
   useEffect(() => { if (menuOpen) void refresh() }, [menuOpen, refresh])
-
-  useEffect(() => {
-    const receive = (event: Event) => {
-      const detail = (event as CustomEvent<{ title?: string; message?: string; kind?: Toast['kind'] }>).detail || {}
-      const toast: Toast = { id: Date.now() + Math.random(), title: detail.title || (detail.kind === 'error' ? 'Something went wrong' : detail.kind === 'success' ? 'Completed' : 'UFLMB notification'), message: detail.message || '', kind: detail.kind || 'info' }
-      setToasts(current => [...current, toast].slice(-4))
-      window.setTimeout(() => setToasts(current => current.filter(item => item.id !== toast.id)), 4400)
-    }
-    window.addEventListener(toastEvent, receive)
-    return () => window.removeEventListener(toastEvent, receive)
-  }, [])
 
   useEffect(() => {
     if (!isAdmin || !dashboardOpen || !userId || !accessToken) return
@@ -137,13 +148,6 @@ export default function NotificationCenter({ userId, accessToken, username, isAd
         </article>)}
       </div>
     </section>}
-    {toasts.length > 0 && createPortal(<div className="uflmb-toast-stack" aria-live="polite" aria-atomic="false">
-      {toasts.map(toast => <div key={toast.id} className={'uflmb-toast ' + toast.kind} role="status">
-        <span className="uflmb-toast-icon">{toast.kind === 'success' ? '✓' : toast.kind === 'error' ? '!' : 'i'}</span>
-        <span><strong>{toast.title}</strong>{toast.message && <small>{toast.message}</small>}</span>
-        <button type="button" aria-label="Dismiss notification" onClick={() => setToasts(current => current.filter(item => item.id !== toast.id))}>×</button>
-      </div>)}
-    </div>, document.body)}
     {welcomeOpen && createPortal(<div className="admin-welcome-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setWelcomeOpen(false) }}>
       <section className="admin-welcome-modal" role="dialog" aria-modal="true" aria-labelledby="admin-welcome-title">
         <button type="button" className="admin-welcome-close" onClick={() => setWelcomeOpen(false)} aria-label="Close summary">×</button>
