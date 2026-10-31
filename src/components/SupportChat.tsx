@@ -48,8 +48,16 @@ function SupportChatWidget({ adminDashboardView = false }: { adminDashboardView?
   const [draft, setDraft] = useState('')
   const [creating, setCreating] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const [error, setErrorState] = useState('')
+  const [notice, setNoticeState] = useState('')
+  const setError = (value: string) => {
+    setErrorState(value)
+    if (value.trim()) window.dispatchEvent(new CustomEvent('uflmb:toast', { detail: { title: 'Support action failed', message: value, kind: 'error' } }))
+  }
+  const setNotice = (value: string) => {
+    setNoticeState(value)
+    if (value.trim()) window.dispatchEvent(new CustomEvent('uflmb:toast', { detail: { title: 'Support update', message: value, kind: 'success' } }))
+  }
   const session = readSession()
   const userId = session?.user?.id || ''
   const token = session?.access_token || ''
