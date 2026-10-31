@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import './ModerationCenter.css'
 
@@ -29,8 +29,16 @@ export default function ModerationCenter({ userId, accessToken, isAdmin, adminVi
   const [warningArea, setWarningArea] = useState('community_review')
   const [targetUsername, setTargetUsername] = useState('')
   const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
+  const [message, setMessageState] = useState('')
+  const [error, setErrorState] = useState('')
+  const setMessage = useCallback((value: string) => {
+    setMessageState(value)
+    if (value.trim()) window.dispatchEvent(new CustomEvent('uflmb:toast', { detail: { title: 'Moderation update', message: value, kind: 'success' } }))
+  }, [])
+  const setError = useCallback((value: string) => {
+    setErrorState(value)
+    if (value.trim()) window.dispatchEvent(new CustomEvent('uflmb:toast', { detail: { title: 'Moderation action failed', message: value, kind: 'error' } }))
+  }, [])
   const selected = queue.find(item => item.id === selectedId) || null
   const headers = () => ({ apikey: anonKey, Authorization: `Bearer ${accessToken || ''}`, 'Content-Type': 'application/json' })
 
