@@ -591,3 +591,99 @@
   opacity:.5;
   cursor:not-allowed;
 }
+
+
+/* Support composer: compact icon-only send control shared by public and admin inboxes. */
+.support-reply-form .support-send-icon{
+  box-sizing:border-box;
+  display:inline-flex;
+  flex:0 0 42px;
+  width:42px;
+  min-width:42px;
+  height:42px;
+  align-self:flex-end;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  border:1px solid #a3e635;
+  border-radius:9px;
+  background:#a3e635;
+  color:#17200d;
+  box-shadow:0 2px 7px rgba(0,0,0,.12);
+  cursor:pointer;
+  transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
+}
+.support-reply-form .support-send-icon svg{
+  display:block;
+  width:19px;
+  height:19px;
+}
+.support-reply-form .support-send-icon:hover:not(:disabled){
+  background:#b7f34f;
+  border-color:#b7f34f;
+  box-shadow:0 4px 12px rgba(163,230,53,.22);
+  transform:translateY(-1px);
+}
+.support-reply-form .support-send-icon:active:not(:disabled){
+  transform:scale(.96);
+}
+.support-reply-form .support-send-icon:focus-visible{
+  outline:2px solid #a3e635;
+  outline-offset:3px;
+}
+.support-reply-form .support-send-icon:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+  box-shadow:none;
+}
+
+/* Replace text glyphs in the admin conversation list with consistent vector indicators. */
+.support-admin-mini .support-mini-read-dot svg{
+  display:block;
+  width:16px;
+  height:16px;
+}
+.support-admin-mini .support-mini-flags{
+  align-items:center;
+  gap:6px;
+}
+.support-admin-mini .support-mini-flags svg{
+  display:block;
+  width:14px;
+  height:14px;
+}
+.support-admin-mini .support-mini-star svg,
+.support-admin-mini .support-mini-archive svg,
+.support-admin-mini .support-mini-actions .support-mini-star-action svg{
+  display:block;
+  width:17px;
+  height:17px;
+}
+.support-admin-mini .support-mini-star,
+.support-admin-mini .support-mini-archive{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.support-admin-mini .support-mini-star:hover,
+.support-admin-mini .support-mini-archive:hover{
+  border-radius:8px;
+  background:rgba(163,230,53,.12);
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-read-dot.read{
+  color:#718096;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-read-dot.unread{
+  color:#6f9923;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-flags{
+  color:#987000;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-flags span[title="Archived"]{
+  color:#687588;
+}
+@media(max-width:600px){
+  .support-reply-form .support-send-icon{
+    align-self:flex-end;
+  }
+}
