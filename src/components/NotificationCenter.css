@@ -18,3 +18,36 @@
 :root[data-ui-theme="light"] .admin-welcome-backdrop .admin-welcome-modal .admin-welcome-list strong{color:#edf1f7}
 :root[data-ui-theme="light"] .admin-welcome-backdrop .admin-welcome-modal .admin-welcome-list p{color:#b8c2d1}
 :root[data-ui-theme="light"] .admin-welcome-backdrop .admin-welcome-modal .admin-welcome-list time{color:#98a3b3}
+
+
+/* Activity Summary: lock the entire layer to the dark palette in every site theme. */
+:root[data-ui-theme="light"] .admin-welcome-backdrop{
+  background:rgba(3,7,12,.82);
+  backdrop-filter:blur(7px);
+}
+:root[data-ui-theme="light"] .admin-welcome-backdrop .admin-welcome-modal{
+  background:#111722;
+  color:#edf1f7;
+  border-color:rgba(163,230,53,.28);
+  box-shadow:0 28px 90px rgba(0,0,0,.5);
+}
+:root[data-ui-theme="light"] .admin-welcome-backdrop .admin-welcome-list article{
+  background:#1a2332;
+}
+:root[data-ui-theme="light"] .admin-welcome-backdrop .admin-welcome-list strong{
+  color:#fff;
+}
+:root[data-ui-theme="light"] .admin-welcome-backdrop .admin-welcome-list p{
+  color:#f1f5f9;
+}
+:root[data-ui-theme="light"] .admin-welcome-backdrop .admin-welcome-list time{
+  color:#d1d9e6;
+}
+
+/* Keep Activity Summary event-card typography crisp in both themes. */
+.admin-welcome-backdrop .admin-welcome-list article{
+  background:#1a2332;
+}
+.admin-welcome-backdrop .admin-welcome-list strong{color:#fff}
+.admin-welcome-backdrop .admin-welcome-list p{color:#f1f5f9}
+.admin-welcome-backdrop .admin-welcome-list time{color:#d1d9e6}
