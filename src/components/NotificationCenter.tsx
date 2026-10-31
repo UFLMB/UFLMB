@@ -129,6 +129,16 @@ export default function NotificationCenter({ userId, accessToken, username, isAd
       window.dispatchEvent(new CustomEvent(toastEvent, { detail: { kind: 'error', title: 'Could not mark as read', message: error instanceof Error ? error.message : 'Please try again.' } }))
     }
   }
+  const openNotificationTarget = (item: NotificationRow) => {
+    if (!item.read_at) void markRead(item)
+    const conversationId = typeof item.metadata?.conversation_id === 'string' ? item.metadata.conversation_id : ''
+    const messageId = typeof item.metadata?.message_id === 'string' ? item.metadata.message_id : ''
+    if (item.type === 'support' && conversationId) {
+      const detail = { conversationId, messageId }
+      window.dispatchEvent(new CustomEvent(isAdmin ? 'uflmb:open-admin-support-notification' : 'uflmb:open-public-support-notification', { detail }))
+      setOpen(false)
+    }
+  }
   const unread = items.filter(item => !item.read_at).length
 
   return <>
@@ -140,7 +150,7 @@ export default function NotificationCenter({ userId, accessToken, username, isAd
       <header><div><strong>Notifications</strong><small>{unread} unread</small></div><button type="button" onClick={() => void refresh()} aria-label="Refresh notifications" disabled={loading}>↻</button></header>
       <div className="notification-list">
         {items.length === 0 ? <p className="notification-empty">You're all caught up.</p> : items.map(item => <article key={item.id} className={item.read_at ? 'notification-item' : 'notification-item unread'}>
-          <button type="button" onClick={() => void markRead(item)} aria-label={item.read_at ? 'Notification read' : 'Mark notification as read'} className="notification-item-main">
+          <button type="button" onClick={() => openNotificationTarget(item)} aria-label={item.type === 'support' ? 'Open support conversation' : item.read_at ? 'Notification read' : 'Mark notification as read'} className="notification-item-main">
             <span className="notification-item-dot" />
             <span className="notification-item-copy"><strong>{item.title}</strong><span>{item.body}</span><time>{new Date(item.created_at).toLocaleString()}</time></span>
           </button>
