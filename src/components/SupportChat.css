@@ -242,3 +242,173 @@
 .support-mini-archive:hover{background:rgba(163,230,53,.10);color:#a3e635}
 :root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-archive{color:#687588}
 :root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-archive:hover{background:rgba(163,230,53,.18);color:#456c0d}
+
+
+/* Support admin inbox polish — active-row contrast, consistent actions,
+   clearly separated chat surfaces. Scoped to the admin dashboard only. */
+.support-admin-mini .support-mini-workspace{
+  border-top:1px solid rgba(255,255,255,.10);
+}
+.support-admin-mini .support-conversation-list{
+  border-right:1px solid rgba(255,255,255,.18);
+  box-shadow:5px 0 14px rgba(0,0,0,.10);
+  position:relative;
+  z-index:1;
+}
+.support-admin-mini .support-mini-row.active .support-mini-row-copy small,
+.support-admin-mini .support-mini-row.active .support-mini-row-copy time{
+  color:#e4efcf;
+}
+.support-admin-mini .support-mini-row.active .support-mini-read-dot.read{
+  color:#d6e5bd;
+}
+.support-admin-mini .support-mini-actions{
+  gap:8px;
+}
+.support-admin-mini .support-mini-actions button,
+.support-admin-mini .support-mini-actions select{
+  display:inline-flex;
+  min-width:38px;
+  height:36px;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:9px;
+  background:rgba(255,255,255,.055);
+  color:#e7edf5;
+  padding:0 12px;
+  font:inherit;
+  font-size:11px;
+  font-weight:700;
+  line-height:1;
+  cursor:pointer;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease,box-shadow .16s ease;
+}
+.support-admin-mini .support-mini-actions button:first-child{
+  width:38px;
+  min-width:38px;
+  padding:0;
+  color:#f4c84a;
+  font-size:18px;
+}
+.support-admin-mini .support-mini-actions select{
+  min-width:132px;
+  max-width:150px;
+  padding:0 30px 0 11px;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m2 4 4 4 4-4' fill='none' stroke='%23cbd5e1' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+}
+.support-admin-mini .support-mini-actions button:hover:not(:disabled),
+.support-admin-mini .support-mini-actions select:hover:not(:disabled){
+  border-color:rgba(163,230,53,.55);
+  background:rgba(163,230,53,.11);
+  color:#d9f99d;
+  transform:translateY(-1px);
+  box-shadow:0 3px 10px rgba(0,0,0,.12);
+}
+.support-admin-mini .support-mini-actions button:first-child:hover:not(:disabled){
+  color:#ffdf78;
+}
+.support-admin-mini .support-mini-actions button:disabled,
+.support-admin-mini .support-mini-actions select:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+.support-admin-mini .support-mini-actions button:focus-visible,
+.support-admin-mini .support-mini-actions select:focus-visible{
+  outline:2px solid #a3e635;
+  outline-offset:2px;
+}
+.support-admin-mini .support-messages{
+  background:rgba(0,0,0,.035);
+}
+.support-admin-mini .support-message{
+  border-color:rgba(255,255,255,.16);
+  box-shadow:0 2px 9px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.035);
+}
+.support-admin-mini .support-message-admin{
+  border-color:rgba(163,230,53,.34);
+  box-shadow:0 2px 10px rgba(0,0,0,.12),inset 0 1px 0 rgba(163,230,53,.07);
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-conversation-list{
+  border-right-color:rgba(24,32,43,.20);
+  box-shadow:5px 0 15px rgba(24,32,43,.075);
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-row.active .support-mini-row-copy small,
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-row.active .support-mini-row-copy time{
+  color:#263447;
+  font-weight:650;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-row.active .support-mini-read-dot.read{
+  color:#40536b;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-actions button,
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-actions select{
+  color:#344154;
+  background:rgba(255,255,255,.82);
+  border-color:rgba(24,32,43,.19);
+  box-shadow:0 1px 3px rgba(24,32,43,.045);
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-actions button:first-child{
+  color:#987000;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-actions select{
+  background-color:rgba(255,255,255,.92);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='m2 4 4 4 4-4' fill='none' stroke='%23344154' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-actions button:hover:not(:disabled),
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-actions select:hover:not(:disabled){
+  color:#36570d;
+  border-color:rgba(111,153,35,.55);
+  background:rgba(163,230,53,.16);
+  box-shadow:0 3px 10px rgba(24,32,43,.09);
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-actions button:first-child:hover:not(:disabled){
+  color:#805d00;
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-messages{
+  background:rgba(226,233,220,.30);
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-message{
+  border-color:rgba(24,32,43,.17);
+  box-shadow:0 2px 9px rgba(24,32,43,.085),inset 0 1px 0 rgba(255,255,255,.75);
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-message-admin{
+  border-color:rgba(111,153,35,.36);
+  box-shadow:0 2px 9px rgba(24,32,43,.07),inset 0 1px 0 rgba(255,255,255,.5);
+}
+:root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-mini-workspace{
+  border-top-color:rgba(24,32,43,.13);
+}
+@media(max-width:700px){
+  .support-admin-mini .support-conversation-list{
+    border-right:0;
+    border-bottom:1px solid rgba(255,255,255,.18);
+    box-shadow:0 5px 14px rgba(0,0,0,.08);
+  }
+  .support-admin-mini .support-mini-actions{
+    display:grid;
+    grid-template-columns:38px minmax(105px,1fr) minmax(120px,1.15fr);
+    align-items:center;
+  }
+  .support-admin-mini .support-mini-actions button:nth-child(2),
+  .support-admin-mini .support-mini-actions select{
+    width:100%;
+    min-width:0;
+    max-width:none;
+  }
+  :root[data-ui-theme="light"] .admin-shell .support-admin-mini .support-conversation-list{
+    border-bottom-color:rgba(24,32,43,.18);
+    box-shadow:0 5px 14px rgba(24,32,43,.07);
+  }
+}
+@media(max-width:380px){
+  .support-admin-mini .support-mini-actions{
+    grid-template-columns:38px minmax(0,1fr);
+  }
+  .support-admin-mini .support-mini-actions select{
+    grid-column:1/-1;
+  }
+}
