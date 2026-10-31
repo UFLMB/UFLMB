@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 
 type Review = { id: string; card_id: string; reviewer_name: string; rating: number; review_text: string; created_at: string }
@@ -13,7 +13,14 @@ export default function CommunityReviews({ cardId, account }: { cardId: string; 
   const [rating, setRating] = useState('5')
   const [reviewText, setReviewText] = useState('')
   const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState('')
+  const [message, setMessageState] = useState('')
+  const setMessage = useCallback((value: string) => {
+    setMessageState(value)
+    if (!value.trim()) return
+    const lower = value.toLowerCase()
+    const kind = lower.includes('could not') || lower.includes('failed') || lower.includes('sign in') || lower.includes('not connected') || lower.includes('enter a short') || lower.includes('review the community rules') ? 'error' : lower.includes('submitted') ? 'success' : 'info'
+    window.dispatchEvent(new CustomEvent('uflmb:toast', { detail: { title: kind === 'error' ? 'Community review' : 'Community update', message: value, kind } }))
+  }, [])
 
   const load = async () => {
     if (!configured) return
