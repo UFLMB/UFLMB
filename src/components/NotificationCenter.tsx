@@ -60,6 +60,16 @@ export default function NotificationCenter({ userId, accessToken, username, isAd
   }, [userId, accessToken, request, onUnreadCountChange])
 
   useEffect(() => { void refresh() }, [refresh])
+  useEffect(() => {
+    const refreshWhenActive = () => { if (document.visibilityState === 'visible') void refresh() }
+    window.addEventListener('focus', refreshWhenActive)
+    document.addEventListener('visibilitychange', refreshWhenActive)
+    return () => {
+      window.removeEventListener('focus', refreshWhenActive)
+      document.removeEventListener('visibilitychange', refreshWhenActive)
+    }
+  }, [refresh])
+
   useEffect(() => { if (menuOpen) void refresh() }, [menuOpen, refresh])
 
   useEffect(() => {
