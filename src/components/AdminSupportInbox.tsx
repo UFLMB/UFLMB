@@ -33,6 +33,7 @@ export default function AdminSupportInbox() {
   const [verified, setVerified] = useState(false)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [adminStates, setAdminStates] = useState<AdminState[]>([])
+  const [latestUserMessageAt, setLatestUserMessageAt] = useState<Record<string, string>>({})
   const [messages, setMessages] = useState<Message[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [folder, setFolder] = useState<'inbox' | 'archive'>('inbox')
@@ -51,9 +52,9 @@ export default function AdminSupportInbox() {
   }, [adminStates])
   const unreadFor = useCallback((conversation: Conversation) => {
     const readAt = stateFor(conversation.id).read_at
-    return messages.some(message => message.conversation_id === conversation.id && message.sender_role === 'user' &&
-      (!readAt || new Date(message.created_at).getTime() > new Date(readAt).getTime()))
-  }, [messages, stateFor])
+    const latest = latestUserMessageAt[conversation.id]
+    return Boolean(latest && (!readAt || new Date(latest).getTime() > new Date(readAt).getTime()))
+  }, [latestUserMessageAt, stateFor])
 
   const saveState = useCallback(async (id: string, patch: Partial<Pick<AdminState, 'is_archived' | 'is_starred' | 'read_at'>>) => {
     const response = await fetch(`${endpoint}/rest/v1/support_admin_conversation_state?on_conflict=conversation_id`, {
@@ -73,14 +74,20 @@ export default function AdminSupportInbox() {
     setBusy(true)
     setError('')
     try {
-      const [conversationResponse, stateResponse] = await Promise.all([
+      const [conversationResponse, stateResponse, activityResponse] = await Promise.all([
         fetch(`${endpoint}/rest/v1/support_conversations?select=*&order=updated_at.desc`, { headers: headers(), cache: 'no-store' }),
         fetch(`${endpoint}/rest/v1/support_admin_conversation_state?select=*`, { headers: headers(), cache: 'no-store' }),
+        fetch(`${endpoint}/rest/v1/support_messages?select=conversation_id,created_at&sender_role=eq.user&order=created_at.desc&limit=1000`, { headers: headers(), cache: 'no-store' }),
       ])
-      if (!conversationResponse.ok || !stateResponse.ok) throw new Error('The support inbox could not be loaded.')
-      const [rows, states] = await Promise.all([conversationResponse.json(), stateResponse.json()]) as [Conversation[], AdminState[]]
+      if (!conversationResponse.ok || !stateResponse.ok || !activityResponse.ok) throw new Error('The support inbox could not be loaded.')
+      const [rows, states, activity] = await Promise.all([conversationResponse.json(), stateResponse.json(), activityResponse.json()]) as [Conversation[], AdminState[], Array<{ conversation_id: string; created_at: string }>]
+      const latest = activity.reduce<Record<string, string>>((map, item) => {
+        if (!map[item.conversation_id] || new Date(item.created_at).getTime() > new Date(map[item.conversation_id]).getTime()) map[item.conversation_id] = item.created_at
+        return map
+      }, {})
       setConversations(rows)
       setAdminStates(states)
+      setLatestUserMessageAt(latest)
       setSelectedId(current => current && rows.some(row => row.id === current) ? current : rows[0]?.id || '')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The support inbox could not be loaded.')
