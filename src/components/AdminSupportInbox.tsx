@@ -314,8 +314,10 @@ export default function AdminSupportInbox() {
               <span className="support-mini-thread-flags">{selectedState?.is_starred && <span>★ Starred</span>}{selectedState?.is_archived && <span>▣ Archived</span>}{selectedUnread && <span className="unread-label">● Unread messages</span>}</span>
             </div>
             <div className="support-mini-actions">
-              <button type="button" onClick={() => void toggleMarker('is_starred')} disabled={busy} aria-label={selectedState?.is_starred ? 'Remove star' : 'Star conversation'} title={selectedState?.is_starred ? 'Remove star' : 'Star conversation'}>{selectedState?.is_starred ? '★' : '☆'}</button>
-              <button type="button" onClick={() => void toggleMarker('is_archived')} disabled={busy}>{folder === 'archive' ? 'Restore to inbox' : 'Archive'}</button>
+              <button type="button" className="support-mini-star-action" onClick={() => void toggleMarker('is_starred')} disabled={busy} aria-label={selectedState?.is_starred ? 'Remove star' : 'Star conversation'} title={selectedState?.is_starred ? 'Remove star' : 'Star conversation'}>{selectedState?.is_starred ? '★' : '☆'}</button>
+              <button type="button" className="support-mini-archive-action" onClick={() => void toggleMarker('is_archived')} disabled={busy} aria-label={folder === 'archive' ? 'Restore conversation to inbox' : 'Archive conversation'} title={folder === 'archive' ? 'Restore to inbox' : 'Archive conversation'}>
+                {folder === 'archive' ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v4H4zM5 8v12h14V8M9 14l3-3 3 3M12 11v6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v4H3zM5 8v12h14V8M9 12h6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+              </button>
               <select aria-label="Conversation status" value={selected.status} onChange={event => void changeStatus(event.target.value as Conversation['status'])} disabled={busy}><option value="open">Open</option><option value="in_progress">In progress</option><option value="resolved">Resolved</option></select>
             </div>
           </div>
