@@ -57,3 +57,12 @@
 :root[data-ui-theme="light"] .admin-welcome-backdrop .admin-welcome-modal h2{
   color:#fff;
 }
+
+
+/* Activity Summary heading must remain pure white in both Light and Dark site themes. */
+.admin-welcome-backdrop .admin-welcome-modal h2#admin-welcome-title{
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  opacity:1 !important;
+  text-shadow:none !important;
+}
