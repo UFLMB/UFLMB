@@ -57,16 +57,35 @@ export default function AdminSupportInbox() {
   }, [latestUserMessageAt, stateFor])
 
   const saveState = useCallback(async (id: string, patch: Partial<Pick<AdminState, 'is_archived' | 'is_starred' | 'read_at'>>) => {
-    const response = await fetch(`${endpoint}/rest/v1/support_admin_conversation_state?on_conflict=conversation_id`, {
+    // Insert the default row without UPDATE-on-conflict. The database keeps
+    // the primary key immutable and grants UPDATE only on marker columns.
+    const insertResponse = await fetch(\`\${endpoint}/rest/v1/support_admin_conversation_state?on_conflict=conversation_id\`, {
       method: 'POST',
-      headers: headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
-      body: JSON.stringify({ conversation_id: id, ...patch }),
+      headers: headers({ Prefer: 'resolution=ignore-duplicates,return=minimal' }),
+      body: JSON.stringify({ conversation_id: id }),
     })
-    if (!response.ok) throw new Error('Could not save the inbox marker.')
+    if (!insertResponse.ok) {
+      const detail = await insertResponse.text().catch(() => '')
+      throw new Error(detail || \`Could not create the inbox marker (HTTP \${insertResponse.status}).\`)
+    }
+
+    const updateResponse = await fetch(\`\${endpoint}/rest/v1/support_admin_conversation_state?conversation_id=eq.\${encodeURIComponent(id)}\`, {
+      method: 'PATCH',
+      headers: headers({ Prefer: 'return=representation' }),
+      body: JSON.stringify({ ...patch, updated_at: new Date().toISOString() }),
+    })
+    if (!updateResponse.ok) {
+      const detail = await updateResponse.text().catch(() => '')
+      throw new Error(detail || \`Could not update the inbox marker (HTTP \${updateResponse.status}).\`)
+    }
+    const updatedRows = await updateResponse.json().catch(() => [])
+    if (!Array.isArray(updatedRows) || updatedRows.length === 0) {
+      throw new Error('The inbox marker was not updated. Verify administrator permissions and try again.')
+    }
     setAdminStates(current => {
       const existing = current.find(item => item.conversation_id === id)
       const next: AdminState = { conversation_id: id, is_archived: false, is_starred: false, read_at: null, ...existing, ...patch }
-      return existing ? current.map(item => item.conversation_id === id ? next : item) : [...current, next]
+      return existing ? current.map(item => item.conversation_id === id ? next : next) : [...current, next]
     })
   }, [headers])
 
