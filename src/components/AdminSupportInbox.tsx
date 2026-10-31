@@ -35,6 +35,8 @@ export default function AdminSupportInbox() {
   const [adminStates, setAdminStates] = useState<AdminState[]>([])
   const [latestUserMessageAt, setLatestUserMessageAt] = useState<Record<string, string>>({})
   const [messages, setMessages] = useState<Message[]>([])
+  const [pendingNotification, setPendingNotification] = useState<{ conversationId: string; messageId: string } | null>(null)
+  const [highlightedMessageId, setHighlightedMessageId] = useState('')
   const [selectedId, setSelectedId] = useState('')
   const [folder, setFolder] = useState<'inbox' | 'archive'>('inbox')
   const [query, setQuery] = useState('')
@@ -137,6 +139,48 @@ export default function AdminSupportInbox() {
   }, [token, userId, headers])
 
   useEffect(() => { if (isAdmin) void loadInbox() }, [isAdmin, loadInbox])
+
+  useEffect(() => {
+    const acceptNotification = (detail: { conversationId?: string; messageId?: string } | null | undefined) => {
+      if (!detail?.conversationId) return
+      setPendingNotification({ conversationId: detail.conversationId, messageId: detail.messageId || '' })
+      setQuery('')
+    }
+    const openFromNotification = (event: Event) => {
+      const detail = (event as CustomEvent<{ conversationId?: string; messageId?: string }>).detail
+      acceptNotification(detail)
+      window.setTimeout(() => { try { sessionStorage.removeItem('uflmb.pending.support.notification.v1') } catch { /* Ignore unavailable storage. */ } }, 0)
+    }
+    window.addEventListener('uflmb:open-admin-support-notification', openFromNotification)
+    try {
+      const raw = sessionStorage.getItem('uflmb.pending.support.notification.v1')
+      if (raw) {
+        sessionStorage.removeItem('uflmb.pending.support.notification.v1')
+        acceptNotification(JSON.parse(raw) as { conversationId?: string; messageId?: string })
+      }
+    } catch { /* The admin inbox remains usable if session storage is unavailable. */ }
+    return () => window.removeEventListener('uflmb:open-admin-support-notification', openFromNotification)
+  }, [])
+
+  useEffect(() => {
+    if (!pendingNotification || !conversations.some(item => item.id === pendingNotification.conversationId)) return
+    const archived = stateFor(pendingNotification.conversationId).is_archived
+    setFolder(archived ? 'archive' : 'inbox')
+    setSelectedId(pendingNotification.conversationId)
+  }, [pendingNotification, conversations, adminStates, stateFor])
+
+  useEffect(() => {
+    if (!pendingNotification?.messageId || selectedId !== pendingNotification.conversationId ||
+        !messages.some(message => message.id === pendingNotification.messageId)) return
+    const target = Array.from(document.querySelectorAll<HTMLElement>('[data-support-message-id]'))
+      .find(element => element.dataset.supportMessageId === pendingNotification.messageId)
+    if (!target) return
+    setHighlightedMessageId(pendingNotification.messageId)
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    setPendingNotification(null)
+    const timer = window.setTimeout(() => setHighlightedMessageId(''), 2400)
+    return () => window.clearTimeout(timer)
+  }, [pendingNotification, selectedId, messages])
 
   useEffect(() => {
     if (!isAdmin || !selectedId) { setMessages([]); return }
@@ -279,7 +323,7 @@ export default function AdminSupportInbox() {
             {messages.length === 0 ? <p className="support-muted">No messages yet. Send a message below.</p> : messages.map(message => {
               const readAt = stateFor(selected.id).read_at
               const read = message.sender_role === 'admin' || Boolean(readAt && new Date(message.created_at).getTime() <= new Date(readAt).getTime())
-              return <article key={message.id} className={message.sender_role === 'admin' ? 'support-message support-message-admin' : 'support-message'}>
+              return <article key={message.id} data-support-message-id={message.id} className={`${message.sender_role === 'admin' ? 'support-message support-message-admin' : 'support-message'}${highlightedMessageId === message.id ? ' support-message-notification-target' : ''}`}>
                 <div className="support-message-meta"><strong>{message.sender_role === 'admin' ? 'UFLMB Support' : 'Member'}</strong><time>{friendlyDate(message.created_at)}</time>
                   <span className={`support-mini-message-read ${read ? 'read' : 'unread'}`} title={read ? 'Read' : 'Unread'}>{message.sender_role === 'admin' ? '✓ Sent' : read ? '✓ Read' : '● Unread'}</span>
                 </div><p>{message.body}</p>
