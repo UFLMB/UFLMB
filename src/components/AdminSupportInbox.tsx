@@ -232,6 +232,7 @@ export default function AdminSupportInbox() {
                 </span>
               </button>
               <button type="button" className={`support-mini-star ${state.is_starred ? 'active' : ''}`} aria-label={state.is_starred ? 'Remove star' : 'Star conversation'} title={state.is_starred ? 'Remove star' : 'Star conversation'} onClick={async () => { setBusy(true); try { await saveState(item.id, { is_starred: !state.is_starred }) } catch (err) { setError(err instanceof Error ? err.message : 'Could not update star.') } finally { setBusy(false) } }}>{state.is_starred ? '★' : '☆'}</button>
+              <button type="button" className="support-mini-archive" aria-label={folder === 'archive' ? 'Restore conversation to inbox' : 'Archive conversation'} title={folder === 'archive' ? 'Restore to inbox' : 'Archive conversation'} onClick={async () => { setBusy(true); try { await saveState(item.id, { is_archived: folder !== 'archive' }); if (selectedId === item.id) setSelectedId(''); setNotice(folder === 'archive' ? 'Conversation restored to the inbox.' : 'Conversation moved to the archive.') } catch (err) { setError(err instanceof Error ? err.message : 'Could not archive conversation.') } finally { setBusy(false) } }}>{folder === 'archive' ? '↩' : '▣'}</button>
             </div>
           })}
       </aside>
