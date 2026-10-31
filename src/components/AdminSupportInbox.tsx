@@ -253,7 +253,7 @@ export default function AdminSupportInbox() {
               const read = message.sender_role === 'admin' || Boolean(readAt && new Date(message.created_at).getTime() <= new Date(readAt).getTime())
               return <article key={message.id} className={message.sender_role === 'admin' ? 'support-message support-message-admin' : 'support-message'}>
                 <div className="support-message-meta"><strong>{message.sender_role === 'admin' ? 'UFLMB Support' : 'Member'}</strong><time>{friendlyDate(message.created_at)}</time>
-                  <span className={`support-mini-message-read ${read ? 'read' : 'unread'}`} title={read ? 'Read' : 'Unread'}>{read ? '✓ Read' : '● Unread'}</span>
+                  <span className={`support-mini-message-read ${read ? 'read' : 'unread'}`} title={read ? 'Read' : 'Unread'}>{message.sender_role === 'admin' ? '✓ Sent' : read ? '✓ Read' : '● Unread'}</span>
                 </div><p>{message.body}</p>
               </article>
             })}
