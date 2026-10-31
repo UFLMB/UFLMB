@@ -85,7 +85,7 @@ export default function AdminSupportInbox() {
     setAdminStates(current => {
       const existing = current.find(item => item.conversation_id === id)
       const next: AdminState = { conversation_id: id, is_archived: false, is_starred: false, read_at: null, ...existing, ...patch }
-      return existing ? current.map(item => item.conversation_id === id ? next : next) : [...current, next]
+      return existing ? current.map(item => item.conversation_id === id ? next : item) : [...current, next]
     })
   }, [headers])
 
