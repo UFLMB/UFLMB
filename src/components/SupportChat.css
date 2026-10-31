@@ -536,3 +536,58 @@
     grid-column:1/-1;
   }
 }
+
+
+/* Admin inbox icon actions: reuse the official refresh-control surface and interaction design. */
+.support-admin-mini .support-mini-actions .support-mini-star-action,
+.support-admin-mini .support-mini-actions .support-mini-archive-action{
+  box-sizing:border-box !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:38px !important;
+  min-width:38px !important;
+  height:36px !important;
+  min-height:36px !important;
+  padding:0 !important;
+  border:1px solid rgba(163,230,53,.28) !important;
+  border-radius:8px !important;
+  background:rgba(163,230,53,.08) !important;
+  color:#cbd5e1 !important;
+  box-shadow:none !important;
+  cursor:pointer;
+  transition:color .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease !important;
+}
+.support-admin-mini .support-mini-actions .support-mini-star-action{
+  color:#f4c84a !important;
+  font-size:18px !important;
+  line-height:1 !important;
+}
+.support-admin-mini .support-mini-actions .support-mini-archive-action svg{
+  display:block;
+  width:17px;
+  height:17px;
+}
+.support-admin-mini .support-mini-actions .support-mini-star-action:hover:not(:disabled),
+.support-admin-mini .support-mini-actions .support-mini-archive-action:hover:not(:disabled){
+  color:#a3e635 !important;
+  border-color:rgba(163,230,53,.55) !important;
+  background:rgba(163,230,53,.14) !important;
+  box-shadow:0 0 0 2px rgba(163,230,53,.08) !important;
+}
+.support-admin-mini .support-mini-actions .support-mini-star-action:active:not(:disabled),
+.support-admin-mini .support-mini-actions .support-mini-archive-action:active:not(:disabled){
+  background:rgba(163,230,53,.18) !important;
+  border-color:rgba(163,230,53,.65) !important;
+  transform:scale(.96);
+}
+.support-admin-mini .support-mini-actions .support-mini-star-action:focus-visible,
+.support-admin-mini .support-mini-actions .support-mini-archive-action:focus-visible{
+  outline:2px solid rgba(163,230,53,.75) !important;
+  outline-offset:2px !important;
+}
+.support-admin-mini .support-mini-actions .support-mini-star-action:disabled,
+.support-admin-mini .support-mini-actions .support-mini-archive-action:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
