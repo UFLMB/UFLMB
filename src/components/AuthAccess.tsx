@@ -315,6 +315,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
     setAccountMenuOpen(false)
     onDashboardChange(false)
     onAdminChange(false)
+    if (recordEvent) showMessage('You have been signed out.', 'success')
   }
 
   useEffect(() => {
@@ -417,17 +418,14 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
       setConfirmPassword('')
       const admin = await checkAdmin(nextSession)
       onAdminChange(admin)
-      if (admin) {
-        showMessage('Administrator access verified.', 'success')
-      } else {
-        showMessage('You are signed in. Community account access is active.', 'success')
-      }
       if (mode === 'signin') {
         setRedirecting(true)
         showMessage(admin ? 'Administrator access verified.' : 'Sign-in successful.', 'success')
         await new Promise(resolve => window.setTimeout(resolve, 1350))
         setOpen(false)
         setRedirecting(false)
+      } else {
+        showMessage(admin ? 'Administrator access verified.' : 'You are signed in. Community account access is active.', 'success')
       }
     } catch (error) {
       const raw = error instanceof Error ? error.message : 'Authentication failed. Please try again.'
