@@ -92,9 +92,17 @@ Deno.serve(async (req: Request) => {
       return json({ message: "Your UFLMB account has been permanently deleted." });
     }
 
-    const { data: adminRow, error: adminError } = await adminClient
-      .from("admin_users").select("user_id").eq("user_id", actor.id).maybeSingle();
-    if (adminError || !adminRow) return json({ error: "Administrator authorization is required." }, 403);
+    const [{ data: adminRow, error: adminError }, { data: viewerRow, error: viewerError }] = await Promise.all([
+      adminClient.from("admin_users").select("user_id").eq("user_id", actor.id).maybeSingle(),
+      adminClient.from("admin_viewers").select("user_id").eq("user_id", actor.id).maybeSingle(),
+    ]);
+    if (adminError || viewerError || (!adminRow && !viewerRow)) {
+      return json({ error: "Administrator authorization is required." }, 403);
+    }
+    const viewerReadActions = new Set(["search_audit_users", "list_action_logs", "profile_statuses", "profile_details", "lookup"]);
+    if (viewerRow && !adminRow && !viewerReadActions.has(body.action)) {
+      return json({ error: "Unsupported account action." }, 403);
+    }
 
     if (body.action === "search_audit_users") {
       const searchTerm = typeof body.query === "string" ? body.query.trim() : "";
