@@ -7499,3 +7499,67 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   pointer-events: none;
   opacity: .45;
 }
+
+
+/* Mobile admin navbar: keep the brand, public link and ADMIN account on one line. */
+@media (max-width: 650px) {
+  .app-shell.admin-shell > .admin-topbar {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar > .brand {
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    gap: 7px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .brand-logo-image {
+    max-width: 78px !important;
+    max-height: 34px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .brand-word {
+    font-size: 16px !important;
+    white-space: nowrap !important;
+  }
+  .app-shell.admin-shell > .admin-topbar > .top-actions {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 7px !important;
+    min-width: 0 !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .status-pill,
+  .app-shell.admin-shell > .admin-topbar .public-refresh-toggle {
+    display: none !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .back-link {
+    display: inline-flex !important;
+    flex: 0 0 36px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    border-radius: 10px !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .back-link svg {
+    display: block !important;
+    width: 19px !important;
+    height: 19px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}
