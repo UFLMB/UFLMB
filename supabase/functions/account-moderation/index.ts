@@ -65,9 +65,12 @@ Deno.serve(async (req: Request) => {
     if (body.action === "delete_self") {
       const { data: profile, error: profileError } = await adminClient.from("profiles").select("id,username").eq("id", actor.id).maybeSingle();
       if (profileError || !profile) return json({ error: "The account profile could not be verified." }, 404);
-      const { data: adminAccount, error: adminLookupError } = await adminClient.from("admin_users").select("user_id").eq("user_id", actor.id).maybeSingle();
-      if (adminLookupError) return json({ error: "Account privileges could not be verified." }, 500);
-      if (adminAccount) return json({ error: "Trusted administrator accounts cannot be self-deleted." }, 403);
+      const [{ data: adminAccount, error: adminLookupError }, { data: viewerAccount, error: viewerLookupError }] = await Promise.all([
+        adminClient.from("admin_users").select("user_id").eq("user_id", actor.id).maybeSingle(),
+        adminClient.from("admin_viewers").select("user_id").eq("user_id", actor.id).maybeSingle(),
+      ]);
+      if (adminLookupError || viewerLookupError) return json({ error: "Account privileges could not be verified." }, 500);
+      if (adminAccount || viewerAccount) return json({ error: "Trusted administrator accounts cannot be self-deleted." }, 403);
       if (body.confirmation !== "DELETE " + profile.username) return json({ error: "Type DELETE followed by your exact username to confirm." }, 400);
 
       const { data: log, error: logError } = await adminClient.from("action_logs").insert({
