@@ -7484,3 +7484,18 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .settings-theme-option > span {
   color: #18202b !important;
 }
+
+
+/* Admin viewer: retain the full workspace for inspection while disabling
+   form-based mutations in the interface. Database RLS remains authoritative. */
+.admin-viewer-mode .admin-panel form :is(input, textarea, select, button) {
+  pointer-events: none;
+  opacity: .62;
+}
+.admin-viewer-mode .admin-panel .form-actions button,
+.admin-viewer-mode .admin-panel button.button.primary,
+.admin-viewer-mode .admin-panel button.button.danger,
+.admin-viewer-mode .admin-panel button[aria-label*="delete" i] {
+  pointer-events: none;
+  opacity: .45;
+}
