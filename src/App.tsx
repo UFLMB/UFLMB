@@ -147,12 +147,12 @@ const categories = ['All cards', 'Goalkeepers', 'Defenders', 'Midfielders', 'For
 type Category = typeof categories[number]
 type Draft = {
   playerName: string; overallRating: string; positions: string; nation: string
-  cardName: string; club: string; traits: string; stats: string; imageUrl: string
+  cardName: string; club: string; perks: string; stats: string; imageUrl: string
   sourceUrl: string; verifiedAt: string
 }
 const emptyDraft = (): Draft => ({
   playerName: '', overallRating: '', positions: '', nation: '', cardName: '', club: '',
-  traits: '', stats: '', imageUrl: '', sourceUrl: '', verifiedAt: new Date().toISOString().slice(0, 10),
+  perks: '', stats: '', imageUrl: '', sourceUrl: '', verifiedAt: new Date().toISOString().slice(0, 10),
 })
 const makeId = () => `card-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
 const countryFlagCode = (nation: string) => {
@@ -249,7 +249,7 @@ const isValidPlayerCard = (value: unknown): value is PlayerCard => {
   if (card.cardName !== undefined && typeof card.cardName !== 'string') return false
   if (card.club !== undefined && typeof card.club !== 'string') return false
   if (card.imageUrl !== undefined && typeof card.imageUrl !== 'string') return false
-  if (card.traits !== undefined && (!Array.isArray(card.traits) || card.traits.some(perk => typeof perk !== 'string'))) return false
+  if (card.perks !== undefined && (!Array.isArray(card.perks) || card.perks.some(perk => typeof perk !== 'string'))) return false
   if (card.stats !== undefined && (!card.stats || typeof card.stats !== 'object' || Array.isArray(card.stats) || Object.values(card.stats).some(stat => typeof stat !== 'number' || !Number.isFinite(stat)))) return false
   return true
 }
@@ -299,7 +299,7 @@ const downloadCsv = (cards: PlayerCard[]) => {
       'Player Name': card.playerName, 'OVR': card.overallRating,
       'Position(s)': card.positions.join('/'), 'Nation': card.nation,
       'Card Type': card.cardName, 'Club': card.club, 'Image URL': card.imageUrl,
-      'Traits': card.traits?.join('; '), 'Verified At': card.verifiedAt, 'Source URL': card.sourceUrl,
+      'Traits': card.perks?.join('; '), 'Verified At': card.verifiedAt, 'Source URL': card.sourceUrl,
       'PAC': card.stats?.PAC, 'SHO': card.stats?.SHO, 'PAS': card.stats?.PAS,
       'DRI': card.stats?.DRI, 'DEF': card.stats?.DEF, 'PHY': card.stats?.PHY,
     }
@@ -853,7 +853,7 @@ export default function App() {
     type PublicDbCard = {
       id: string; player_name: string; overall_rating: number; positions: string[]; nation: string
       card_name?: string | null; club?: string | null; stats?: Record<string, number> | null
-      traits?: string[] | null; image_url?: string | null; source_url: string; verified_at: string
+      perks?: string[] | null; image_url?: string | null; source_url: string; verified_at: string
       event?: string | null; position_category?: string | null; date_of_birth?: string | null
       height_cm?: number | string | null; weight_kg?: number | string | null; foot?: string | null
       weak_foot?: number | null; skill_moves?: number | null; source_image_path?: string | null
@@ -871,7 +871,7 @@ export default function App() {
         nation: row.nation, ...(row.card_name ? { cardName: row.card_name } : {}),
         ...(row.club ? { club: row.club } : {}),
         ...(row.stats && Object.keys(row.stats).length ? { stats: row.stats } : {}),
-        ...(row.traits?.length ? { traits: row.traits } : {}),
+        ...(row.perks?.length ? { perks: row.perks } : {}),
         ...(row.image_url ? { imageUrl: row.image_url } : {}),
         ...(row.event ? { event: row.event } : {}),
         ...(row.position_category ? { positionCategory: row.position_category } : {}),
@@ -901,7 +901,7 @@ export default function App() {
   const cardTypes = useMemo(() => Array.from(new Set(allCards.map(card => card.event).filter((value): value is string => Boolean(value?.trim())))).sort((a, b) => a.localeCompare(b)), [allCards])
 
   const searchIndex = useMemo(() => new Map(allCards.map(card => [card.id,
-    [card.playerName, card.nation, card.club, card.cardName, card.event, card.positionCategory, card.foot, card.sourceImagePath, card.sourceUrl, ...card.positions, ...(card.traits ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)]), ...Object.entries(card.sourceData ?? {}).flatMap(([key, value]) => [key, value])]
+    [card.playerName, card.nation, card.club, card.cardName, card.event, card.positionCategory, card.foot, card.sourceImagePath, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)]), ...Object.entries(card.sourceData ?? {}).flatMap(([key, value]) => [key, value])]
       .filter(Boolean).join(' ').toLowerCase(),
   ] as const)), [allCards])
 
@@ -1042,7 +1042,7 @@ export default function App() {
   }
 
   const adminCards = useMemo(() => allCards.filter(card =>
-    [card.playerName, card.nation, card.club, card.cardName, card.id, card.sourceUrl, ...card.positions, ...(card.traits ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)])].filter(Boolean).join(' ').toLowerCase().includes(adminSearch.toLowerCase())
+    [card.playerName, card.nation, card.club, card.cardName, card.id, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)])].filter(Boolean).join(' ').toLowerCase().includes(adminSearch.toLowerCase())
   ), [allCards, adminSearch])
 
   const dataQuality = useMemo(() => {
@@ -1450,7 +1450,7 @@ export default function App() {
       ...(draft.cardName.trim() ? { cardName: draft.cardName.trim() } : {}),
       ...(draft.club.trim() ? { club: draft.club.trim() } : {}),
       ...(stats ? { stats } : {}),
-      ...(draft.traits.trim() ? { traits: draft.traits.split(/[;,\n]/).map(v => v.trim()).filter(Boolean) } : {}),
+      ...(draft.perks.trim() ? { perks: draft.perks.split(/[;,\n]/).map(v => v.trim()).filter(Boolean) } : {}),
       ...(draft.imageUrl.trim() ? { imageUrl: draft.imageUrl.trim() } : {}),
       sourceUrl: draft.sourceUrl.trim(),
       verifiedAt: draft.verifiedAt || new Date().toISOString().slice(0, 10),
@@ -1470,7 +1470,7 @@ export default function App() {
     setEditingId(card.id)
     setDraft({
       playerName: card.playerName, overallRating: String(card.overallRating), positions: card.positions.join(', '),
-      nation: card.nation, cardName: card.cardName ?? '', club: card.club ?? '', traits: card.traits?.join(', ') ?? '',
+      nation: card.nation, cardName: card.cardName ?? '', club: card.club ?? '', perks: card.perks?.join(', ') ?? '',
       stats: card.stats ? JSON.stringify(card.stats, null, 2) : '', imageUrl: card.imageUrl ?? '',
       sourceUrl: card.sourceUrl, verifiedAt: card.verifiedAt,
     })
@@ -1522,13 +1522,13 @@ export default function App() {
           const value = get(row, [key.toLowerCase(), key.toLowerCase() + 'stat'])
           if (value !== '' && value !== null && Number.isFinite(Number(value))) stats[key] = Number(value)
         })
-        const traitsRaw = asText(get(row, ['traits', 'attributes', 'traits']))
+        const traitsRaw = asText(get(row, ['perks', 'attributes', 'traits']))
         imported.push({
           id: makeId(), playerName, overallRating, positions, nation,
           ...(cardName ? { cardName } : {}),
           ...(club ? { club } : {}),
           ...(Object.keys(stats).length ? { stats } : {}),
-          ...(traitsRaw ? { traits: traitsRaw.split(/[;,|]/).map(v => v.trim()).filter(Boolean) } : {}),
+          ...(traitsRaw ? { perks: traitsRaw.split(/[;,|]/).map(v => v.trim()).filter(Boolean) } : {}),
           ...(imageUrl ? { imageUrl } : {}),
           sourceUrl,
           verifiedAt: /^\d{4}-\d{2}-\d{2}$/.test(verifiedAt) ? verifiedAt : new Date().toISOString().slice(0, 10),
@@ -1850,7 +1850,7 @@ export default function App() {
             <div className="section-heading"><div><p className="eyebrow">ASSET LIBRARY · TRAITS</p><h2>Trait artwork</h2></div><span className="count-label">{Object.keys(siteBranding.perkTraitImages).length} configured</span></div>
             <p className="muted-copy">Assign images once per trait type. The compact official icon appears beside the trait in Players; the separate expanded image appears in Player Profile. Existing and newly added cards that use the same trait name update automatically. Enter direct HTTP or HTTPS image URLs.</p>
             <div className="perk-trait-image-controls">
-              <label>Trait type<select value={selectedPerkTraitType} onChange={event => { const next = event.target.value; const saved = next ? siteBranding.perkTraitImages[normalizeIdentityPart(next)] : undefined; setSelectedPerkTraitType(next); setPerkIconUrlDraft(saved?.iconUrl || ''); setPerkProfileImageUrlDraft(saved?.profileImageUrl || '') }}><option value="">Choose a trait…</option>{Array.from(new Map(allCards.flatMap(card => card.traits ?? []).map(perk => perk.trim()).filter(Boolean).map(perk => [normalizeIdentityPart(perk), perk.toUpperCase()] as const)).values()).sort((a,b) => a.localeCompare(b)).map(perk => <option key={normalizeIdentityPart(perk)} value={perk}>{perk}</option>)}</select></label>
+              <label>Trait type<select value={selectedPerkTraitType} onChange={event => { const next = event.target.value; const saved = next ? siteBranding.perkTraitImages[normalizeIdentityPart(next)] : undefined; setSelectedPerkTraitType(next); setPerkIconUrlDraft(saved?.iconUrl || ''); setPerkProfileImageUrlDraft(saved?.profileImageUrl || '') }}><option value="">Choose a trait…</option>{Array.from(new Map(allCards.flatMap(card => card.perks ?? []).map(perk => perk.trim()).filter(Boolean).map(perk => [normalizeIdentityPart(perk), perk.toUpperCase()] as const)).values()).sort((a,b) => a.localeCompare(b)).map(perk => <option key={normalizeIdentityPart(perk)} value={perk}>{perk}</option>)}</select></label>
               <label>Players menu icon URL<input type="url" value={perkIconUrlDraft} onChange={event => setPerkIconUrlDraft(event.target.value)} placeholder="https://example.com/trait-icon.png" /></label>
               <label>Player Profile expanded image URL<input type="url" value={perkProfileImageUrlDraft} onChange={event => setPerkProfileImageUrlDraft(event.target.value)} placeholder="https://example.com/trait-art.png" /></label>
             </div>
@@ -1966,7 +1966,7 @@ export default function App() {
           <label>Card type / edition<input value={draft.cardName} onChange={e => updateDraft('cardName', e.target.value)} placeholder="e.g. Icon, event name" /></label>
           <label>Club<input value={draft.club} onChange={e => updateDraft('club', e.target.value)} placeholder="Optional" /></label>
           <label className="full-field">Stats (JSON)<textarea rows={4} value={draft.stats} onChange={e => updateDraft('stats', e.target.value)} placeholder={'{"PAC": 90, "SHO": 85, "PAS": 88}'} /></label>
-          <label className="full-field">Traits / attributes<input value={draft.traits} onChange={e => updateDraft('traits', e.target.value)} placeholder="Comma-separated values" /></label>
+          <label className="full-field">Traits / attributes<input value={draft.perks} onChange={e => updateDraft('perks', e.target.value)} placeholder="Comma-separated values" /></label>
           <label className="full-field">Upload card image<input type="file" accept="image/*" onChange={handleImage} /><span className="field-help">Maximum 8 MB; the image is optimized in your browser and saved to local storage.</span></label>
           <label className="full-field">Or image URL<input value={draft.imageUrl.startsWith('data:') ? '' : draft.imageUrl} onChange={e => updateDraft('imageUrl', e.target.value)} placeholder="https://…" /></label>
           {draft.imageUrl && <div className="image-preview"><img src={draft.imageUrl} alt="Card preview" /><button type="button" className="button secondary" onClick={() => updateDraft('imageUrl', '')}>Remove image</button></div>}
@@ -2457,7 +2457,7 @@ export default function App() {
             </div>
             <div className="player-card-body">{card.event && <div className="event-ribbon"><span aria-hidden="true">✦</span> {card.event}</div>}<div className="player-title-row"><div className="player-title-copy"><h3>{card.playerName}</h3><p><span className="card-nationality"><span>{card.nation}</span></span></p></div></div>
               {card.stats && <div className="stats-grid">{['PAC','SHO','PAS','DRI','DEF','PHY'].filter(key => typeof card.stats?.[key] === 'number').map(key => <span key={key}><b>{card.stats![key]}</b><small>{key}</small></span>)}</div>}
-              {card.traits?.length ? <div className="perk-row"><span className="perk-heading"><span aria-hidden="true">✦</span> TRAITS</span>{card.traits.slice(0, 2).map(perk => <span className="perk-item" key={perk}>{siteBranding.perkTraitImages[normalizeIdentityPart(perk)]?.iconUrl && <img className="perk-trait-icon" src={siteBranding.perkTraitImages[normalizeIdentityPart(perk)].iconUrl} alt="" loading="lazy" />}{perk}</span>)}{card.traits.length > 2 && <span className="perk-more">+{card.traits.length - 2}</span>}</div> : null}
+              {card.perks?.length ? <div className="perk-row"><span className="perk-heading"><span aria-hidden="true">✦</span> TRAITS</span>{card.perks.slice(0, 2).map(perk => <span className="perk-item" key={perk}>{siteBranding.perkTraitImages[normalizeIdentityPart(perk)]?.iconUrl && <img className="perk-trait-icon" src={siteBranding.perkTraitImages[normalizeIdentityPart(perk)].iconUrl} alt="" loading="lazy" />}{perk}</span>)}{card.perks.length > 2 && <span className="perk-more">+{card.perks.length - 2}</span>}</div> : null}
               <div className="card-actions"><button className="button secondary" type="button" onClick={event => { event.stopPropagation(); setSelectedCard(card) }}><span aria-hidden="true">↗</span> Player profile</button>{card.sourceStatus !== 'imported-unverified' && <span className="source-status"><span className="source-status-dot" />{card.id.startsWith('uflmb-demo-') ? 'Demo' : 'Verified'}</span>}</div>{card.sourceStatus !== 'imported-unverified' && <small className="verified-date">{card.id.startsWith('uflmb-demo-') ? 'Demo record' : `Checked ${card.verifiedAt}`}</small>}
             </div>
           </article>)}</div>}
