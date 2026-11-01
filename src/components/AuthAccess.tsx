@@ -199,7 +199,7 @@ async function restoreSession(): Promise<AuthSession | null> {
   }
 }
 
-export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, themeMode, onThemeModeChange, onDashboardChange, onProfileChange, dashboardOpen }: Props) {
+export default function AuthAccess({ isAdmin, onAdminChange, onAdminViewerChange, onAccountChange, themeMode, onThemeModeChange, onDashboardChange, onProfileChange, dashboardOpen }: Props) {
   const [open, setOpen] = useState(false)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const accountMenuRef = useRef<HTMLDivElement>(null)
