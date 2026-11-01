@@ -2045,7 +2045,7 @@ export default function App() {
       </section>
       <section className="admin-panel tools-panel">
         <p className="eyebrow">SPREADSHEET IMPORT</p><h2>Import from Excel</h2>
-        <p className="muted-copy">Import .xlsx, .xls, or .csv files. The first worksheet is read. Required columns: Player Name, OVR, Position(s), Nation, and Source URL. Optional columns: Card Type, Club, Image URL, Traits (legacy Perks column is also supported), Verified At, and individual stat columns such as PAC, SHO, PAS, DRI, DEF, and PHY. Existing matching cards are skipped rather than overwritten.</p>
+        <p className="muted-copy">Import .xlsx, .xls, or .csv files. The first worksheet is read. Required columns: Player Name, OVR, Position(s), Nation, and Source URL. Optional columns: Card Type, Club, Image URL, Traits (older source column names are also supported), Verified At, and individual stat columns such as PAC, SHO, PAS, DRI, DEF, and PHY. Existing matching cards are skipped rather than overwritten.</p>
         <label className="full-field">Choose spreadsheet file<input type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" onChange={importExcel} /><span className="field-help">Only valid rows are imported. Invalid rows and duplicate player/OVR/position/nation combinations are skipped and counted.</span></label>
       </section>
       <section className="admin-panel tools-panel">
