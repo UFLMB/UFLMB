@@ -41,7 +41,7 @@ export const demoCards: PlayerCard[] = names.map((playerName, index) => {
       DEF: Math.max(40, Math.min(99, rating - 4 + (slot % 7))),
       PHY: Math.max(40, Math.min(99, rating - 2 + (slot % 4))),
     },
-    perks: ['Demo perk — replace with verified data'],
+    perks: ['Demo trait — replace with verified data'],
     sourceUrl: 'https://example.com/uflmb-demo-data-not-a-real-source',
     verifiedAt: today,
   }
