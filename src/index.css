@@ -7563,3 +7563,27 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     padding-right: 10px !important;
   }
 }
+
+
+/* Admin public-database link: preserve the original text link on desktop;
+   use a framed globe + separate external-link arrow only on mobile. */
+.app-shell.admin-shell > .admin-topbar .back-link-mobile-icon {
+  display: none;
+}
+@media (max-width: 650px) {
+  .app-shell.admin-shell > .admin-topbar .back-link {
+    flex: 0 0 40px !important;
+    width: 40px !important;
+    height: 36px !important;
+    padding: 0 !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .back-link-label {
+    display: none !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .back-link .back-link-mobile-icon {
+    display: block !important;
+    width: 27px !important;
+    height: 21px !important;
+    overflow: visible !important;
+  }
+}
