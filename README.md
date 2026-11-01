@@ -10,8 +10,8 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 - Improved keyboard focus visibility and reduced-motion support
 - Multiple background image URLs with automatic 30-second rotation, dark readability overlay, and backward-compatible migration of the previous single-background setting (saved in the current browser)
 - Search by player name, nation, club, card type and position
-- Search by player name, nation, club, card type, position, stats, perks, and source URL
-- Full player profile modal with complete saved attributes, perk list, verification date and source link
+- Search by player name, nation, club, card type, position, stats, traits, and source URL
+- Full player profile modal with complete saved attributes, trait list, verification date and source link
 - Personal saved-card bookmarks and a saved-only browsing filter, with browser-local fallback and optional signed-in cloud sync
 - Minimum and maximum OVR range filters alongside position, nation, card type and text search
 - Numeric attribute filtering using each attribute present in the verified card records
@@ -22,7 +22,7 @@ A community-driven UFL Mobile player-card database. Built with React, TypeScript
 - Strict JSON backup validation, duplicate-ID rejection, pre-import impact summary, explicit confirmation before overwriting matching IDs, and duplicate-aware merging
 - Filters for goalkeepers, defenders, midfielders and forwards, plus exact position, nation and card type
 - Sort by highest OVR, lowest OVR, or player name
-- Card records with OVR, positions, nation, card type, club, stats, perks, image and verification source/date
+- Card records with OVR, positions, nation, card type, club, stats, traits, image and verification source/date
 - Separate manual content manager at `/admin`
 - Add, edit and delete card records
 - Upload an image (client-side resize/compression) or use an image URL
@@ -63,7 +63,7 @@ Only add records that have been checked against a reliable source. Export a JSON
 
 ## Demo squads for testing
 
-In the admin workspace, open **Card manager → Load / reset 22 demo cards** to load Demo Team A and Demo Team B (11 cards each). Switch teams in the squad builder. These are fictional UI test fixtures: names, OVR, stats, perks, nations and clubs are synthetic; the source link is deliberately a placeholder. They are not real UFL Mobile records and must not be treated as verified data. Edit them in the card manager or delete them before entering real cards. Reloading the demo fixture overwrites the demo records only and preserves records whose IDs are not demo IDs.
+In the admin workspace, open **Card manager → Load / reset 22 demo cards** to load Demo Team A and Demo Team B (11 cards each). Switch teams in the squad builder. These are fictional UI test fixtures: names, OVR, stats, traits, nations and clubs are synthetic; the source link is deliberately a placeholder. They are not real UFL Mobile records and must not be treated as verified data. Edit them in the card manager or delete them before entering real cards. Reloading the demo fixture overwrites the demo records only and preserves records whose IDs are not demo IDs.
 
 ## Shared database groundwork
 
