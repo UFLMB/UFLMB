@@ -2,7 +2,7 @@
   "id": "./",
   "name": "UFLMB — UFL Mobile Card Database",
   "short_name": "UFLMB",
-  "description": "A community-built reference for UFL Mobile player cards, ratings, stats, perks and verified sources.",
+  "description": "A community-built reference for UFL Mobile player cards, ratings, stats, traits and verified sources.",
   "lang": "en",
   "start_url": "./",
   "scope": "./",
