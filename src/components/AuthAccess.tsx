@@ -29,6 +29,7 @@ const isStrongPassword = (value: string, username = '') => {
 type Props = {
   isAdmin: boolean
   onAdminChange: (value: boolean) => void
+  onAdminViewerChange: (value: boolean) => void
   onAccountChange: (value: { userId: string; username: string; email?: string; accessToken: string } | null) => void
   themeMode: 'dark' | 'light' | 'system'
   onThemeModeChange: (value: 'dark' | 'light' | 'system') => void
@@ -76,18 +77,21 @@ function saveSession(session: AuthSession) {
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
 }
 
-async function checkAdmin(session: AuthSession): Promise<boolean> {
+async function checkAdmin(session: AuthSession): Promise<{ admin: boolean; viewer: boolean }> {
   const { url, key } = getConfig()
-  if (!url || !key) return false
+  if (!url || !key) return { admin: false, viewer: false }
+  const headers = { apikey: key, Authorization: `Bearer ${session.access_token}` }
   try {
-    const response = await fetch(`${url}/rest/v1/admin_users?select=user_id&user_id=eq.${encodeURIComponent(session.user.id)}`, {
-      headers: { apikey: key, Authorization: `Bearer ${session.access_token} ` .trim() },
-    })
-    if (!response.ok) return false
-    const rows = await response.json() as Array<{ user_id: string }>
-    return rows.some(row => row.user_id === session.user.id)
+    const [adminResponse, viewerResponse] = await Promise.all([
+      fetch(`${url}/rest/v1/admin_users?select=user_id&user_id=eq.${encodeURIComponent(session.user.id)}`, { headers }),
+      fetch(`${url}/rest/v1/admin_viewers?select=user_id&user_id=eq.${encodeURIComponent(session.user.id)}`, { headers }),
+    ])
+    const adminRows = adminResponse.ok ? await adminResponse.json() as Array<{ user_id: string }> : []
+    const viewerRows = viewerResponse.ok ? await viewerResponse.json() as Array<{ user_id: string }> : []
+    const admin = adminRows.some(row => row.user_id === session.user.id)
+    return { admin, viewer: !admin && viewerRows.some(row => row.user_id === session.user.id) }
   } catch {
-    return false
+    return { admin: false, viewer: false }
   }
 }
 
@@ -291,16 +295,17 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
       const restoredUsername = await getProfileUsername(restored)
       setSessionUsername(restoredUsername)
       if (!cancelled) onAccountChange({ userId: restored.user.id, username: restoredUsername, email: restored.user.email || '', accessToken: restored.access_token })
-      const admin = await checkAdmin(restored)
+      const adminAccess = await checkAdmin(restored)
       if (!cancelled) {
-        onAdminChange(admin)
-        onDashboardChange(admin && sessionStorage.getItem('uflmb.admin.dashboard.v1') === 'open')
+        onAdminChange(adminAccess.admin || adminAccess.viewer)
+        onAdminViewerChange(adminAccess.viewer)
+        onDashboardChange((adminAccess.admin || adminAccess.viewer) && sessionStorage.getItem('uflmb.admin.dashboard.v1') === 'open')
       }
       if (!cancelled && fragmentType === 'recovery') showMessage('Choose a new password for your account.', 'info')
       if (!cancelled && fragmentType === 'signup') showMessage('Email confirmed. Your account is ready.', 'success')
     })
     return () => { cancelled = true }
-  }, [onAdminChange, onAccountChange, onDashboardChange])
+  }, [onAdminChange, onAdminViewerChange, onAccountChange, onDashboardChange])
 
   const signOut = async (recordEvent = true) => {
     const { url, key } = getConfig()
@@ -325,6 +330,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
     setAccountMenuOpen(false)
     onDashboardChange(false)
     onAdminChange(false)
+    onAdminViewerChange(false)
     if (recordEvent) showMessage('You have been signed out.', 'success')
   }
 
@@ -426,8 +432,10 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAccountChange, th
       onAccountChange({ userId: nextSession.user.id, username: nextUsername, email: nextSession.user.email || '', accessToken: nextSession.access_token })
       setPassword('')
       setConfirmPassword('')
-      const admin = await checkAdmin(nextSession)
+      const adminAccess = await checkAdmin(nextSession)
+      const admin = adminAccess.admin || adminAccess.viewer
       onAdminChange(admin)
+      onAdminViewerChange(adminAccess.viewer)
       if (mode === 'signin') {
         setRedirecting(true)
         showMessage(admin ? 'Administrator access verified.' : 'Sign-in successful.', 'success')
