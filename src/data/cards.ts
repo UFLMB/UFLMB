@@ -55,7 +55,8 @@ export const cards: PlayerCard[] = sourceRows
       const [, group, name] = key.split(':')
       stats[`${group} · ${name}`] = value
     }
-    const perks = row.perks ? row.perks.split(/[;|]/).map(value => value.trim()).filter(Boolean) : []
+    const traitValues = row.traits ?? row.perks ?? ''
+    const perks = traitValues ? traitValues.split(/[;|]/).map(value => value.trim()).filter(Boolean) : []
     return {
       id: row.id,
       playerName: row.name,
