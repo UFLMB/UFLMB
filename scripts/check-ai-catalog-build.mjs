@@ -29,8 +29,8 @@ const builtIndexHtml = await readFile(path.join(dist, 'index.html'), 'utf8');
 if (!builtIndexHtml.includes('id="uflmb-critical-css"')) {
   throw new Error('Production index.html must include the critical above-the-fold CSS.');
 }
-const htmlWithoutNoScriptFallback = builtIndexHtml.replace(/<noscript>[\\s\\S]*?<\\/noscript>/gi, '');
-if (/<link\\b(?=[^>]*\\brel=["']stylesheet["'])(?=[^>]*\\bhref=["'][^"']*\\/assets\\/[^"']+\\.css["'])[^>]*>/i.test(htmlWithoutNoScriptFallback)) {
+const htmlWithoutNoScriptFallback = builtIndexHtml.replace(/<noscript>[\s\S]*?<\/noscript>/gi, '');
+if (/<link\b(?=[^>]*\brel=["']stylesheet["'])(?=[^>]*\bhref=["'][^"']*\/assets\/[^"']+\.css["'])[^>]*>/i.test(htmlWithoutNoScriptFallback)) {
   throw new Error('The compiled application stylesheet must not be linked as a render-blocking HTML stylesheet.');
 }
 if (!/rel=["']preload["'][^>]*as=["']style["'][^>]*onload=/i.test(builtIndexHtml)) {
