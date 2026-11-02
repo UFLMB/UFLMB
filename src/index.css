@@ -7813,3 +7813,11 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     animation-iteration-count: 1 !important;
   }
 }
+
+
+/* Initial shared-catalog loading state; only shown when no local records are available. */
+.database-loading-skeleton{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;padding:8px 0}
+.database-skeleton-card{display:block;min-height:270px;border:1px solid rgba(148,163,184,.16);border-radius:16px;background:linear-gradient(100deg,rgba(148,163,184,.07) 20%,rgba(148,163,184,.15) 38%,rgba(148,163,184,.07) 56%);background-size:200% 100%;animation:database-skeleton-shimmer 1.35s ease-in-out infinite}
+.database-skeleton-label{grid-column:1/-1;color:var(--muted-color,#8b95a5);font-size:12px;text-align:center}
+@keyframes database-skeleton-shimmer{to{background-position-x:-200%}}
+@media(prefers-reduced-motion:reduce){.database-skeleton-card{animation:none}}
