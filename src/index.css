@@ -7515,6 +7515,11 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
+/* Desktop keeps the full Public label; mobile swaps to the compact label below. */
+.app-shell.admin-shell > .admin-topbar .back-link-mobile-label {
+  display: none;
+}
+
 /* Admin mobile header: align its content with the mobile admin panels.
    Keep all geometry changes inside the requested 767px breakpoint. */
 @media (max-width: 767px) {
@@ -7536,11 +7541,18 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     gap: 7px !important;
   }
 
-  .app-shell.admin-shell > .admin-topbar .brand-mark,
-  .app-shell.admin-shell > .admin-topbar .brand-logo-image {
+  .app-shell.admin-shell > .admin-topbar .brand-mark {
     width: 32px !important;
     height: 32px !important;
     flex: 0 0 32px !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .brand-logo-image {
+    width: auto !important;
+    max-width: 110px !important;
+    height: auto !important;
+    max-height: 32px !important;
+    flex: 0 1 auto !important;
   }
 
   .app-shell.admin-shell > .admin-topbar .brand-word {
