@@ -7724,3 +7724,93 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .app-shell.admin-shell .account-dropdown .dashboard-menu-item {
   display: none !important;
 }
+
+
+/* Header interaction polish: restore restrained motion without reintroducing
+   the decorative sweep or allowing pseudo-elements to intercept pointer input. */
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .site-nav a,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .nav-page,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .menu-toggle,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .public-theme-toggle,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .public-refresh-toggle,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .auth-trigger,
+.app-shell.admin-shell > .admin-topbar .back-link,
+.app-shell.admin-shell > .admin-topbar .public-refresh-toggle,
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger {
+  transition:
+    color .2s ease,
+    background-color .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease,
+    opacity .2s ease,
+    transform .2s ease,
+    filter .2s ease !important;
+}
+
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .site-nav a:hover,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .nav-page:hover,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .menu-toggle:hover,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .public-theme-toggle:hover,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .public-refresh-toggle:hover,
+.app-shell.admin-shell > .admin-topbar .back-link:hover,
+.app-shell.admin-shell > .admin-topbar .public-refresh-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .menu-toggle:active,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .public-theme-toggle:active,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .public-refresh-toggle:active,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .auth-trigger:active,
+.app-shell.admin-shell > .admin-topbar .back-link:active,
+.app-shell.admin-shell > .admin-topbar .public-refresh-toggle:active,
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger:active {
+  transform: scale(.98) !important;
+}
+
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .auth-trigger::before,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .auth-trigger:hover::before,
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger::before,
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger:hover::before {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .auth-trigger .auth-trigger-icon,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .auth-trigger .account-chevron,
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger .auth-trigger-icon,
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger .account-chevron {
+  transition: color .2s ease, opacity .2s ease, transform .2s ease !important;
+}
+
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .account-dropdown,
+.app-shell.admin-shell > .admin-topbar .account-dropdown {
+  pointer-events: auto !important;
+  transition: opacity .2s ease, transform .2s ease, border-color .2s ease, box-shadow .2s ease !important;
+  animation: account-dropdown-in .18s ease-out both !important;
+}
+
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .account-menu-item,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .theme-mode-button,
+.app-shell.admin-shell > .admin-topbar .account-menu-item,
+.app-shell.admin-shell > .admin-topbar .theme-mode-button {
+  transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease !important;
+}
+
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .account-menu-item:active,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .theme-mode-button:active,
+.app-shell.admin-shell > .admin-topbar .account-menu-item:active,
+.app-shell.admin-shell > .admin-topbar .theme-mode-button:active {
+  transform: scale(.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell:not(.admin-shell) > .app-content-scroll > .topbar *,
+  .app-shell.admin-shell > .admin-topbar * {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
