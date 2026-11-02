@@ -1,0 +1,11 @@
+{
+  "name": "UFL Mobile Community Wiki",
+  "description": "Független közösségi adatbázis és adatforrás az UFL Mobile játékosok számára.",
+  "version": "1.0.0",
+  "resources": [
+    {
+      "type": "documentation",
+      "url": "https://uflmobile.wiki/llms.txt"
+    }
+  ]
+}
