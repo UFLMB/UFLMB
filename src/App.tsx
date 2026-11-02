@@ -949,11 +949,21 @@ export default function App() {
   const squadRating = squadPlayers.length ? Math.round(squadPlayers.reduce((total, entry) => total + entry.card.overallRating, 0) / squadPlayers.length) : 0
   const squadPositionFits = squadPlayers.filter(({slot,card}) => card.positions.some(position => slot.positions.includes(position))).length
   const statLeaders = useMemo(() => {
-    const statKeys = Array.from(new Set(allCards.flatMap(card => Object.keys(card.stats ?? {}))))
-      .filter(key => allCards.some(card => typeof card.stats?.[key] === 'number'))
-      .sort((a, b) => a.localeCompare(b))
-    return statKeys.map(key => ({ key, cards: allCards.filter(card => typeof card.stats?.[key] === 'number').sort((a, b) => (b.stats?.[key] ?? -Infinity) - (a.stats?.[key] ?? -Infinity)).slice(0, 5) })).filter(item => item.cards.length)
-  }, [allCards])
+    if (page !== 'home' || adminDashboardOpen) return []
+    const leadersByStat = new Map<string, PlayerCard[]>()
+    for (const card of allCards) {
+      for (const [key, value] of Object.entries(card.stats ?? {})) {
+        if (typeof value !== 'number') continue
+        const leaders = leadersByStat.get(key) ?? []
+        leaders.push(card)
+        leaders.sort((a, b) => (b.stats?.[key] ?? -Infinity) - (a.stats?.[key] ?? -Infinity))
+        if (leaders.length > 5) leaders.pop()
+        leadersByStat.set(key, leaders)
+      }
+    }
+    return Array.from(leadersByStat, ([key, cards]) => ({ key, cards }))
+      .sort((a, b) => a.key.localeCompare(b.key))
+  }, [allCards, page, adminDashboardOpen])
 
   const toggleBookmark = (id: string) => setBookmarkedIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id])
 
@@ -1060,11 +1070,16 @@ export default function App() {
     }
   }
 
-  const adminCards = useMemo(() => allCards.filter(card =>
-    [card.playerName, card.nation, card.club, card.cardName, card.id, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)])].filter(Boolean).join(' ').toLowerCase().includes(adminSearch.toLowerCase())
-  ), [allCards, adminSearch])
+  const adminCards = useMemo(() => {
+    if (!adminDashboardOpen) return []
+    const normalizedSearch = adminSearch.toLowerCase()
+    return allCards.filter(card =>
+      [card.playerName, card.nation, card.club, card.cardName, card.id, card.sourceUrl, ...card.positions, ...(card.perks ?? []), ...Object.entries(card.stats ?? {}).flatMap(([key, value]) => [key, String(value)])].filter(Boolean).join(' ').toLowerCase().includes(normalizedSearch)
+    )
+  }, [allCards, adminSearch, adminDashboardOpen])
 
   const dataQuality = useMemo(() => {
+    if (!adminDashboardOpen) return { total: 0, missingImage: 0, missingClubOrType: 0, missingStats: 0, invalidSource: 0, staleVerification: 0, duplicates: 0 }
     const today = new Date()
     const missingImage = allCards.filter(card => !card.imageUrl?.trim()).length
     const missingClubOrType = allCards.filter(card => !card.club?.trim() || !card.cardName?.trim()).length
@@ -1083,9 +1098,11 @@ export default function App() {
       else keys.add(key)
     })
     return { total: allCards.length, missingImage, missingClubOrType, missingStats, invalidSource, staleVerification, duplicates }
-  }, [allCards])
+  }, [allCards, adminDashboardOpen])
 
-  const reviewCandidates = useMemo(() => allCards.map(card => {
+  const reviewCandidates = useMemo(() => {
+    if (!adminDashboardOpen) return []
+    return allCards.map(card => {
     const issues: string[] = []
     if (!card.imageUrl?.trim()) issues.push('Missing image')
     if (!card.stats || !Object.keys(card.stats).length) issues.push('Missing stats')
@@ -1095,7 +1112,8 @@ export default function App() {
     const verified = /^\d{4}-\d{2}-\d{2}$/.test(card.verifiedAt || '') ? new Date(card.verifiedAt + 'T00:00:00') : null
     if (!verified || Number.isNaN(verified.getTime()) || (Date.now() - verified.getTime()) > 90 * 86400000) issues.push('Source review due')
     return { card, issues }
-  }).filter(item => item.issues.length > 0).sort((a, b) => b.issues.length - a.issues.length || a.card.playerName.localeCompare(b.card.playerName)).slice(0, 50), [allCards])
+    }).filter(item => item.issues.length > 0).sort((a, b) => b.issues.length - a.issues.length || a.card.playerName.localeCompare(b.card.playerName)).slice(0, 50)
+  }, [allCards, adminDashboardOpen])
 
   const toggleSelected = (id: string) => setSelectedIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id])
   const selectVisible = () => setSelectedIds(current => {
