@@ -7499,3 +7499,17 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   pointer-events: none;
   opacity: .45;
 }
+
+/* Desktop admin header: remove the centered app-shell side gutters.
+   Keep the change above 1023px so mobile and tablet layouts remain untouched. */
+@media (min-width: 1024px) {
+  .app-shell.admin-shell > .admin-topbar,
+  :root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar {
+    box-sizing: border-box !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin-left: calc(50% - 50vw) !important;
+    padding-left: clamp(24px, 3vw, 48px) !important;
+    padding-right: clamp(24px, 3vw, 48px) !important;
+  }
+}
