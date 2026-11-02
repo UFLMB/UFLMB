@@ -5,6 +5,7 @@ const dist = path.resolve('dist');
 const requiredFiles = [
   'ai-catalog.json',
   '.well-known/ai-catalog.json',
+  '.well-known/ard.json',
   'llms.txt',
   'robots.txt',
   'sitemap.xml',
@@ -32,6 +33,17 @@ for (const [label, content] of [['root ai-catalog.json', rootCatalogText], ['.we
 if (rootCatalogText !== wellKnownCatalogText) throw new Error('Root and .well-known AI Catalog files must be byte-for-byte identical.');
 const rootCatalog = JSON.parse(rootCatalogText);
 const wellKnownCatalog = JSON.parse(wellKnownCatalogText);
+const ardManifestText = await readFile(path.join(dist, '.well-known/ard.json'), 'utf8');
+if (ardManifestText.charCodeAt(0) === 0xfeff || !ardManifestText.trimStart().startsWith('{')) {
+  throw new Error('ARD manifest must be plain UTF-8 JSON without BOM or HTML wrapper.');
+}
+const ardManifest = JSON.parse(ardManifestText);
+if (!Array.isArray(ardManifest.entries) || ardManifest.entries.length === 0) {
+  throw new Error('ARD manifest must contain a non-empty entries array.');
+}
+if (JSON.stringify(ardManifest.entries) !== JSON.stringify(rootCatalog.entries)) {
+  throw new Error('ARD and AI Catalog manifests must publish the same entries.');
+}
 
 if (rootCatalog.specVersion !== '1.0' || !Array.isArray(rootCatalog.entries)) {
   throw new Error('AI Catalog must declare specVersion "1.0" and an entries array.');
@@ -85,7 +97,7 @@ if (!sitemap.includes('<urlset') || !sitemap.includes('<loc>https://uflmb.web.ap
 
 const firebaseConfig = JSON.parse(await readFile(path.resolve('firebase.json'), 'utf8'));
 const hosting = Array.isArray(firebaseConfig.hosting) ? firebaseConfig.hosting[0] : firebaseConfig.hosting;
-for (const catalogPath of ['/ai-catalog.json', '/.well-known/ai-catalog.json']) {
+for (const catalogPath of ['/ai-catalog.json', '/.well-known/ai-catalog.json', '/.well-known/ard.json']) {
   const rule = hosting?.headers?.find(item => item.source === catalogPath);
   if (!rule?.headers?.some(header => header.key.toLowerCase() === 'content-type' && header.value.toLowerCase().startsWith('application/json'))) throw new Error(`Firebase must serve ${catalogPath} with application/json content type.`);
 }

@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
 Sitemap: https://uflmb.web.app/sitemap.xml
+Agentmap: https://uflmb.web.app/.well-known/ard.json
