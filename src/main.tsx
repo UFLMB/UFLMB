@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -8,11 +9,6 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// Keep the initial React render independent from the full stylesheet download.
-// Critical above-the-fold styles are in index.html; the complete theme loads immediately after mount.
-void import('./index.css').catch(() => {
-  // The inline critical styles keep the initial page readable if the stylesheet request fails.
-})
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
