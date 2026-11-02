@@ -7587,3 +7587,83 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     overflow: visible !important;
   }
 }
+
+
+/* Mobile admin navbar correction: keep all four controls visible in one row.
+   The globe and external-link arrow are separate visual elements. */
+@media (max-width: 650px) {
+  .app-shell.admin-shell > .admin-topbar {
+    gap: 6px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar > .brand {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    gap: 5px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .brand-logo-image {
+    max-width: 58px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .brand-word {
+    font-size: 15px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar > .top-actions {
+    flex: 0 0 auto !important;
+    gap: 5px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .status-pill {
+    display: none !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .back-link {
+    flex: 0 0 42px !important;
+    width: 42px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border: 1px solid currentColor !important;
+    border-radius: 10px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .back-link-mobile-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 1px !important;
+    width: auto !important;
+    height: 22px !important;
+    overflow: visible !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .back-link-mobile-icon svg {
+    display: block !important;
+    flex: 0 0 19px !important;
+    width: 19px !important;
+    height: 19px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .external-link-arrow {
+    display: inline-block !important;
+    flex: 0 0 auto !important;
+    margin-top: -7px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .public-refresh-toggle {
+    display: inline-flex !important;
+    flex: 0 0 34px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 34px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border-radius: 10px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .public-refresh-toggle svg {
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger {
+    flex: 0 0 auto !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
