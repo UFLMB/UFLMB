@@ -22,6 +22,10 @@
         if (themeColor) themeColor.setAttribute('content', resolved === 'light' ? '#f4f6f8' : '#0b0d12');
       })();
     </script>
+    <style>
+      #uflmb-loading-screen{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#0b0d12;color:#f3f5f8}
+      html[data-ui-theme="light"] #uflmb-loading-screen{background:#f4f6f8;color:#171b22}
+    </style>
     <meta name="theme-color" content="#0b0d12" />
     <meta name="description" content="Explore the UFL Mobile card reference: searchable player cards, OVR ratings, positions, stats, traits and verified sources." />
     <meta name="application-name" content="UFLMB" />
@@ -40,6 +44,17 @@
     <title>UFLMB — UFL Mobile Card Database</title>
   </head>
   <body>
+    <div id="uflmb-loading-screen" class="uflmb-loading-screen is-active" role="status" aria-live="polite" aria-label="Loading UFLMB">
+      <div class="loading-screen-content">
+        <div class="loading-screen-emblem" aria-hidden="true">
+          <span class="loading-screen-spinner"></span>
+          <span class="loading-screen-mark">U</span>
+        </div>
+        <div class="loading-screen-wordmark">UFLMB</div>
+        <div class="loading-screen-caption">MOBILE DATABASE</div>
+        <div class="loading-screen-loading">LOADING<span class="loading-screen-dots" aria-hidden="true">···</span></div>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
