@@ -318,6 +318,8 @@ export default function App() {
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
   const [query, setQuery] = useState(() => loadBrowseFilters(initialView.showBookmarked ? 'favorites' : 'players').query)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [publicSupportOpen, setPublicSupportOpen] = useState(false)
+  const [pendingPublicSupportNotification, setPendingPublicSupportNotification] = useState<{ conversationId?: string; messageId?: string } | null>(null)
   const [page, setPage] = useState<PublicPage>(initialView.page)
   const [cardPage, setCardPage] = useState(1)
   const [isAdminSession, setIsAdminSession] = useState(false)
@@ -405,6 +407,23 @@ export default function App() {
   const [compareIds, setCompareIds] = useState<string[]>(() => { try { const saved: unknown = JSON.parse(localStorage.getItem('uflmb.compare.v1') || '[]'); return Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string').slice(0, 3) : [] } catch { return [] } })
   const [showCompare, setShowCompare] = useState(false)
   const [adminTab, setAdminTab] = useState<'cards' | 'quality' | 'imports' | 'appearance' | 'assets' | 'cloud' | 'profiles' | 'moderation' | 'action-log' | 'support'>(() => { try { const saved = sessionStorage.getItem('uflmb.admin.tab.v1'); return saved === 'cards' || saved === 'quality' || saved === 'imports' || saved === 'appearance' || saved === 'assets' || saved === 'cloud' || saved === 'profiles' || saved === 'moderation' || saved === 'action-log' || saved === 'support' ? saved : 'cards' } catch { return 'cards' } })
+
+  useEffect(() => {
+    const openPublicSupportFromNotification = (event: Event) => {
+      const detail = (event as CustomEvent<{ conversationId?: string; messageId?: string }>).detail
+      if (!detail?.conversationId) return
+      setPendingPublicSupportNotification(detail)
+      setPublicSupportOpen(true)
+    }
+    window.addEventListener('uflmb:open-public-support-notification', openPublicSupportFromNotification)
+    return () => window.removeEventListener('uflmb:open-public-support-notification', openPublicSupportFromNotification)
+  }, [])
+
+  useEffect(() => {
+    if (!publicSupportOpen || !pendingPublicSupportNotification) return
+    window.dispatchEvent(new CustomEvent('uflmb:open-public-support-notification', { detail: pendingPublicSupportNotification }))
+    setPendingPublicSupportNotification(null)
+  }, [publicSupportOpen, pendingPublicSupportNotification])
 
   useEffect(() => {
     const openAdminSupportFromNotification = (event: Event) => {
@@ -2480,8 +2499,16 @@ export default function App() {
         document.body,
       )}
             <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><span className="footer-muted">Independent community project; not affiliated with or endorsed by the game’s publisher.</span><span className="footer-sdg">SDG - {new Date().getFullYear()}</span></footer>
-      {/* Public support launcher is portaled to the document body so it stays above the app layout and mobile navigation. */}
-      {createPortal(<Suspense fallback={null}><SupportChat /></Suspense>, document.body)}
+      {/* Keep the launcher lightweight; load the support module only after an explicit open action. */}
+      {createPortal(
+        <>
+          {!publicSupportOpen && <button className="support-launcher" type="button" onClick={() => setPublicSupportOpen(true)} aria-expanded={false} aria-controls="uflmb-support-panel">
+            <span aria-hidden="true">✉</span> Support
+          </button>}
+          {publicSupportOpen && <Suspense fallback={null}><SupportChat initialOpen hideLauncher onClose={() => setPublicSupportOpen(false)} /></Suspense>}
+        </>,
+        document.body,
+      )}
       </div>
     </main>
   )
