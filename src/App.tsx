@@ -322,26 +322,6 @@ export default function App() {
   const [isAdminSession, setIsAdminSession] = useState(false)
   const [isAdminViewer, setIsAdminViewer] = useState(false)
   const [adminDashboardOpen, setAdminDashboardOpen] = useState(() => { try { return sessionStorage.getItem('uflmb.admin.dashboard.v1') === 'open' } catch { return false } })
-  const dashboardTransitionPendingRef = useRef(false)
-  const initialLoaderDismissedRef = useRef(false)
-  const setDashboardView = (nextOpen: boolean) => {
-    if (nextOpen === adminDashboardOpen) return
-    const loadingScreen = document.getElementById('uflmb-loading-screen')
-    loadingScreen?.classList.remove('is-leaving')
-    dashboardTransitionPendingRef.current = true
-    requestAnimationFrame(() => setAdminDashboardOpen(nextOpen))
-  }
-  useEffect(() => {
-    const dismissLoadingScreen = () => document.getElementById('uflmb-loading-screen')?.classList.add('is-leaving')
-    if (!initialLoaderDismissedRef.current) {
-      initialLoaderDismissedRef.current = true
-      requestAnimationFrame(() => requestAnimationFrame(dismissLoadingScreen))
-      return
-    }
-    if (!dashboardTransitionPendingRef.current) return
-    dashboardTransitionPendingRef.current = false
-    requestAnimationFrame(() => requestAnimationFrame(dismissLoadingScreen))
-  }, [adminDashboardOpen])
   useEffect(() => {
     try { sessionStorage.setItem('uflmb.admin.dashboard.v1', adminDashboardOpen ? 'open' : 'closed') } catch { /* The current view remains usable if session storage is unavailable. */ }
   }, [adminDashboardOpen])
@@ -430,7 +410,7 @@ export default function App() {
       const detail = (event as CustomEvent<{ conversationId?: string; messageId?: string }>).detail
       if (!detail?.conversationId) return
       try { sessionStorage.setItem('uflmb.pending.support.notification.v1', JSON.stringify(detail)) } catch { /* The inbox event still works when storage is unavailable. */ }
-      setDashboardView(true)
+      setAdminDashboardOpen(true)
       setAdminTab('support')
     }
     window.addEventListener('uflmb:open-admin-support-notification', openAdminSupportFromNotification)
@@ -1814,8 +1794,8 @@ export default function App() {
     if (isAdminSession && adminDashboardOpen) return (
     <main className={`app-shell admin-shell${isAdminViewer ? " admin-viewer-mode" : ""}`}>
       <header className="topbar admin-topbar">
-        <a className="brand" href={import.meta.env.BASE_URL} onClick={() => { setDashboardView(false); try { sessionStorage.setItem('uflmb.admin.dashboard.v1', 'closed') } catch { /* Navigation should still work without session storage. */ } }} aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
-        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Admin access verified</span><a className="back-link" href={import.meta.env.BASE_URL} aria-label="Open public database" onClick={event => { event.stopPropagation(); setDashboardView(false); try { sessionStorage.setItem('uflmb.admin.dashboard.v1', 'closed') } catch { /* Navigation should still work without session storage. */ } }}><span className="back-link-desktop-label">Public database ↗</span><span className="back-link-mobile-label" aria-hidden="true">Public</span></a><button type="button" className="public-refresh-toggle" aria-label="Refresh UFLMB" title="Refresh" onClick={event => { event.stopPropagation(); window.location.reload() }}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></button><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAdminViewerChange={setIsAdminViewer} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setDashboardView} dashboardOpen={adminDashboardOpen} onProfileChange={() => { setPage('profile'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }} /></div>
+        <a className="brand" href={import.meta.env.BASE_URL} onClick={() => { setAdminDashboardOpen(false); try { sessionStorage.setItem('uflmb.admin.dashboard.v1', 'closed') } catch { /* Navigation should still work without session storage. */ } }} aria-label="UFLMB home">{siteBranding.logoUrl.trim() ? <img className="brand-logo-image" src={siteBranding.logoUrl.trim()} alt="UFLMB logo" /> : <span className="brand-mark">{siteBranding.iconText || 'U'}</span>}<span className="brand-word">UFL<span>MB</span></span></a>
+        <div className="top-actions"><span className="status-pill"><span className="status-dot" /> Admin access verified</span><a className="back-link" href={import.meta.env.BASE_URL} aria-label="Open public database" onClick={event => { event.stopPropagation(); setAdminDashboardOpen(false); try { sessionStorage.setItem('uflmb.admin.dashboard.v1', 'closed') } catch { /* Navigation should still work without session storage. */ } }}><span className="back-link-desktop-label">Public database ↗</span><span className="back-link-mobile-label" aria-hidden="true">Public</span></a><button type="button" className="public-refresh-toggle" aria-label="Refresh UFLMB" title="Refresh" onClick={event => { event.stopPropagation(); window.location.reload() }}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></button><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAdminViewerChange={setIsAdminViewer} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setAdminDashboardOpen} dashboardOpen={adminDashboardOpen} onProfileChange={() => { setPage('profile'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }} /></div>
       </header>
       <div className="admin-overview-shell">
       <section className="admin-intro">
@@ -2097,7 +2077,7 @@ export default function App() {
         document.body,
       )}
       <ModerationCenter userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'moderation')} />
-      <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href={import.meta.env.BASE_URL} onClick={() => { setDashboardView(false); try { sessionStorage.setItem('uflmb.admin.dashboard.v1', 'closed') } catch { /* Navigation should still work without session storage. */ } }}>Back to home</a></footer>
+      <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href={import.meta.env.BASE_URL} onClick={() => { setAdminDashboardOpen(false); try { sessionStorage.setItem('uflmb.admin.dashboard.v1', 'closed') } catch { /* Navigation should still work without session storage. */ } }}>Back to home</a></footer>
     </main>
   )
 
@@ -2353,7 +2333,7 @@ export default function App() {
           <button type="button" className={showBookmarked && page === 'players' ? 'nav-page active' : 'nav-page'} aria-current={showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { if (page === 'players' && showBookmarked) { document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }); return } setPage('players'); switchBrowseMode(true); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}>Favorites {bookmarkedIds.length > 0 && <span className="nav-count">{bookmarkedIds.length}</span>}</button>
           <button type="button" className={page === 'compare' ? 'nav-page active' : 'nav-page'} aria-current={page === 'compare' ? 'page' : undefined} onClick={() => { if (page === 'compare') { window.location.reload(); return } setPage('compare'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}>Compare {compareIds.length > 0 && <span className="nav-count">{compareIds.length}</span>}</button>
         </nav>
-        <div className="top-actions"><button type="button" className="public-refresh-toggle" aria-label="Refresh UFLMB" title="Refresh" onClick={() => window.location.reload()}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></button><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAdminViewerChange={setIsAdminViewer} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setDashboardView} dashboardOpen={adminDashboardOpen} onProfileChange={() => { setDashboardView(false); setPage('profile'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }} /><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
+        <div className="top-actions"><button type="button" className="public-refresh-toggle" aria-label="Refresh UFLMB" title="Refresh" onClick={() => window.location.reload()}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></button><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAdminViewerChange={setIsAdminViewer} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setAdminDashboardOpen} dashboardOpen={adminDashboardOpen} onProfileChange={() => { setAdminDashboardOpen(false); setPage('profile'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }} /><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
       </header>
       {page === 'settings' && <section className="settings-page account-page" aria-labelledby="settings-title">
         <div className="account-page-heading"><p className="eyebrow">PREFERENCES</p><h1 id="settings-title">Settings<span>.</span></h1><p className="hero-copy">Make UFLMB feel right for you. Your theme choice is saved on this device.</p></div>
