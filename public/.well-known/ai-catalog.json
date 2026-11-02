@@ -1,0 +1,22 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "UFL Mobile Community Wiki"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:uflmobile.wiki:documentation:community-wiki",
+      "displayName": "UFL Mobile Community Wiki & Database",
+      "description": "Independent community database and documentation for UFL Mobile players.",
+      "type": "text/plain",
+      "url": "https://uflmobile.wiki/llms.txt",
+      "version": "1.0.0",
+      "updatedAt": "2026-11-02T00:00:00Z",
+      "tags": ["UFL Mobile", "player database", "community wiki", "documentation"],
+      "representativeQueries": [
+        "Find UFL Mobile player cards and their attributes.",
+        "Search the UFL Mobile community database and documentation."
+      ]
+    }
+  ]
+}
