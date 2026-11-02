@@ -411,6 +411,7 @@ export default function App() {
 
   useEffect(() => {
     const openPublicSupportFromNotification = (event: Event) => {
+      if (publicSupportOpen) return
       const detail = (event as CustomEvent<{ conversationId?: string; messageId?: string }>).detail
       if (!detail?.conversationId) return
       setPendingPublicSupportNotification(detail)
@@ -418,7 +419,7 @@ export default function App() {
     }
     window.addEventListener('uflmb:open-public-support-notification', openPublicSupportFromNotification)
     return () => window.removeEventListener('uflmb:open-public-support-notification', openPublicSupportFromNotification)
-  }, [])
+  }, [publicSupportOpen])
 
   useEffect(() => {
     if (!publicSupportOpen || !pendingPublicSupportNotification) return
