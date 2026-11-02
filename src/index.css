@@ -7717,3 +7717,10 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .app-shell.admin-shell > .admin-topbar .public-refresh-toggle:active {
   transform: none !important;
 }
+
+
+/* Admin dashboard: hide redundant Profile and Dashboard account-menu actions only here. */
+.app-shell.admin-shell .account-dropdown .profile-menu-item,
+.app-shell.admin-shell .account-dropdown .dashboard-menu-item {
+  display: none !important;
+}
