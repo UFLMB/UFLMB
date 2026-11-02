@@ -24,14 +24,15 @@ for (const relativePath of requiredFiles) {
   console.log(`[ai-catalog] verified dist/${relativePath}`);
 }
 
-const rootCatalog = JSON.parse(await readFile(path.join(dist, 'ai-catalog.json'), 'utf8'));
-const wellKnownCatalog = JSON.parse(
-  await readFile(path.join(dist, '.well-known/ai-catalog.json'), 'utf8'),
-);
-
-if (JSON.stringify(rootCatalog) !== JSON.stringify(wellKnownCatalog)) {
-  throw new Error('Root and .well-known AI Catalog files must contain identical JSON.');
+const rootCatalogText = await readFile(path.join(dist, 'ai-catalog.json'), 'utf8');
+const wellKnownCatalogText = await readFile(path.join(dist, '.well-known/ai-catalog.json'), 'utf8');
+for (const [label, content] of [['root ai-catalog.json', rootCatalogText], ['.well-known ai-catalog.json', wellKnownCatalogText]]) {
+  if (content.charCodeAt(0) === 0xfeff || !content.trimStart().startsWith('{')) throw new Error(`${label} must be plain UTF-8 JSON without BOM or HTML wrapper.`);
 }
+if (rootCatalogText !== wellKnownCatalogText) throw new Error('Root and .well-known AI Catalog files must be byte-for-byte identical.');
+const rootCatalog = JSON.parse(rootCatalogText);
+const wellKnownCatalog = JSON.parse(wellKnownCatalogText);
+
 if (rootCatalog.specVersion !== '1.0' || !Array.isArray(rootCatalog.entries)) {
   throw new Error('AI Catalog must declare specVersion "1.0" and an entries array.');
 }
@@ -84,6 +85,10 @@ if (!sitemap.includes('<urlset') || !sitemap.includes('<loc>https://uflmb.web.ap
 
 const firebaseConfig = JSON.parse(await readFile(path.resolve('firebase.json'), 'utf8'));
 const hosting = Array.isArray(firebaseConfig.hosting) ? firebaseConfig.hosting[0] : firebaseConfig.hosting;
+for (const catalogPath of ['/ai-catalog.json', '/.well-known/ai-catalog.json']) {
+  const rule = hosting?.headers?.find(item => item.source === catalogPath);
+  if (!rule?.headers?.some(header => header.key.toLowerCase() === 'content-type' && header.value.toLowerCase().startsWith('application/json'))) throw new Error(`Firebase must serve ${catalogPath} with application/json content type.`);
+}
 const assetCacheRule = hosting?.headers?.find(rule => rule.source === '**/*.@(js|css)');
 if (!assetCacheRule?.headers?.some(header =>
   header.key.toLowerCase() === 'cache-control' &&
