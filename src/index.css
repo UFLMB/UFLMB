@@ -7620,3 +7620,20 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     z-index: 100 !important;
   }
 }
+
+/* Admin mobile header label visibility hardening. */
+@media (max-width: 767px) {
+  .app-shell.admin-shell > .admin-topbar .top-actions {
+    gap: 4px !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar span.back-link-desktop-label {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar span.back-link-mobile-label {
+    display: inline-flex !important;
+    visibility: visible !important;
+  }
+}
