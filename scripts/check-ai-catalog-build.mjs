@@ -1,4 +1,4 @@
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 const dist = path.resolve('dist');
@@ -24,6 +24,19 @@ for (const relativePath of requiredFiles) {
   }
   console.log(`[ai-catalog] verified dist/${relativePath}`);
 }
+
+const builtIndexHtml = await readFile(path.join(dist, 'index.html'), 'utf8');
+if (!builtIndexHtml.includes('id="uflmb-critical-css"')) {
+  throw new Error('Production index.html must include the critical above-the-fold CSS.');
+}
+if (/<link\b(?=[^>]*\brel=["']stylesheet["'])(?=[^>]*\bhref=["'][^"']*\/assets\/[^"']+\.css["'])[^>]*>/i.test(builtIndexHtml)) {
+  throw new Error('The compiled application stylesheet must not be linked as a render-blocking HTML stylesheet.');
+}
+const assetFiles = await readdir(path.join(dist, 'assets'));
+if (!assetFiles.some(file => file.endsWith('.css'))) {
+  throw new Error('The deferred application stylesheet must still be emitted as a production CSS asset.');
+}
+console.log('[performance] verified critical CSS and non-render-blocking application stylesheet output.');
 
 const rootCatalogText = await readFile(path.join(dist, 'ai-catalog.json'), 'utf8');
 const wellKnownCatalogText = await readFile(path.join(dist, '.well-known/ai-catalog.json'), 'utf8');
@@ -136,4 +149,3 @@ if (!imageCacheRule?.headers?.some(header =>
 }
 
 console.log('[ai-catalog] build output, SEO assets and cache headers checks passed.');
-
