@@ -81,5 +81,17 @@ if (!sitemap.includes('<urlset') || !sitemap.includes('<loc>https://uflmb.web.ap
   throw new Error('sitemap.xml must contain a valid urlset and the production homepage URL.');
 }
 
-console.log('[ai-catalog] build output and static SEO asset checks passed.');
+
+const firebaseConfig = JSON.parse(await readFile(path.resolve('firebase.json'), 'utf8'));
+const hosting = Array.isArray(firebaseConfig.hosting) ? firebaseConfig.hosting[0] : firebaseConfig.hosting;
+const assetCacheRule = hosting?.headers?.find(rule => rule.source === '**/*.@(js|css)');
+if (!assetCacheRule?.headers?.some(header =>
+  header.key.toLowerCase() === 'cache-control' &&
+  header.value.includes('max-age=31536000') &&
+  header.value.includes('immutable')
+)) {
+  throw new Error('Firebase must cache versioned JS/CSS assets for one year as immutable.');
+}
+
+console.log('[ai-catalog] build output, SEO assets and cache headers checks passed.');
 
