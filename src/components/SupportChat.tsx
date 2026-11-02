@@ -35,8 +35,13 @@ const readSession = (): StoredSession | null => {
 }
 const friendlyDate = (value: string) => new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
 
-function SupportChatWidget({ adminDashboardView = false }: { adminDashboardView?: boolean }) {
-  const [open, setOpen] = useState(false)
+function SupportChatWidget({ adminDashboardView = false, initialOpen = false, hideLauncher = false, onClose }: {
+  adminDashboardView?: boolean
+  initialOpen?: boolean
+  hideLauncher?: boolean
+  onClose?: () => void
+}) {
+  const [open, setOpen] = useState(initialOpen)
   const [adminView, setAdminView] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [adminCheckComplete, setAdminCheckComplete] = useState(false)
@@ -271,13 +276,13 @@ function SupportChatWidget({ adminDashboardView = false }: { adminDashboardView?
   if (adminDashboardView && (!token || !userId)) return <section className="admin-panel support-admin-panel"><div className="section-heading"><div><p className="eyebrow">UFLMB HELP DESK</p><h2>Support</h2></div></div><div className="support-empty"><strong>Administrator sign-in required</strong><p>Sign in with an authorized administrator account to access support conversations.</p></div></section>
 
   return <>
-    {!adminDashboardView && <button className="support-launcher" type="button" onClick={() => { setOpen(value => !value); setError(''); setNotice('') }} aria-expanded={open} aria-controls="uflmb-support-panel">
+    {!adminDashboardView && !hideLauncher && <button className="support-launcher" type="button" onClick={() => { setOpen(value => !value); setError(''); setNotice('') }} aria-expanded={open} aria-controls="uflmb-support-panel">
       <span aria-hidden="true">✉</span> Support
     </button>}
     {(open || adminDashboardView) && <section className={adminDashboardView ? 'support-panel support-admin-dashboard' : 'support-panel'} id="uflmb-support-panel" role="dialog" aria-modal="false" aria-label="UFLMB customer support">
       <header className="support-header">
         <div><p className="support-eyebrow">UFLMB HELP DESK</p><h2>{adminDashboardView || (adminView && isAdmin) ? 'Support inbox' : 'How can we help?'}</h2></div>
-        {!adminDashboardView && <button type="button" className="support-close" onClick={() => setOpen(false)} aria-label="Close support">×</button>}
+        {!adminDashboardView && <button type="button" className="support-close" onClick={() => { setOpen(false); onClose?.() }} aria-label="Close support">×</button>}
       </header>
       {!token || !userId ? <div className="support-empty"><strong>Sign in to contact support</strong><p>Only registered, signed-in users can create support requests or send messages. Sign in to continue.</p></div> : adminDashboardView && !adminCheckComplete ? <div className="support-empty"><strong>Verifying administrator access…</strong><p>Checking the trusted administrator allowlist.</p></div> : adminDashboardView && !isAdmin ? <div className="support-empty"><strong>Administrator access required</strong><p>This inbox is available only to authorized administrators.</p></div> : <>
         {!adminDashboardView && isAdmin && <div className="support-mode-switch"><button type="button" className={!adminView ? 'active' : ''} onClick={() => { setAdminView(false); setSelectedId(''); setNotice(''); setError('') }}>My requests</button><button type="button" className={adminView ? 'active' : ''} onClick={() => { setAdminView(true); setSelectedId(''); setNotice(''); setError('') }}>Admin inbox</button></div>}
@@ -319,6 +324,13 @@ function SupportChatWidget({ adminDashboardView = false }: { adminDashboardView?
 }
 
 
-export default function SupportChat({ adminDashboardView = false }: { adminDashboardView?: boolean }) {
-  return adminDashboardView ? <AdminSupportInbox /> : <SupportChatWidget />
+export default function SupportChat({ adminDashboardView = false, initialOpen = false, hideLauncher = false, onClose }: {
+  adminDashboardView?: boolean
+  initialOpen?: boolean
+  hideLauncher?: boolean
+  onClose?: () => void
+}) {
+  return adminDashboardView
+    ? <AdminSupportInbox />
+    : <SupportChatWidget initialOpen={initialOpen} hideLauncher={hideLauncher} onClose={onClose} />
 }
