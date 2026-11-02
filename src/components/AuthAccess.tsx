@@ -514,11 +514,11 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAdminViewerChange
           </div>
           <NotificationCenter userId={session?.user.id} accessToken={session?.access_token} username={sessionUsername} isAdmin={isAdmin} dashboardOpen={dashboardOpen} menuOpen={accountMenuOpen} onUnreadCountChange={setNotificationUnreadCount} />
           <div className="account-menu-divider" />
-          <button className="account-menu-item" type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); onProfileChange() }}>
+          <button className="account-menu-item profile-menu-item" type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); onProfileChange() }}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" strokeWidth="1.8"/><path d="M4 21v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
             <span>Profile</span>
           </button>
-          {isAdmin && <button className="account-menu-item" type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); onDashboardChange(true) }}>
+          {isAdmin && <button className="account-menu-item dashboard-menu-item" type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); onDashboardChange(true) }}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8"/><rect x="13" y="3" width="8" height="5" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8"/><rect x="13" y="10" width="8" height="11" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8"/></svg>
             <span>Dashboard</span>
           </button>}
