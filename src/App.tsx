@@ -758,7 +758,7 @@ export default function App() {
     else favicon.removeAttribute('href')
   }, [siteBranding])
 
-  // Shared branding is public-readable but only trusted admins can publish it.
+  // Load public cards and shared appearance concurrently. Local data remains visible while these requests resolve.
   useEffect(() => {
     const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
@@ -767,42 +767,86 @@ export default function App() {
       return
     }
     let cancelled = false
-    void fetch(`${endpoint}/rest/v1/site_settings?id=eq.branding&select=payload,updated_at`, {
-      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
-    }).then(async response => {
-      if (!response.ok) throw new Error('Shared appearance could not be loaded.')
-      return await response.json() as Array<{ payload?: { branding?: Partial<SiteBranding> } }>
-    }).then(rows => {
+    type PublicDbCard = {
+      id: string; player_name: string; overall_rating: number; positions: string[]; nation: string
+      card_name?: string | null; club?: string | null; stats?: Record<string, number> | null
+      perks?: string[] | null; image_url?: string | null; source_url: string; verified_at: string
+      event?: string | null; position_category?: string | null; date_of_birth?: string | null
+      height_cm?: number | string | null; weight_kg?: number | string | null; foot?: string | null
+      weak_foot?: number | null; skill_moves?: number | null; source_image_path?: string | null
+      source_data?: Record<string, string> | null; source_status?: 'verified' | 'imported-unverified' | null
+    }
+    void (async () => {
+      const [cardsResult, brandingResult] = await Promise.all([
+        fetch(`${endpoint}/rest/v1/cards?select=*&order=player_name.asc`, {
+          headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
+        }).then(async response => {
+          if (!response.ok) throw new Error('Shared database read failed')
+          return { ok: true as const, rows: await response.json() as PublicDbCard[] }
+        }).catch(() => ({ ok: false as const })),
+        fetch(`${endpoint}/rest/v1/site_settings?id=eq.branding&select=payload,updated_at`, {
+          headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
+        }).then(async response => {
+          if (!response.ok) throw new Error('Shared appearance could not be loaded.')
+          return { ok: true as const, rows: await response.json() as Array<{ payload?: { branding?: Partial<SiteBranding> } }> }
+        }).catch(() => ({ ok: false as const })),
+      ])
       if (cancelled) return
-      const saved = rows[0]?.payload?.branding
-      if (saved && typeof saved === 'object') {
-        const urls = Array.isArray(saved.backgroundImageUrls)
-          ? saved.backgroundImageUrls.filter((url): url is string => typeof url === 'string').join('\n')
-          : ''
-        setSiteBranding({
-          iconText: typeof saved.iconText === 'string' ? saved.iconText.slice(0, 5) : defaultBranding.iconText,
-          logoUrl: typeof saved.logoUrl === 'string' ? saved.logoUrl : '',
-          faviconUrl: typeof saved.faviconUrl === 'string' ? saved.faviconUrl : '',
-          backgroundImageUrls: parseBackgroundUrls(urls),
-          eventTypeBackgrounds: parseEventTypeBackgrounds(saved.eventTypeBackgrounds),
-          perkTraitImages: parsePerkTraitImages(saved.perkTraitImages),
-        })
-        setBackgroundUrlsText(parseBackgroundUrls(urls).join('\n'))
-        setSharedBrandingStatus('Shared appearance loaded.')
-      } else {
-        setSharedBrandingStatus('No shared appearance has been published yet.')
+
+      if (cardsResult.ok) {
+        const rows = cardsResult.rows
+        const remoteCards: PlayerCard[] = rows.filter(row => !row.id.startsWith('uflmb-demo-')).map(row => ({
+          id: row.id, playerName: row.player_name, overallRating: row.overall_rating, positions: row.positions,
+          nation: row.nation, ...(row.card_name ? { cardName: row.card_name } : {}),
+          ...(row.club ? { club: row.club } : {}),
+          ...(row.stats && Object.keys(row.stats).length ? { stats: row.stats } : {}),
+          ...(row.perks?.length ? { perks: row.perks } : {}),
+          ...(row.image_url ? { imageUrl: row.image_url } : {}),
+          ...(row.event ? { event: row.event } : {}),
+          ...(row.position_category ? { positionCategory: row.position_category } : {}),
+          ...(row.date_of_birth ? { dateOfBirth: row.date_of_birth } : {}),
+          ...(row.height_cm != null ? { heightCm: Number(row.height_cm) } : {}),
+          ...(row.weight_kg != null ? { weightKg: Number(row.weight_kg) } : {}),
+          ...(row.foot ? { foot: row.foot } : {}),
+          ...(row.weak_foot != null ? { weakFoot: Number(row.weak_foot) } : {}),
+          ...(row.skill_moves != null ? { skillMoves: Number(row.skill_moves) } : {}),
+          ...(row.source_image_path ? { sourceImagePath: row.source_image_path } : {}),
+          ...(row.source_data ? { sourceData: row.source_data } : {}),
+          sourceStatus: row.source_status || 'imported-unverified',
+          sourceUrl: row.source_url, verifiedAt: row.verified_at,
+        }))
+        const ids = new Set(remoteCards.map(card => card.id))
+        setAllCards(current => [...remoteCards, ...current.filter(card => card.id.startsWith('uflmb-demo-') || !ids.has(card.id))])
+        
       }
-      setSharedBrandingLoaded(true)
-    }).catch(() => {
-      if (cancelled) return
-      setSharedBrandingStatus('Could not load shared appearance; using this browser’s saved settings. Reload before publishing to avoid overwriting a shared version.')
-    })
+
+      if (brandingResult.ok) {
+        const saved = brandingResult.rows[0]?.payload?.branding
+        if (saved && typeof saved === 'object') {
+          const urls = Array.isArray(saved.backgroundImageUrls)
+            ? saved.backgroundImageUrls.filter((url): url is string => typeof url === 'string').join('\n')
+            : ''
+          setSiteBranding({
+            iconText: typeof saved.iconText === 'string' ? saved.iconText.slice(0, 5) : defaultBranding.iconText,
+            logoUrl: typeof saved.logoUrl === 'string' ? saved.logoUrl : '',
+            faviconUrl: typeof saved.faviconUrl === 'string' ? saved.faviconUrl : '',
+            backgroundImageUrls: parseBackgroundUrls(urls),
+            eventTypeBackgrounds: parseEventTypeBackgrounds(saved.eventTypeBackgrounds),
+            perkTraitImages: parsePerkTraitImages(saved.perkTraitImages),
+          })
+          setBackgroundUrlsText(parseBackgroundUrls(urls).join('\n'))
+          setSharedBrandingStatus('Shared appearance loaded.')
+        } else {
+          setSharedBrandingStatus('No shared appearance has been published yet.')
+        }
+        setSharedBrandingLoaded(true)
+      } else {
+        setSharedBrandingStatus('Could not load shared appearance; using this browser’s saved settings. Reload before publishing to avoid overwriting a shared version.')
+      }
+    })()
     return () => { cancelled = true }
   }, [])
 
-  useEffect(() => {
-    try { sessionStorage.setItem('uflmb.admin.tab.v1', adminTab) } catch { /* The current tab remains usable if session storage is unavailable. */ }
-  }, [adminTab])
 
   useEffect(() => {
     if (!sharedBrandingLoaded || !isAdminSession) return
@@ -863,56 +907,7 @@ export default function App() {
     return () => window.clearTimeout(timer)
   }, [allCards])
 
-  // Public reads must preserve the full cloud record, not just the legacy card fields.
-  // Otherwise a refresh silently hides event, physical metadata, source provenance and raw CSV fields.
-  useEffect(() => {
-    const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
-    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-    if (!endpoint || !anonKey) return
-    let cancelled = false
-    type PublicDbCard = {
-      id: string; player_name: string; overall_rating: number; positions: string[]; nation: string
-      card_name?: string | null; club?: string | null; stats?: Record<string, number> | null
-      perks?: string[] | null; image_url?: string | null; source_url: string; verified_at: string
-      event?: string | null; position_category?: string | null; date_of_birth?: string | null
-      height_cm?: number | string | null; weight_kg?: number | string | null; foot?: string | null
-      weak_foot?: number | null; skill_moves?: number | null; source_image_path?: string | null
-      source_data?: Record<string, string> | null; source_status?: 'verified' | 'imported-unverified' | null
-    }
-    void fetch(`${endpoint}/rest/v1/cards?select=*&order=player_name.asc`, {
-      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
-    }).then(async response => {
-      if (!response.ok) throw new Error('Shared database read failed')
-      return await response.json() as PublicDbCard[]
-    }).then(rows => {
-      if (cancelled) return
-      const remoteCards: PlayerCard[] = rows.filter(row => !row.id.startsWith('uflmb-demo-')).map(row => ({
-        id: row.id, playerName: row.player_name, overallRating: row.overall_rating, positions: row.positions,
-        nation: row.nation, ...(row.card_name ? { cardName: row.card_name } : {}),
-        ...(row.club ? { club: row.club } : {}),
-        ...(row.stats && Object.keys(row.stats).length ? { stats: row.stats } : {}),
-        ...(row.perks?.length ? { perks: row.perks } : {}),
-        ...(row.image_url ? { imageUrl: row.image_url } : {}),
-        ...(row.event ? { event: row.event } : {}),
-        ...(row.position_category ? { positionCategory: row.position_category } : {}),
-        ...(row.date_of_birth ? { dateOfBirth: row.date_of_birth } : {}),
-        ...(row.height_cm != null ? { heightCm: Number(row.height_cm) } : {}),
-        ...(row.weight_kg != null ? { weightKg: Number(row.weight_kg) } : {}),
-        ...(row.foot ? { foot: row.foot } : {}),
-        ...(row.weak_foot != null ? { weakFoot: Number(row.weak_foot) } : {}),
-        ...(row.skill_moves != null ? { skillMoves: Number(row.skill_moves) } : {}),
-        ...(row.source_image_path ? { sourceImagePath: row.source_image_path } : {}),
-        ...(row.source_data ? { sourceData: row.source_data } : {}),
-        sourceStatus: row.source_status || 'imported-unverified',
-        sourceUrl: row.source_url, verifiedAt: row.verified_at,
-      }))
-      const ids = new Set(remoteCards.map(card => card.id))
-      setAllCards(current => [...remoteCards, ...current.filter(card => card.id.startsWith('uflmb-demo-') || !ids.has(card.id))])
-    }).catch(() => {
-      // Keep the local cache usable if the shared backend is temporarily unavailable.
-    })
-    return () => { cancelled = true }
-  }, [])
+
 
   const nations = useMemo(() => Array.from(new Set(allCards.map(card => card.nation).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [allCards])
   const availableStats = useMemo(() => Array.from(new Set(allCards.flatMap(card => Object.keys(card.stats ?? {})))).sort((a,b) => a.localeCompare(b)), [allCards])
