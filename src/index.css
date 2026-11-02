@@ -7638,19 +7638,55 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   }
 }
 
-/* Keep the account menu independent from the header controls: no entrance
-   animation or transition layer may delay clicks on adjacent actions. */
-.auth-account-wrap,
-.auth-account-wrap > .auth-trigger.account-trigger {
+/* Dashboard header only: make its three actions immediate and independent.
+   Keep the public-site account trigger and its motion untouched. */
+.app-shell.admin-shell > .admin-topbar .auth-account-wrap {
+  position: relative !important;
+  z-index: 250 !important;
   pointer-events: auto !important;
 }
 
-.auth-account-wrap > .account-dropdown {
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger {
+  pointer-events: auto !important;
+  transition: none !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger::before,
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger:hover::before {
+  pointer-events: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger:hover,
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger:active {
+  transform: none !important;
+}
+
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger .auth-trigger-icon,
+.app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger .account-chevron {
+  transition: none !important;
+}
+
+.app-shell.admin-shell > .admin-topbar .account-dropdown {
   pointer-events: auto !important;
   animation: none !important;
   transition: none !important;
 }
 
-.auth-account-wrap > .auth-trigger.account-trigger .account-chevron {
+.app-shell.admin-shell > .admin-topbar .back-link,
+.app-shell.admin-shell > .admin-topbar .public-refresh-toggle {
+  position: relative !important;
+  z-index: 251 !important;
+  pointer-events: auto !important;
   transition: none !important;
+  animation: none !important;
+}
+
+.app-shell.admin-shell > .admin-topbar .back-link:hover,
+.app-shell.admin-shell > .admin-topbar .public-refresh-toggle:hover,
+.app-shell.admin-shell > .admin-topbar .public-refresh-toggle:active {
+  transform: none !important;
 }
