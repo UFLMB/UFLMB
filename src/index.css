@@ -7713,50 +7713,69 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 }
 
 
-/* Mobile admin header: final hit-target isolation, arrow alignment and edge spacing. */
+/* Mobile admin header: isolated hit targets, top-right external arrow and wider mobile layout. */
 @media (max-width: 650px) {
   .app-shell.admin-shell > .admin-topbar {
-    width: calc(100% + 32px) !important;
+    width: calc(100% + 40px) !important;
     max-width: none !important;
-    margin-left: -16px !important;
+    margin-left: -20px !important;
     margin-right: 0 !important;
-    padding-left: 8px !important;
-    padding-right: 8px !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
     box-sizing: border-box !important;
   }
+
+  /* Keep the action row interactive; each control owns its own hit area. */
   .app-shell.admin-shell > .admin-topbar > .top-actions {
     position: relative !important;
     isolation: isolate !important;
     z-index: 10 !important;
-    pointer-events: none !important;
-  }
-  .app-shell.admin-shell > .admin-topbar > .top-actions > .back-link,
-  .app-shell.admin-shell > .admin-topbar > .top-actions > .public-refresh-toggle,
-  .app-shell.admin-shell > .admin-topbar > .top-actions > .auth-account-wrap {
-    position: relative !important;
     pointer-events: auto !important;
-    touch-action: manipulation !important;
   }
   .app-shell.admin-shell > .admin-topbar > .top-actions > .back-link,
   .app-shell.admin-shell > .admin-topbar > .top-actions > .public-refresh-toggle {
-    z-index: 20 !important;
+    position: relative !important;
+    z-index: 30 !important;
+    display: inline-flex !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
   }
   .app-shell.admin-shell > .admin-topbar > .top-actions > .auth-account-wrap {
-    z-index: 1 !important;
+    position: relative !important;
+    z-index: 5 !important;
+    pointer-events: auto !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .back-link {
+    flex: 0 0 42px !important;
+    width: 42px !important;
+    height: 36px !important;
   }
   .app-shell.admin-shell > .admin-topbar .back-link-mobile-icon {
     position: relative !important;
     display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     overflow: visible !important;
     pointer-events: none !important;
   }
   .app-shell.admin-shell > .admin-topbar .external-link-arrow {
     position: absolute !important;
-    top: -4px !important;
+    top: -3px !important;
     right: -4px !important;
     margin: 0 !important;
     z-index: 2 !important;
     pointer-events: none !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
     line-height: 1 !important;
+  }
+  .app-shell.admin-shell > .admin-topbar .public-refresh-toggle {
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    height: 36px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
   }
 }
