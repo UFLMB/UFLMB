@@ -7640,13 +7640,26 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 
 /* Public header: keep the account dropdown below adjacent header actions.
    Its right-aligned panel can extend left over Refresh and right over Menu. */
-.app-shell:not(.admin-shell) > .topbar .auth-account-wrap {
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .auth-account-wrap {
   position: relative !important;
   z-index: 250 !important;
+  pointer-events: auto !important;
 }
 
-.app-shell:not(.admin-shell) > .topbar .public-refresh-toggle,
-.app-shell:not(.admin-shell) > .topbar .menu-toggle {
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .auth-trigger {
+  pointer-events: auto !important;
+}
+
+/* Public login/account trigger: remove only the sweeping light overlay.
+   Keep the button, icon, hover and press animations enabled. */
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .auth-trigger::before,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .auth-trigger:hover::before {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .public-refresh-toggle,
+.app-shell:not(.admin-shell) > .app-content-scroll > .topbar .menu-toggle {
   position: relative !important;
   z-index: 251 !important;
   pointer-events: auto !important;
