@@ -316,6 +316,7 @@ const downloadCsv = (cards: PlayerCard[]) => {
 export default function App() {
   const [initialView] = useState(loadViewState)
   const [allCards, setAllCards] = useState<PlayerCard[]>(loadCards)
+  const [cardsLoading, setCardsLoading] = useState(true)
   const [query, setQuery] = useState(() => loadBrowseFilters(initialView.showBookmarked ? 'favorites' : 'players').query)
   const [menuOpen, setMenuOpen] = useState(false)
   const [publicSupportOpen, setPublicSupportOpen] = useState(false)
@@ -763,6 +764,7 @@ export default function App() {
     const endpoint = (import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '')
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
     if (!endpoint || !anonKey) {
+      setCardsLoading(false)
       setSharedBrandingStatus('Shared appearance is not configured; using this browser’s saved settings.')
       return
     }
@@ -792,6 +794,7 @@ export default function App() {
         }).catch(() => ({ ok: false as const })),
       ])
       if (cancelled) return
+      setCardsLoading(false)
 
       if (cardsResult.ok) {
         const rows = cardsResult.rows
@@ -2461,7 +2464,7 @@ export default function App() {
       </section>}
       {page === 'players' && <section className="database-section" aria-labelledby="database-title">
         <div className="section-heading"><div><p className="eyebrow">{showBookmarked ? 'STARRED PLAYERS' : 'THE COLLECTION'}</p><h2 id="database-title">{showBookmarked ? 'Your favorites' : 'Card database'}</h2></div><div className="collection-actions"><span className="count-label">{visibleCards.length} shown / {showBookmarked ? bookmarkedIds.length : allCards.length} total</span></div></div>
-        {visibleCards.length === 0 ? <div className="empty-state"><div className="empty-emblem" aria-hidden="true">U<span>+</span></div><h3>{showBookmarked ? 'No favorites yet' : query.trim() ? 'No matching cards found' : 'The database starts here'}</h3><p>{showBookmarked ? 'Tap the star on any player card to add it to this list.' : query.trim() ? `No verified card matches “${query.trim()}”. Try another search or category.` : 'No card records have been entered yet.'}</p><span className="empty-tag">VERIFIED DATA ONLY</span></div> :
+        {cardsLoading && allCards.length === 0 ? <div className="database-loading-skeleton" role="status" aria-label="Loading player cards"><span className="database-skeleton-card" /><span className="database-skeleton-card" /><span className="database-skeleton-card" /><span className="database-skeleton-label">Loading the shared player database…</span></div> : visibleCards.length === 0 ? <div className="empty-state"><div className="empty-emblem" aria-hidden="true">U<span>+</span></div><h3>{showBookmarked ? 'No favorites yet' : query.trim() ? 'No matching cards found' : 'The database starts here'}</h3><p>{showBookmarked ? 'Tap the star on any player card to add it to this list.' : query.trim() ? `No verified card matches “${query.trim()}”. Try another search or category.` : 'No card records have been entered yet.'}</p><span className="empty-tag">VERIFIED DATA ONLY</span></div> :
           <div className="card-grid">{pagedCards.map((card, index) => <article className={`player-card ${selectedCardId === card.id ? 'card-click-selected' : ''} ${compareIds.includes(card.id) ? 'compare-selected' : ''} ${card.sourceStatus === 'imported-unverified' ? 'imported-card' : ''} ${card.overallRating >= 90 ? 'elite-card ovr-elite' : card.overallRating >= 80 ? 'ovr-high' : card.overallRating >= 70 ? 'ovr-mid' : 'ovr-standard'}`} key={card.id} onClick={() => setSelectedCardId(current => current === card.id ? null : card.id)} style={{ animationDelay: `${Math.min(index % 12, 11) * 45}ms` }}>
             <div className="player-image" style={siteBranding.eventTypeBackgrounds[normalizeIdentityPart(card.event)] ? { backgroundImage: `linear-gradient(rgba(5,8,14,.12), rgba(5,8,14,.2)), url("${siteBranding.eventTypeBackgrounds[normalizeIdentityPart(card.event)].replace(/["\\]/g, '')}")`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}><div className="card-art-glow" aria-hidden="true" />
               {card.imageUrl ? <img src={card.imageUrl} alt={`${card.playerName} card`} loading="lazy" /> : <div className="no-image"><span className="no-image-mark">✦</span><strong>UFL<span>MB</span></strong><small>PLAYER DATABASE</small></div>}
