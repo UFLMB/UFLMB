@@ -7513,3 +7513,98 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     padding-right: clamp(24px, 3vw, 48px) !important;
   }
 }
+
+
+/* Admin mobile header: align its content with the mobile admin panels.
+   Keep all geometry changes inside the requested 767px breakpoint. */
+@media (max-width: 767px) {
+  .app-shell.admin-shell > .admin-topbar,
+  :root[data-ui-theme="light"] .app-shell.admin-shell > .admin-topbar {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    min-height: 64px !important;
+    gap: 8px !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .brand {
+    min-width: 0 !important;
+    flex: 0 1 auto !important;
+    gap: 7px !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .brand-mark,
+  .app-shell.admin-shell > .admin-topbar .brand-logo-image {
+    width: 32px !important;
+    height: 32px !important;
+    flex: 0 0 32px !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .brand-word {
+    font-size: 16px !important;
+    letter-spacing: -.5px !important;
+    white-space: nowrap !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .top-actions {
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+    gap: 4px !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .status-pill {
+    display: none !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .back-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 0 8px !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .back-link-desktop-label {
+    display: none !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .back-link-mobile-label {
+    display: inline !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .public-refresh-toggle {
+    box-sizing: border-box !important;
+    flex: 0 0 44px !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .auth-account-wrap {
+    flex: 0 0 auto !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .auth-trigger.account-trigger {
+    box-sizing: border-box !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 0 8px !important;
+    gap: 5px !important;
+    white-space: nowrap !important;
+  }
+
+  .app-shell.admin-shell > .admin-topbar .account-dropdown {
+    right: 0 !important;
+    left: auto !important;
+    z-index: 100 !important;
+  }
+}
