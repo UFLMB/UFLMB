@@ -9,7 +9,7 @@ html = html.replace(
   /<link\b(?=[^>]*\brel=["']stylesheet["'])(?=[^>]*\bhref=["']([^"']+\.css(?:\?[^"']*)?)["'])[^>]*>/gi,
   (tag) => {
     const href = tag.match(/\bhref=["']([^"']+\.css(?:\?[^"']*)?)["']/i)?.[1];
-    if (!href || !href.startsWith('/assets/')) return tag;
+    if (!href || !href.includes('/assets/')) return tag;
 
     const crossorigin = /\bcrossorigin(?:=["'][^"']*["'])?/i.test(tag) ? ' crossorigin' : '';
     rewritten += 1;
