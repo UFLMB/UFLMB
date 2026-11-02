@@ -1,0 +1,5 @@
+# UFL Mobile Community Wiki & Database
+> Az UFL Mobile közösség független adatbázisa és útmutatója.
+
+## Fő oldalak
+- [Főoldal / Adatbázis](https://uflmobile.wiki/)
