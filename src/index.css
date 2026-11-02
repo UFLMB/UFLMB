@@ -7638,6 +7638,20 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   }
 }
 
+/* Public header: keep the account dropdown below adjacent header actions.
+   Its right-aligned panel can extend left over Refresh and right over Menu. */
+.app-shell:not(.admin-shell) > .topbar .auth-account-wrap {
+  position: relative !important;
+  z-index: 250 !important;
+}
+
+.app-shell:not(.admin-shell) > .topbar .public-refresh-toggle,
+.app-shell:not(.admin-shell) > .topbar .menu-toggle {
+  position: relative !important;
+  z-index: 251 !important;
+  pointer-events: auto !important;
+}
+
 /* Dashboard header only: make its three actions immediate and independent.
    Keep the public-site account trigger and its motion untouched. */
 .app-shell.admin-shell > .admin-topbar .auth-account-wrap {
