@@ -956,7 +956,7 @@ export default function App() {
         if (typeof value !== 'number') continue
         const leaders = leadersByStat.get(key) ?? []
         leaders.push(card)
-        leaders.sort((a, b) => (b.stats?.[key] ?? -Infinity) - (a.stats?.[key] ?? -Infinity) || a.playerName.localeCompare(b.playerName))
+        leaders.sort((a, b) => (b.stats?.[key] ?? -Infinity) - (a.stats?.[key] ?? -Infinity))
         if (leaders.length > 5) leaders.pop()
         leadersByStat.set(key, leaders)
       }
