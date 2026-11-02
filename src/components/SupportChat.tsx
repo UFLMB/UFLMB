@@ -111,14 +111,14 @@ function SupportChatWidget({ adminDashboardView = false, initialOpen = false, hi
     setIsAdmin(false)
     setAdminCheckComplete(false)
     setAdminView(adminDashboardView)
-    setOpen(adminDashboardView)
+    setOpen(adminDashboardView || initialOpen)
     setAdminCheckComplete(false)
     setConversations([])
     setSelectedId('')
     setMessages([])
     setError('')
     setNotice('')
-  }, [token, userId, adminDashboardView])
+  }, [token, userId, adminDashboardView, initialOpen])
 
   useEffect(() => {
     if (!open || !token || !userId || !endpoint || !anonKey) return
