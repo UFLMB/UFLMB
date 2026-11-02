@@ -98,5 +98,30 @@ if (!assetCacheRule?.headers?.some(header =>
   throw new Error('Firebase must cache versioned JS/CSS assets for one year as immutable.');
 }
 
+const indexCacheRule = hosting?.headers?.find(rule => rule.source === '/index.html');
+if (!indexCacheRule?.headers?.some(header =>
+  header.key.toLowerCase() === 'cache-control' &&
+  header.value.includes('max-age=0') &&
+  header.value.includes('must-revalidate')
+)) {
+  throw new Error('Firebase must revalidate index.html so new hashed bundles are discovered promptly.');
+}
+const serviceWorkerCacheRule = hosting?.headers?.find(rule => rule.source === '/sw.js');
+if (!serviceWorkerCacheRule?.headers?.some(header =>
+  header.key.toLowerCase() === 'cache-control' &&
+  header.value.includes('max-age=0') &&
+  header.value.includes('must-revalidate')
+)) {
+  throw new Error('Firebase must revalidate sw.js so service worker updates are discovered promptly.');
+}
+const imageCacheRule = hosting?.headers?.find(rule => rule.source === '**/*.@(png|jpg|jpeg|webp|avif|svg|ico)');
+if (!imageCacheRule?.headers?.some(header =>
+  header.key.toLowerCase() === 'cache-control' &&
+  header.value.includes('max-age=2592000') &&
+  header.value.includes('must-revalidate')
+)) {
+  throw new Error('Firebase must cache static images for 30 days with revalidation.');
+}
+
 console.log('[ai-catalog] build output, SEO assets and cache headers checks passed.');
 
