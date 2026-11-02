@@ -6,6 +6,8 @@ const requiredFiles = [
   'ai-catalog.json',
   '.well-known/ai-catalog.json',
   'llms.txt',
+  'robots.txt',
+  'sitemap.xml',
 ];
 
 for (const relativePath of requiredFiles) {
@@ -68,4 +70,16 @@ for (const [index, entry] of rootCatalog.entries.entries()) {
   }
 }
 
-console.log('[ai-catalog] build output and AI Catalog schema checks passed.');
+
+const robots = await readFile(path.join(dist, 'robots.txt'), 'utf8');
+if (!robots.includes('User-agent: *') || !robots.includes('Allow: /') ||
+    !robots.includes('Sitemap: https://uflmb.web.app/sitemap.xml')) {
+  throw new Error('robots.txt must allow crawling and reference the production sitemap.');
+}
+const sitemap = await readFile(path.join(dist, 'sitemap.xml'), 'utf8');
+if (!sitemap.includes('<urlset') || !sitemap.includes('<loc>https://uflmb.web.app/</loc>')) {
+  throw new Error('sitemap.xml must contain a valid urlset and the production homepage URL.');
+}
+
+console.log('[ai-catalog] build output and static SEO asset checks passed.');
+

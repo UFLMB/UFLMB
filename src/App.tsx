@@ -1,18 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { ChangeEvent, FormEvent } from 'react'
 import type { PlayerCard } from './types/card'
 import { cards as starterCards } from './data/cards'
-import CommunityReviews from './components/CommunityReviews'
 import AuthAccess from './components/AuthAccess'
-import SharedDatabasePanel from './components/SharedDatabasePanel'
-import SupportChat from './components/SupportChat'
-import ModerationCenter from './components/ModerationCenter'
-import AccountManagement from './components/AccountManagement'
-import ActionLog from './components/ActionLog'
-import AccountSelfDeletion from './components/AccountSelfDeletion'
 import { validateUsernamePolicy } from './lib/usernamePolicy'
 import { matchCardImageFilename } from './lib/cardImageImport'
+
+const CommunityReviews = lazy(() => import('./components/CommunityReviews'))
+const SharedDatabasePanel = lazy(() => import('./components/SharedDatabasePanel'))
+const SupportChat = lazy(() => import('./components/SupportChat'))
+const ModerationCenter = lazy(() => import('./components/ModerationCenter'))
+const AccountManagement = lazy(() => import('./components/AccountManagement'))
+const ActionLog = lazy(() => import('./components/ActionLog'))
+const AccountSelfDeletion = lazy(() => import('./components/AccountSelfDeletion'))
 
 const STORAGE_KEY = 'uflmb.cards.v1'
 const VIEW_STATE_KEY = 'uflmb.current-view.v1'
@@ -1859,8 +1860,8 @@ export default function App() {
             {perkTraitImageStatus && <p className="muted-copy" role="status">{perkTraitImageStatus}</p>}
           </section>
       </section>}
-      {adminTab === 'action-log' && <ActionLog accessToken={account?.accessToken} />}
-      {adminTab === 'support' && <SupportChat adminDashboardView />}
+      {adminTab === 'action-log' && <Suspense fallback={null}><ActionLog accessToken={account?.accessToken} /></Suspense>}
+      {adminTab === 'support' && <Suspense fallback={null}><SupportChat adminDashboardView /></Suspense>}
       {adminTab === 'profiles' && <section className="admin-panel profile-management-panel">
         <div className="section-heading"><div><p className="eyebrow">ACCOUNT CONTROL</p><h2>Profile management</h2></div><span className="count-label">{adminProfiles.length} profiles</span></div>
         <p className="muted-copy">A clear overview of registered members and trusted administrators. Select any profile to view its public identity and manage its account status, including suspension, restoration and permanent deletion. Trusted administrator access remains protected by the database allowlist.</p>
@@ -1913,7 +1914,7 @@ export default function App() {
                 <div className="profile-management-meta"><span>Created</span><strong>{new Date(selectedAdminProfile.created_at).toLocaleString()}</strong></div>
                 <div className="profile-management-meta"><span>Last updated</span><strong>{new Date(selectedAdminProfile.updated_at).toLocaleString()}</strong></div>
               </div>
-            <AccountManagement userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'profiles')} selectedAccount={{ id: selectedAdminProfile.id, username: selectedAdminProfile.username, createdAt: selectedAdminProfile.created_at, isAdmin: adminUserIds.includes(selectedAdminProfile.id) }} onDeleted={() => { setAdminProfiles(current => current.filter(profile => profile.id !== selectedAdminProfile.id)); setSelectedAdminProfileId(null); setAdminProfilesMessage('Account permanently deleted.') }} onStatusChanged={() => setAdminProfilesRefreshKey(value => value + 1)} /></div> : <div className="profile-management-empty profile-management-editor-empty"><span className="profile-management-empty-icon">◎</span><strong>Select a profile</strong><span>Choose an account from the list to review and manage its public profile.</span></div>}
+            <Suspense fallback={null}><AccountManagement userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'profiles')} selectedAccount={{ id: selectedAdminProfile.id, username: selectedAdminProfile.username, createdAt: selectedAdminProfile.created_at, isAdmin: adminUserIds.includes(selectedAdminProfile.id) }} onDeleted={() => { setAdminProfiles(current => current.filter(profile => profile.id !== selectedAdminProfile.id)); setSelectedAdminProfileId(null); setAdminProfilesMessage('Account permanently deleted.') }} onStatusChanged={() => setAdminProfilesRefreshKey(value => value + 1)} /></Suspense></div> : <div className="profile-management-empty profile-management-editor-empty"><span className="profile-management-empty-icon">◎</span><strong>Select a profile</strong><span>Choose an account from the list to review and manage its public profile.</span></div>}
           </div>
         </div>
       </section>}
@@ -2018,7 +2019,7 @@ export default function App() {
       </section>
       </>}
       <div style={{ display: adminTab === 'cloud' ? 'contents' : 'none' }}>
-      <SharedDatabasePanel
+      <Suspense fallback={null}><SharedDatabasePanel
         cards={allCards}
         appState={{ bookmarkedIds, formationId, squadAssignments }}
         onLoad={remoteCards => setAllCards(current => [...remoteCards, ...current.filter(card => card.id.startsWith('uflmb-demo-') || !remoteCards.some(remote => remote.id === card.id))])}
@@ -2028,7 +2029,7 @@ export default function App() {
           if (saved.squadAssignments && typeof saved.squadAssignments === 'object' && !Array.isArray(saved.squadAssignments)) setSquadAssignments(Object.fromEntries(Object.entries(saved.squadAssignments).filter((entry): entry is [string, string] => typeof entry[1] === 'string')))
         }}
         onMessage={setNotice}
-      />
+      /></Suspense>
       </div>
       {adminTab === 'cloud' && <section className="admin-panel tools-panel cloud-help-panel">
         <p className="eyebrow">SYNC SAFETY</p><h2>How cloud sync works</h2>
@@ -2076,7 +2077,7 @@ export default function App() {
               </nav>,
         document.body,
       )}
-      <ModerationCenter userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'moderation')} />
+      <Suspense fallback={null}><ModerationCenter userId={account?.userId} accessToken={account?.accessToken} isAdmin={isAdminSession} adminView={Boolean(isAdminSession && adminDashboardOpen && adminTab === 'moderation')} /></Suspense>
       <footer className="footer"><span>UFLMB <span className="footer-muted">· Admin tools</span></span><a href={import.meta.env.BASE_URL} onClick={() => { setAdminDashboardOpen(false); try { sessionStorage.setItem('uflmb.admin.dashboard.v1', 'closed') } catch { /* Navigation should still work without session storage. */ } }}>Back to home</a></footer>
     </main>
   )
@@ -2391,7 +2392,7 @@ export default function App() {
               <button className="button primary" type="submit" disabled={profileBusy || !profilePassword || !profilePasswordConfirm}>{profileBusy ? 'Updating…' : 'Update password'}</button>
             </form>
           </section>
-          {!isAdminSession && account && <AccountSelfDeletion username={account.username} accessToken={account.accessToken} />}
+          {!isAdminSession && account && <Suspense fallback={null}><AccountSelfDeletion username={account.username} accessToken={account.accessToken} /></Suspense>}
           {profileMessage && <p className={profileMessageType === 'error' ? 'profile-feedback error' : 'profile-feedback success'} role="status" aria-live="polite">{profileMessage}</p>}
         </> : <div className="account-signin-note"><span aria-hidden="true">✦</span><div><strong>Make yourself at home</strong><p>Create an account or sign in from the account button above to change your username, password and user logo.</p></div></div>}
       </section>}
@@ -2467,7 +2468,7 @@ export default function App() {
         <div className="compare-chips">{comparedCards.map(card => <span className="compare-chip" key={card.id}>{card.playerName} · {card.overallRating}<button type="button" onClick={() => toggleCompare(card.id)} aria-label={`Remove ${card.playerName} from comparison`}>×</button></span>)}</div>
         {showCompare && <div className="comparison-table-wrap"><table className="comparison-table"><thead><tr><th>Attribute</th>{comparedCards.map(card => <th key={card.id}>{card.playerName}</th>)}</tr></thead><tbody>{[['OVR','overallRating'],['Position','positions'],['Nation','nation'],['Club','club'],['Card type','cardName'],...Array.from(new Set(comparedCards.flatMap(card => Object.keys(card.stats ?? {}))).values()).sort().map(key => [key, `stat:${key}`])].map(([label,key]) => <tr key={key}><th>{label}</th>{comparedCards.map(card => { const value = key === 'overallRating' ? card.overallRating : key === 'positions' ? card.positions.join(' / ') : key.startsWith('stat:') ? card.stats?.[key.slice(5)] ?? '—' : card[key as 'nation' | 'club' | 'cardName'] ?? '—'; return <td key={card.id}>{value}</td> })}</tr>)}</tbody></table></div>}
       </section>}
-      {selectedCard && <div className="profile-backdrop" role="presentation" onClick={() => setSelectedCard(null)}><section className="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title" onClick={event => event.stopPropagation()}><button className="profile-close" type="button" onClick={() => setSelectedCard(null)} aria-label="Close player profile">×</button><div className="profile-heading">{selectedCard.imageUrl ? <img src={selectedCard.imageUrl} alt={`${selectedCard.playerName} card`} /> : <div className="profile-placeholder">UFL<span>MB</span></div>}<div><p className="eyebrow">PLAYER PROFILE</p><h2 id="profile-title">{selectedCard.playerName}</h2><div className="profile-meta"><strong className={`profile-ovr profile-ovr-${selectedCard.overallRating >= 90 ? 'elite' : selectedCard.overallRating >= 80 ? 'high' : selectedCard.overallRating >= 70 ? 'mid' : 'standard'}`}>OVR {selectedCard.overallRating}</strong><span className="profile-meta-badge profile-nationality-badge">{countryFlagCode(selectedCard.nation) ? <img className="profile-country-flag" src={`https://flagcdn.com/${countryFlagCode(selectedCard.nation)}.svg`} alt="" aria-hidden="true" loading="lazy" /> : null}<span>{selectedCard.nation}</span></span>{selectedCard.positions.length > 0 && <span className="profile-meta-badge profile-position-badge">{selectedCard.positions.join(' / ')}</span>}{selectedCard.event && <span className="profile-meta-badge profile-event-badge">{selectedCard.event}</span>}</div>{(selectedCard.dateOfBirth || selectedCard.heightCm || selectedCard.weightKg || selectedCard.foot) && <p className="muted-copy">{[selectedCard.dateOfBirth ? `DOB ${selectedCard.dateOfBirth}` : '', selectedCard.heightCm ? `${selectedCard.heightCm} cm` : '', selectedCard.weightKg ? `${selectedCard.weightKg} kg` : '', selectedCard.foot ? `${selectedCard.foot}-footed` : '', selectedCard.weakFoot ? `Weak foot ${selectedCard.weakFoot}/5` : '', selectedCard.skillMoves ? `Skill moves ${selectedCard.skillMoves}/5` : ''].filter(Boolean).join(' · ')}</p>}</div></div><div className="profile-section"><h3>Attributes</h3>{selectedCard.stats && Object.keys(selectedCard.stats).length ? <div className="profile-stat-groups">{groupProfileStats(selectedCard.stats).map(group => <section className="profile-stat-group" key={group.code}><div className="profile-stat-group-header"><span className="profile-stat-group-code">{group.code === 'GK' ? 'GK' : group.code}</span><span className="profile-stat-group-name">{group.label}</span>{typeof group.main === 'number' && <div className="profile-stat-group-score"><strong className="profile-stat-main-value text-lime-400 font-bold">{group.main}</strong></div>}</div>{group.details.length > 0 && <div className="profile-stat-group-details">{group.details.sort((a,b) => a.label.localeCompare(b.label)).map(stat => <div className="profile-stat-detail" key={stat.key}><span className="profile-stat-label" title={stat.label}>{stat.label}</span><div className="profile-stat-meter"><i style={{display:'block', flex:'1 1 auto', minWidth:0, height:6, overflow:'hidden', borderRadius:999, backgroundColor:'rgba(255,255,255,.12)'}}><b style={{display:'block', width:`${Math.max(0,Math.min(100,Number(stat.value)))}%`, height:'100%', maxWidth:'100%', backgroundColor:'#a3e635', borderRadius:999}} /></i><strong>{stat.value}</strong></div></div>)}</div>}</section>)}</div> : <p className="muted-copy">No verified attribute data has been entered for this card yet.</p>}</div>{selectedCard.perks?.length ? <div className="profile-section"><h3>Traits</h3><div className="perk-row profile-perk-row">{selectedCard.perks.filter(perk => Boolean(siteBranding.perkTraitImages[normalizeIdentityPart(perk)]?.profileImageUrl)).map(perk => <span className="profile-perk-item" key={perk}><img className="perk-trait-profile-image" src={siteBranding.perkTraitImages[normalizeIdentityPart(perk)]!.profileImageUrl} alt={perk} loading="lazy" /></span>)}</div></div> : null}<CommunityReviews cardId={selectedCard.id} account={account ? { userId: account.userId, username: account.username, accessToken: account.accessToken } : null} /><div className="profile-footer">{selectedCard.sourceStatus !== 'imported-unverified' && <><span className="verified-date">{selectedCard.id.startsWith('uflmb-demo-') ? 'Demo fixture — no verified source' : `Verified ${selectedCard.verifiedAt}`}</span>{selectedCard.id.startsWith('uflmb-demo-') ? <span className="field-help">Demo fixture — no verified source</span> : <a className="button primary" href={selectedCard.sourceUrl} target="_blank" rel="noreferrer">Open verified source ↗</a>}</>}<button className="button secondary" type="button" onClick={() => toggleBookmark(selectedCard.id)}>{bookmarkedIds.includes(selectedCard.id) ? '★ Saved' : '☆ Save card'}</button></div></section></div>}
+      {selectedCard && <div className="profile-backdrop" role="presentation" onClick={() => setSelectedCard(null)}><section className="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title" onClick={event => event.stopPropagation()}><button className="profile-close" type="button" onClick={() => setSelectedCard(null)} aria-label="Close player profile">×</button><div className="profile-heading">{selectedCard.imageUrl ? <img src={selectedCard.imageUrl} alt={`${selectedCard.playerName} card`} /> : <div className="profile-placeholder">UFL<span>MB</span></div>}<div><p className="eyebrow">PLAYER PROFILE</p><h2 id="profile-title">{selectedCard.playerName}</h2><div className="profile-meta"><strong className={`profile-ovr profile-ovr-${selectedCard.overallRating >= 90 ? 'elite' : selectedCard.overallRating >= 80 ? 'high' : selectedCard.overallRating >= 70 ? 'mid' : 'standard'}`}>OVR {selectedCard.overallRating}</strong><span className="profile-meta-badge profile-nationality-badge">{countryFlagCode(selectedCard.nation) ? <img className="profile-country-flag" src={`https://flagcdn.com/${countryFlagCode(selectedCard.nation)}.svg`} alt="" aria-hidden="true" loading="lazy" /> : null}<span>{selectedCard.nation}</span></span>{selectedCard.positions.length > 0 && <span className="profile-meta-badge profile-position-badge">{selectedCard.positions.join(' / ')}</span>}{selectedCard.event && <span className="profile-meta-badge profile-event-badge">{selectedCard.event}</span>}</div>{(selectedCard.dateOfBirth || selectedCard.heightCm || selectedCard.weightKg || selectedCard.foot) && <p className="muted-copy">{[selectedCard.dateOfBirth ? `DOB ${selectedCard.dateOfBirth}` : '', selectedCard.heightCm ? `${selectedCard.heightCm} cm` : '', selectedCard.weightKg ? `${selectedCard.weightKg} kg` : '', selectedCard.foot ? `${selectedCard.foot}-footed` : '', selectedCard.weakFoot ? `Weak foot ${selectedCard.weakFoot}/5` : '', selectedCard.skillMoves ? `Skill moves ${selectedCard.skillMoves}/5` : ''].filter(Boolean).join(' · ')}</p>}</div></div><div className="profile-section"><h3>Attributes</h3>{selectedCard.stats && Object.keys(selectedCard.stats).length ? <div className="profile-stat-groups">{groupProfileStats(selectedCard.stats).map(group => <section className="profile-stat-group" key={group.code}><div className="profile-stat-group-header"><span className="profile-stat-group-code">{group.code === 'GK' ? 'GK' : group.code}</span><span className="profile-stat-group-name">{group.label}</span>{typeof group.main === 'number' && <div className="profile-stat-group-score"><strong className="profile-stat-main-value text-lime-400 font-bold">{group.main}</strong></div>}</div>{group.details.length > 0 && <div className="profile-stat-group-details">{group.details.sort((a,b) => a.label.localeCompare(b.label)).map(stat => <div className="profile-stat-detail" key={stat.key}><span className="profile-stat-label" title={stat.label}>{stat.label}</span><div className="profile-stat-meter"><i style={{display:'block', flex:'1 1 auto', minWidth:0, height:6, overflow:'hidden', borderRadius:999, backgroundColor:'rgba(255,255,255,.12)'}}><b style={{display:'block', width:`${Math.max(0,Math.min(100,Number(stat.value)))}%`, height:'100%', maxWidth:'100%', backgroundColor:'#a3e635', borderRadius:999}} /></i><strong>{stat.value}</strong></div></div>)}</div>}</section>)}</div> : <p className="muted-copy">No verified attribute data has been entered for this card yet.</p>}</div>{selectedCard.perks?.length ? <div className="profile-section"><h3>Traits</h3><div className="perk-row profile-perk-row">{selectedCard.perks.filter(perk => Boolean(siteBranding.perkTraitImages[normalizeIdentityPart(perk)]?.profileImageUrl)).map(perk => <span className="profile-perk-item" key={perk}><img className="perk-trait-profile-image" src={siteBranding.perkTraitImages[normalizeIdentityPart(perk)]!.profileImageUrl} alt={perk} loading="lazy" /></span>)}</div></div> : null}<Suspense fallback={null}><CommunityReviews cardId={selectedCard.id} account={account ? { userId: account.userId, username: account.username, accessToken: account.accessToken } : null} /></Suspense><div className="profile-footer">{selectedCard.sourceStatus !== 'imported-unverified' && <><span className="verified-date">{selectedCard.id.startsWith('uflmb-demo-') ? 'Demo fixture — no verified source' : `Verified ${selectedCard.verifiedAt}`}</span>{selectedCard.id.startsWith('uflmb-demo-') ? <span className="field-help">Demo fixture — no verified source</span> : <a className="button primary" href={selectedCard.sourceUrl} target="_blank" rel="noreferrer">Open verified source ↗</a>}</>}<button className="button secondary" type="button" onClick={() => toggleBookmark(selectedCard.id)}>{bookmarkedIds.includes(selectedCard.id) ? '★ Saved' : '☆ Save card'}</button></div></section></div>}
       {createPortal(
         <nav className="mobile-bottom-nav public-mobile-bottom-nav" aria-label="Primary navigation">
         <button type="button" className={page === 'home' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={page === 'home' ? 'page' : undefined} onClick={() => { setPage('home'); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">⌂</span><span>Home</span></button>
@@ -2480,7 +2481,7 @@ export default function App() {
       )}
             <footer className="footer"><span>UFLMB <span className="footer-muted">· Community project</span></span><span className="footer-muted">Independent community project; not affiliated with or endorsed by the game’s publisher.</span><span className="footer-sdg">SDG - {new Date().getFullYear()}</span></footer>
       {/* Public support launcher is portaled to the document body so it stays above the app layout and mobile navigation. */}
-      {createPortal(<SupportChat />, document.body)}
+      {createPortal(<Suspense fallback={null}><SupportChat /></Suspense>, document.body)}
       </div>
     </main>
   )
