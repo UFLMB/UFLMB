@@ -476,9 +476,16 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAdminViewerChange
     <>
       <ToastHost />
       <div className="auth-account-wrap" ref={accountMenuRef}>
-        <button className={session ? 'auth-trigger account-trigger' : 'button primary auth-trigger'} type="button" aria-haspopup={session ? 'menu' : 'dialog'} aria-expanded={session ? accountMenuOpen : open} onClick={() => {
-          if (session) { setAccountMenuOpen(value => !value); setOpen(false) }
-          else { setOpen(value => !value); setMessage('') }
+        <button className={session ? 'auth-trigger account-trigger' : 'button primary auth-trigger'} type="button" aria-haspopup={session ? 'menu' : 'dialog'} aria-controls={session ? 'uflmb-account-dropdown' : undefined} aria-expanded={session ? accountMenuOpen : open} onClick={event => {
+          event.stopPropagation()
+          if (session) {
+            // ADMIN/account trigger controls only its own dropdown; dashboard navigation stays in the menu item.
+            setAccountMenuOpen(value => !value)
+            setOpen(false)
+          } else {
+            setOpen(value => !value)
+            setMessage('')
+          }
         }}>
           {session && isAdmin
             ? <svg className="auth-trigger-icon auth-admin-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 6v5.1c0 5.1-3.4 8.3-8 10.1-4.6-1.8-8-5-8-10.1V6z" fill="currentColor" stroke="none"/><path d="m8.5 12 2.2 2.2 4.8-5" fill="none" stroke="#10140b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -492,7 +499,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAdminViewerChange
             ? <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="1.8"/><path d="M12 2v2.2M12 19.8V22M4.9 4.9l1.6 1.6m11 11 1.6 1.6M2 12h2.2m15.6 0H22M4.9 19.1l1.6-1.6m11-11 1.6-1.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
             : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.6 8.6 0 1 0 20.2 15.1Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
         </button>}
-        {session && <div className={accountMenuOpen ? 'account-dropdown is-open' : 'account-dropdown'} role="menu" aria-label="Account menu" hidden={!accountMenuOpen}>
+        {session && <div id="uflmb-account-dropdown" className={accountMenuOpen ? 'account-dropdown is-open' : 'account-dropdown'} role="menu" aria-label="Account menu" hidden={!accountMenuOpen}>
           <div className="account-menu-label">APPEARANCE</div>
           <div className="theme-mode-options" role="group" aria-label="Theme mode">
             <button type="button" role="menuitemradio" aria-label="Dark theme" title="Dark" aria-checked={themeMode === 'dark'} className={themeMode === 'dark' ? 'theme-mode-button active' : 'theme-mode-button'} onClick={() => onThemeModeChange('dark')}>
