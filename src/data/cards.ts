@@ -2,7 +2,7 @@ import type { PlayerCard } from '../types/card'
 import playersCsv from './players-5.csv?raw'
 
 const sourceUrl = 'https://github.com/UFLMB/UFLMB/blob/main/src/data/players-5.csv'
-const importedAt = '2026-11-03'
+const importedAt = '2026-10-20'
 const groupKeys: Record<string, string> = {
   Pace: 'PAC', Shooting: 'SHO', Passing: 'PAS', Dribbling: 'DRI',
   Defense: 'DEF', Physical: 'PHY', Positioning: 'POS', Reflexes: 'REF',
@@ -61,7 +61,6 @@ export const cards: PlayerCard[] = sourceRows
       id: row.id,
       playerName: row.name,
       overallRating: numeric(row.rating)!,
-      maxRating: numeric(row.max_rating),
       positions: [row.position],
       nation: row.nation,
       cardName: row.card_name || undefined,
