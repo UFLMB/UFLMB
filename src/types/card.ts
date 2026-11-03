@@ -31,7 +31,7 @@ export interface PlayerCard {
   imageUrl?: string
   /** Original image reference from the CSV; the image itself may not be present. */
   sourceImagePath?: string
-  /** All 59 original CSV columns retained for lossless data review/export. */
+  /** All 60 imported CSV fields retained for lossless data review/export. */
   sourceData?: Record<string, string>
   sourceStatus?: 'verified' | 'imported-unverified'
   sourceUrl: string
