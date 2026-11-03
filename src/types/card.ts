@@ -11,6 +11,8 @@ export interface PlayerCard {
   id: string
   playerName: string
   overallRating: number
+  /** Maximum attainable rating for this card, imported from max_rating. */
+  maxRating?: number
   positions: CardPosition[]
   nation: string
   cardName?: string
@@ -29,7 +31,7 @@ export interface PlayerCard {
   imageUrl?: string
   /** Original image reference from the CSV; the image itself may not be present. */
   sourceImagePath?: string
-  /** All 59 original CSV columns retained for lossless data review/export. */
+  /** All 60 original CSV columns retained for lossless data review/export. */
   sourceData?: Record<string, string>
   sourceStatus?: 'verified' | 'imported-unverified'
   sourceUrl: string
