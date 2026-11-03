@@ -1,5 +1,6 @@
 import type { PlayerCard } from '../types/card'
 import playersCsv from './players-5.csv?raw'
+import maxRatingsCsv from './max-ratings.csv?raw'
 
 const sourceUrl = 'https://github.com/UFLMB/UFLMB/blob/main/src/data/players-5.csv'
 const importedAt = '2026-10-20'
@@ -39,6 +40,7 @@ const numeric = (value: string | undefined): number | undefined => {
 }
 
 const sourceRows = parseCsv(playersCsv)
+const maxRatingById = new Map(parseCsv(maxRatingsCsv).map(row => [row.id, numeric(row.max_rating)]))
 
 export const cards: PlayerCard[] = sourceRows
   .filter(row => row.id && row.name && numeric(row.rating) !== undefined && row.position && row.nation)
@@ -57,10 +59,12 @@ export const cards: PlayerCard[] = sourceRows
     }
     const traitValues = row.traits ?? row.perks ?? ''
     const perks = traitValues ? traitValues.split(/[;|]/).map(value => value.trim()).filter(Boolean) : []
+    const maxRating = maxRatingById.get(row.id)
     return {
       id: row.id,
       playerName: row.name,
       overallRating: numeric(row.rating)!,
+      maxRating,
       positions: [row.position],
       nation: row.nation,
       cardName: row.card_name || undefined,
@@ -76,7 +80,7 @@ export const cards: PlayerCard[] = sourceRows
       stats,
       perks,
       sourceImagePath: row.image || undefined,
-      sourceData: row,
+      sourceData: { ...row, max_rating: maxRating === undefined ? '' : String(maxRating) },
       sourceStatus: 'imported-unverified' as const,
       sourceUrl,
       verifiedAt: importedAt,
@@ -84,9 +88,9 @@ export const cards: PlayerCard[] = sourceRows
   })
 
 export const sourceDatasetInfo = {
-  filename: 'players-5.csv',
+  filename: 'players-5.csv + max-ratings.csv',
   rowCount: cards.length,
-  columnCount: Object.keys(sourceRows[0] || {}).length,
+  columnCount: Object.keys(sourceRows[0] || {}).length + 1,
   importedAt,
   independentlyVerified: false,
 }
