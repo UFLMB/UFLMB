@@ -1875,7 +1875,7 @@ export default function App() {
             <div className="event-type-background-controls">
               <label>Event type<select value={selectedEventTypeForBackground} onChange={event => { const nextType = event.target.value; setSelectedEventTypeForBackground(nextType); setEventTypeBackgroundUrlDraft(nextType ? siteBranding.eventTypeBackgrounds[normalizeIdentityPart(nextType)] || '' : '') }}>
                 <option value="">Choose an event type…</option>
-                {Array.from(new Map(allCards.map(card => [normalizeIdentityPart(card.cardName), (card.cardName || '').trim()])).entries()).filter(([key, label]) => key && label).sort((a, b) => a[1].localeCompare(b[1])).map(([key, label]) => <option key={key} value={label}>{label}</option>)}
+                {Array.from(new Map(allCards.map(card => [normalizeIdentityPart(card.event), (card.event || '').trim()])).entries()).filter(([key, label]) => key && label).sort((a, b) => a[1].localeCompare(b[1])).map(([key, label]) => <option key={key} value={label}>{label}</option>)}
               </select></label>
               <label>Background image URL<input type="url" value={eventTypeBackgroundUrlDraft} onChange={event => setEventTypeBackgroundUrlDraft(event.target.value)} placeholder="https://example.com/event-type-background.jpg" /></label>
             </div>
