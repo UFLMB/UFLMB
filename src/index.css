@@ -7845,3 +7845,43 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     display: none !important;
   }
 }
+
+
+/* Related card versions in the player profile */
+.profile-versions-section{padding:22px 0;border-bottom:1px solid rgba(255,255,255,.09)}
+.profile-versions-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+.profile-versions-heading .eyebrow{margin:0 0 5px;color:var(--accent,#c5f467);font-size:9px;font-weight:800;letter-spacing:1.35px}
+.profile-versions-heading h3{margin:0 0 5px;font-size:17px;letter-spacing:-.25px}
+.profile-versions-subtitle{margin:0;color:#aab4c3;font-size:11px;line-height:1.5}
+.profile-versions-count{flex:0 0 auto;padding:6px 9px;border:1px solid color-mix(in srgb,var(--accent,#c5f467) 32%,transparent);border-radius:999px;background:color-mix(in srgb,var(--accent,#c5f467) 9%,transparent);color:var(--accent,#c5f467);font:700 9px 'DM Mono',monospace;letter-spacing:.7px}
+.profile-versions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:11px}
+.profile-version-card{min-width:0;display:flex;flex-direction:column;overflow:hidden;padding:7px;border:1px solid rgba(220,230,245,.13);border-radius:12px;background:linear-gradient(155deg,rgba(255,255,255,.055),rgba(255,255,255,.018));color:inherit;text-align:left;cursor:pointer;transition:border-color .18s ease,transform .18s ease,box-shadow .18s ease}
+.profile-version-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent,#c5f467) 55%,transparent);box-shadow:0 8px 22px rgba(0,0,0,.2)}
+.profile-version-card:focus-visible{outline:2px solid var(--accent,#c5f467);outline-offset:3px}
+.profile-version-art{position:relative;display:block;overflow:hidden;aspect-ratio:3/4;border-radius:8px;background:radial-gradient(ellipse at 50% 25%,color-mix(in srgb,var(--accent,#c5f467) 16%,transparent),transparent 65%),#090d13}
+.profile-version-art>img{display:block;width:100%;height:100%;object-fit:contain}
+.profile-version-placeholder{display:grid;width:100%;height:100%;place-content:center;color:#aab4c3;font-size:19px;font-weight:850;text-align:center}
+.profile-version-placeholder span{color:var(--accent,#c5f467)}
+.profile-version-ovr{position:absolute;top:6px;left:6px;display:grid;min-width:31px;height:27px;place-items:center;padding:0 5px;border:1px solid rgba(255,255,255,.17);border-radius:7px;background:rgba(5,9,14,.84);color:var(--accent,#c5f467);font:800 12px 'DM Mono',monospace;backdrop-filter:blur(7px)}
+.profile-version-info{display:flex;flex-direction:column;gap:4px;padding:9px 3px 3px}
+.profile-version-info strong{overflow:hidden;color:#f3f5f8;font-size:11px;line-height:1.3;text-overflow:ellipsis;white-space:nowrap}
+.profile-version-info>span{overflow:hidden;color:#b6c0ce;font-size:10px;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
+.profile-version-info small{color:#8490a1;font:9px 'DM Mono',monospace;letter-spacing:.3px}
+:root[data-ui-theme="light"] .profile-versions-section{border-bottom-color:rgba(15,23,42,.12)}
+:root[data-ui-theme="light"] .profile-versions-subtitle{color:#64748b}
+:root[data-ui-theme="light"] .profile-version-card{border-color:rgba(15,23,42,.13);background:linear-gradient(155deg,#fff,#f1f5f9);box-shadow:0 3px 12px rgba(15,23,42,.055)}
+:root[data-ui-theme="light"] .profile-version-card:hover{border-color:color-mix(in srgb,var(--accent,#527b13) 60%,#cbd5e1);box-shadow:0 9px 22px rgba(15,23,42,.11)}
+:root[data-ui-theme="light"] .profile-version-art{background:radial-gradient(ellipse at 50% 25%,color-mix(in srgb,var(--accent,#527b13) 13%,transparent),transparent 65%),#e8edf2}
+:root[data-ui-theme="light"] .profile-version-placeholder{color:#475569}
+:root[data-ui-theme="light"] .profile-version-ovr{border-color:rgba(15,23,42,.14);background:rgba(255,255,255,.9);color:#426b13}
+:root[data-ui-theme="light"] .profile-version-info strong{color:#0f172a}
+:root[data-ui-theme="light"] .profile-version-info>span{color:#475569}
+:root[data-ui-theme="light"] .profile-version-info small{color:#64748b}
+@media(max-width:560px){
+  .profile-versions-heading{gap:9px;margin-bottom:12px}
+  .profile-versions-heading h3{font-size:16px}
+  .profile-versions-subtitle{max-width:235px;font-size:10px}
+  .profile-versions-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .profile-version-card{padding:6px;border-radius:10px}
+  .profile-version-info{padding:8px 2px 2px}
+}
