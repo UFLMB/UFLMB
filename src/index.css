@@ -323,8 +323,8 @@ body.has-background-images .app-shell{
   color:#fff;
   font-size:25px;
 }
-.profile-heading{display:grid;grid-template-columns:225px minmax(0,1fr);align-items:center;gap:24px;padding:8px 36px 24px 0;border-bottom:1px solid rgba(255,255,255,.1)}
-.profile-heading>img,.profile-placeholder{box-sizing:border-box;width:225px;height:315px;padding:8px;object-fit:contain;object-position:center center;border:1px solid rgba(255,255,255,.14);border-radius:17px;background:#090c12;box-shadow:0 12px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06)}
+.profile-heading{display:grid;grid-template-columns:215px minmax(0,1fr);align-items:center;gap:24px;padding:8px 36px 24px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.profile-heading>img,.profile-placeholder{box-sizing:border-box;width:215px;height:315px;padding:8px;object-fit:contain;object-position:center center;border:1px solid rgba(255,255,255,.14);border-radius:17px;background:#090c12;box-shadow:0 12px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06)}
 .profile-placeholder{display:grid;place-items:center;color:#8b95a5;font-size:19px;font-weight:800}
 .profile-placeholder span{color:var(--accent,#c5f467)}
 .profile-heading h2{margin:0 0 8px;font-size:clamp(24px,4vw,36px);letter-spacing:-1px;overflow-wrap:anywhere}
@@ -348,8 +348,8 @@ body.has-background-images .app-shell{
   .ovr-range input{width:76px}
   .profile-backdrop{padding:10px;align-items:flex-start}
   .profile-modal{max-height:calc(100vh - 20px);padding:18px;border-radius:15px}
-  .profile-heading{grid-template-columns:150px minmax(0,1fr);gap:13px;padding-right:24px}
-  .profile-heading>img,.profile-placeholder{width:150px;height:210px;padding:7px;object-position:center center}
+  .profile-heading{grid-template-columns:145px minmax(0,1fr);gap:13px;padding-right:24px}
+  .profile-heading>img,.profile-placeholder{width:145px;height:210px;padding:7px;object-position:center center}
   .profile-heading h2{font-size:23px}
   .profile-meta>*{font-size:9px;padding:6px}
   .profile-stats{grid-template-columns:1fr;gap:10px}
