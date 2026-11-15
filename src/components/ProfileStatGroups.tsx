@@ -85,7 +85,7 @@ export default function ProfileStatGroups({ groups }: ProfileStatGroupsProps) {
     }
   }, [targetSignature])
 
-  const getValue = (key: string, target: number) => animatedValues[key] ?? 0
+  const getValue = (key: string) => animatedValues[key] ?? 0
   const isComplete = targetEntries.every(entry => animatedValues[entry.key] === entry.value)
 
   return (
@@ -95,12 +95,12 @@ export default function ProfileStatGroups({ groups }: ProfileStatGroupsProps) {
           <span className="profile-stat-group-code">{group.code === 'GK' ? 'GK' : group.code}</span>
           <span className="profile-stat-group-name">{group.label}</span>
           {typeof group.main === 'number' && <div className="profile-stat-group-score">
-            <strong className="profile-stat-main-value text-lime-400 font-bold">{formatStatValue(getValue(`${group.code}:main`, group.main))}</strong>
+            <strong className="profile-stat-main-value text-lime-400 font-bold">{formatStatValue(getValue(`${group.code}:main`))}</strong>
           </div>}
         </div>
         {group.details.length > 0 && <div className="profile-stat-group-details">
           {group.details.slice().sort((a, b) => a.label.localeCompare(b.label)).map(stat => {
-            const value = getValue(`${group.code}:${stat.key}`, stat.value)
+            const value = getValue(`${group.code}:${stat.key}`)
             return <div className="profile-stat-detail" key={stat.key}>
               <span className="profile-stat-label" title={stat.label}>{stat.label}</span>
               <div className="profile-stat-meter">
