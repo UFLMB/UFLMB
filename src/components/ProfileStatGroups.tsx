@@ -19,6 +19,8 @@ const formatStatValue = (value: number, target: number) => Number.isInteger(targ
 export default function ProfileStatGroups({ groups }: ProfileStatGroupsProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [animatedValues, setAnimatedValues] = useState<Record<string, number>>({})
+  const [hasEntered, setHasEntered] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(false)
   const targetEntries = useMemo(() => groups.flatMap(group => [
     ...(typeof group.main === 'number' ? [{ key: `${group.code}:main`, value: group.main }] : []),
     ...group.details.map(stat => ({ key: `${group.code}:${stat.key}`, value: stat.value })),
@@ -35,6 +37,8 @@ export default function ProfileStatGroups({ groups }: ProfileStatGroupsProps) {
       started = true
 
       const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+      setHasEntered(true)
+      setReducedMotion(reduceMotion)
       if (reduceMotion || targetEntries.length === 0) {
         setAnimatedValues(targets)
         return
@@ -87,15 +91,26 @@ export default function ProfileStatGroups({ groups }: ProfileStatGroupsProps) {
 
   const getValue = (key: string) => animatedValues[key] ?? 0
   const isComplete = targetEntries.every(entry => animatedValues[entry.key] === entry.value)
+  const isAnimating = hasEntered && !isComplete && !reducedMotion
+  const numberGlow = isAnimating ? '0 0 9px rgba(163, 230, 53, 0.22)' : '0 0 0 rgba(163, 230, 53, 0)'
 
   return (
     <div ref={containerRef} className="profile-stat-groups" data-animation-complete={isComplete}>
-      {groups.map(group => <section className="profile-stat-group" key={group.code}>
+      {groups.map((group, index) => <section
+        className="profile-stat-group"
+        key={group.code}
+        style={{
+          opacity: hasEntered ? 1 : 0,
+          transform: hasEntered ? 'translateY(0)' : 'translateY(6px)',
+          transition: reducedMotion ? 'none' : 'opacity 320ms ease-out, transform 320ms ease-out',
+          transitionDelay: reducedMotion ? '0ms' : `${index * 28}ms`,
+        }}
+      >
         <div className="profile-stat-group-header">
           <span className="profile-stat-group-code">{group.code === 'GK' ? 'GK' : group.code}</span>
           <span className="profile-stat-group-name">{group.label}</span>
           {typeof group.main === 'number' && <div className="profile-stat-group-score">
-            <strong className="profile-stat-main-value text-lime-400 font-bold">{formatStatValue(getValue(`${group.code}:main`), group.main)}</strong>
+            <strong className="profile-stat-main-value text-lime-400 font-bold" style={{ textShadow: numberGlow, transition: reducedMotion ? 'none' : 'text-shadow 360ms ease-out' }}>{formatStatValue(getValue(`${group.code}:main`), group.main)}</strong>
           </div>}
         </div>
         {group.details.length > 0 && <div className="profile-stat-group-details">
@@ -105,9 +120,9 @@ export default function ProfileStatGroups({ groups }: ProfileStatGroupsProps) {
               <span className="profile-stat-label" title={stat.label}>{stat.label}</span>
               <div className="profile-stat-meter">
                 <i style={{ display: 'block', flex: '1 1 auto', minWidth: 0, height: 6, overflow: 'hidden', borderRadius: 999, backgroundColor: 'rgba(255,255,255,.12)' }}>
-                  <b style={{ display: 'block', width: `${Math.max(0, Math.min(100, value))}%`, height: '100%', maxWidth: '100%', backgroundColor: '#a3e635', borderRadius: 999 }} />
+                  <b style={{ display: 'block', width: `${Math.max(0, Math.min(100, value))}%`, height: '100%', maxWidth: '100%', backgroundColor: '#a3e635', borderRadius: 999, boxShadow: isAnimating ? '0 0 8px rgba(163, 230, 53, 0.48)' : 'none' }} />
                 </i>
-                <strong>{formatStatValue(value, stat.value)}</strong>
+                <strong style={{ textShadow: numberGlow, transition: reducedMotion ? 'none' : 'text-shadow 360ms ease-out' }}>{formatStatValue(value, stat.value)}</strong>
               </div>
             </div>
           })}
