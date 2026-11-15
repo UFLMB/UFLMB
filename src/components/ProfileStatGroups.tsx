@@ -120,7 +120,7 @@ export default function ProfileStatGroups({ groups }: ProfileStatGroupsProps) {
               <span className="profile-stat-label" title={stat.label}>{stat.label}</span>
               <div className="profile-stat-meter">
                 <i style={{ display: 'block', flex: '1 1 auto', minWidth: 0, height: 6, overflow: 'hidden', borderRadius: 999, backgroundColor: 'rgba(255,255,255,.12)' }}>
-                  <b style={{ display: 'block', width: `${Math.max(0, Math.min(100, value))}%`, height: '100%', maxWidth: '100%', backgroundColor: '#a3e635', borderRadius: 999, boxShadow: isAnimating ? '0 0 8px rgba(163, 230, 53, 0.48)' : 'none' }} />
+                  <b className={isAnimating ? 'profile-stat-fill is-animating' : 'profile-stat-fill'} style={{ display: 'block', position: 'relative', overflow: 'hidden', width: `${Math.max(0, Math.min(100, value))}%`, height: '100%', maxWidth: '100%', backgroundColor: '#a3e635', borderRadius: 999, boxShadow: isAnimating ? '0 0 8px rgba(163, 230, 53, 0.48)' : 'none' }} />
                 </i>
                 <strong style={{ textShadow: numberGlow, transition: reducedMotion ? 'none' : 'text-shadow 360ms ease-out' }}>{formatStatValue(value, stat.value)}</strong>
               </div>
