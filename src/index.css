@@ -7822,3 +7822,26 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .database-skeleton-label{grid-column:1/-1;color:var(--muted-color,#8b95a5);font-size:12px;text-align:center}
 @keyframes database-skeleton-shimmer{to{background-position-x:-200%}}
 @media(prefers-reduced-motion:reduce){.database-skeleton-card{animation:none}}
+
+
+/* One-shot highlight sweep for player stat bars; no persistent animation loop. */
+.profile-stat-fill.is-animating::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 42%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.72), transparent);
+  transform: translateX(-140%);
+  animation: profile-stat-sheen 760ms cubic-bezier(.2,.7,.25,1) 140ms 1 both;
+  pointer-events: none;
+}
+@keyframes profile-stat-sheen {
+  to { transform: translateX(260%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .profile-stat-fill.is-animating::after {
+    animation: none !important;
+    display: none !important;
+  }
+}
