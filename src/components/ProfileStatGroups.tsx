@@ -14,7 +14,7 @@ type ProfileStatGroupsProps = {
 const DURATION_MS = 760
 const FRAME_INTERVAL_MS = 32
 
-const formatStatValue = (value: number) => Number.isInteger(value) ? String(value) : String(Number(value.toFixed(1)))
+const formatStatValue = (value: number, target: number) => Number.isInteger(target) ? String(Math.round(value)) : String(Number(value.toFixed(1)))
 
 export default function ProfileStatGroups({ groups }: ProfileStatGroupsProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -95,7 +95,7 @@ export default function ProfileStatGroups({ groups }: ProfileStatGroupsProps) {
           <span className="profile-stat-group-code">{group.code === 'GK' ? 'GK' : group.code}</span>
           <span className="profile-stat-group-name">{group.label}</span>
           {typeof group.main === 'number' && <div className="profile-stat-group-score">
-            <strong className="profile-stat-main-value text-lime-400 font-bold">{formatStatValue(getValue(`${group.code}:main`))}</strong>
+            <strong className="profile-stat-main-value text-lime-400 font-bold">{formatStatValue(getValue(`${group.code}:main`), group.main)}</strong>
           </div>}
         </div>
         {group.details.length > 0 && <div className="profile-stat-group-details">
@@ -107,7 +107,7 @@ export default function ProfileStatGroups({ groups }: ProfileStatGroupsProps) {
                 <i style={{ display: 'block', flex: '1 1 auto', minWidth: 0, height: 6, overflow: 'hidden', borderRadius: 999, backgroundColor: 'rgba(255,255,255,.12)' }}>
                   <b style={{ display: 'block', width: `${Math.max(0, Math.min(100, value))}%`, height: '100%', maxWidth: '100%', backgroundColor: '#a3e635', borderRadius: 999 }} />
                 </i>
-                <strong>{formatStatValue(value)}</strong>
+                <strong>{formatStatValue(value, stat.value)}</strong>
               </div>
             </div>
           })}
