@@ -11,7 +11,7 @@ type ProfileStatGroupsProps = {
   groups: ProfileStatGroup[]
 }
 
-const DURATION_MS = 760
+const DURATION_MS = 1100
 const FRAME_INTERVAL_MS = 32
 
 const formatStatValue = (value: number, target: number) => Number.isInteger(target) ? String(Math.round(value)) : String(Number(value.toFixed(1)))
