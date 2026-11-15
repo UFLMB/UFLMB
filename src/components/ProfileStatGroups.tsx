@@ -83,7 +83,7 @@ export default function ProfileStatGroups({ groups }: ProfileStatGroupsProps) {
     return () => {
       if (frameId) window.cancelAnimationFrame(frameId)
     }
-  }, [targetSignature])
+  }, [targetEntries, targetSignature])
 
   const getValue = (key: string) => animatedValues[key] ?? 0
   const isComplete = targetEntries.every(entry => animatedValues[entry.key] === entry.value)
