@@ -122,6 +122,11 @@ begin
     v_category := 'moderation';
     v_section := 'Moderation Center / Review Queue';
     v_event := case TG_OP when 'INSERT' then 'MODERATION_CASE_CREATED' when 'DELETE' then 'MODERATION_CASE_DELETED' else 'MODERATION_CASE_UPDATED' end;
+  elsif TG_TABLE_NAME = 'support_admin_conversation_state' then
+    v_category := 'support';
+    v_section := 'Support / Inbox Organization';
+    v_event := case TG_OP when 'INSERT' then 'SUPPORT_INBOX_STATE_CREATED' when 'DELETE' then 'SUPPORT_INBOX_STATE_DELETED' else 'SUPPORT_INBOX_STATE_UPDATED' end;
+    v_target_label := coalesce(v_new->>'conversation_id', v_old->>'conversation_id');
   elsif TG_TABLE_NAME = 'support_conversations' then
     v_target_id := coalesce(nullif(v_new->>'user_id',''), nullif(v_old->>'user_id',''))::uuid;
     v_category := 'support';
@@ -235,3 +240,8 @@ revoke all on function public.capture_admin_access_log() from public, anon, auth
 drop trigger if exists action_log_admin_viewers on public.admin_viewers;
 create trigger action_log_admin_viewers after insert or delete on public.admin_viewers
 for each row execute function public.capture_admin_access_log();
+
+drop trigger if exists action_log_support_admin_conversation_state on public.support_admin_conversation_state;
+create trigger action_log_support_admin_conversation_state
+after insert or update or delete on public.support_admin_conversation_state
+for each row execute function public.capture_action_log();
