@@ -53,6 +53,10 @@ export default function ActionLog({ accessToken }: Props) {
   const [offset, setOffset] = useState(0)
   const [category, setCategory] = useState('all')
   const [outcome, setOutcome] = useState('all')
+  const [section, setSection] = useState('all')
+  const [operation, setOperation] = useState('all')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [systemActions, setSystemActions] = useState(false)
   const [executorSearch, setExecutorSearch] = useState('')
   const [targetSearch, setTargetSearch] = useState('')
@@ -73,7 +77,7 @@ export default function ActionLog({ accessToken }: Props) {
       const response = await fetch(endpoint + '/functions/v1/account-moderation', {
         method: 'POST',
         headers: { apikey: anonKey, Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'list_action_logs', limit: 50, offset: nextOffset, category, outcome, systemActions, actorUserId: executorUser?.id ?? null, targetUserId: targetUser?.id ?? null }),
+        body: JSON.stringify({ action: 'list_action_logs', limit: 50, offset: nextOffset, category, outcome, section, operation, dateFrom, dateTo, systemActions, actorUserId: executorUser?.id ?? null, targetUserId: targetUser?.id ?? null }),
         cache: 'no-store',
       })
       const result = await response.json() as { logs?: LogEntry[]; count?: number; error?: string }
@@ -86,7 +90,7 @@ export default function ActionLog({ accessToken }: Props) {
     } finally { setBusy(false) }
   }
 
-  useEffect(() => { void load(true) }, [accessToken, category, outcome, systemActions, executorUser?.id, targetUser?.id, refreshKey])
+  useEffect(() => { void load(true) }, [accessToken, category, outcome, section, operation, dateFrom, dateTo, systemActions, executorUser?.id, targetUser?.id, refreshKey])
 
   useEffect(() => {
     let cancelled = false
@@ -129,6 +133,10 @@ export default function ActionLog({ accessToken }: Props) {
       <label className="action-log-search"><span aria-hidden="true">⌕</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search loaded events, users or IDs…" aria-label="Search action log" /></label>
       <label>Category<select value={category} onChange={event => { setCategory(event.target.value); setOffset(0) }}><option value="all">All categories</option><option value="auth">Authentication</option><option value="profile">Profiles</option><option value="moderation">Moderation</option><option value="community">Community</option><option value="support">Support</option><option value="content">Content</option><option value="system">System</option></select></label>
       <label>Outcome<select value={outcome} onChange={event => { setOutcome(event.target.value); setOffset(0) }}><option value="all">All outcomes</option><option value="success">Successful</option><option value="failed">Failed</option><option value="pending">Pending</option></select></label>
+      <label>Section<select value={section} onChange={event => { setSection(event.target.value); setOffset(0) }}><option value="all">All sections</option><option value="Account Management / Profile">Account Management / Profile</option><option value="Account Management / Suspensions">Account Management / Suspensions</option><option value="Moderation & Warnings / User Warnings">Moderation &amp; Warnings</option><option value="Moderation Center / Review Queue">Moderation Center</option><option value="Community Reviews">Community Reviews</option><option value="Support / Conversations">Support / Conversations</option><option value="Support / Messages">Support / Messages</option><option value="Players / Card Database">Players / Card Database</option><option value="User Preferences">User Preferences</option><option value="Admin / Branding & Site Settings">Branding &amp; Site Settings</option><option value="Admin / Shared Database & App State">Shared Database &amp; App State</option><option value="Admin / Access Control">Admin Access Control</option></select></label>
+      <label>Action type<select value={operation} onChange={event => { setOperation(event.target.value); setOffset(0) }}><option value="all">All actions</option><option value="INSERT">Create</option><option value="UPDATE">Update</option><option value="DELETE">Delete</option></select></label>
+      <label>From<input type="date" value={dateFrom} onChange={event => { setDateFrom(event.target.value); setOffset(0) }} /></label>
+      <label>To<input type="date" value={dateTo} onChange={event => { setDateTo(event.target.value); setOffset(0) }} /></label>
       <div className="action-log-user-filter">
         <label htmlFor="action-log-executor">Executor</label>
         <div className="action-log-user-input-wrap">
