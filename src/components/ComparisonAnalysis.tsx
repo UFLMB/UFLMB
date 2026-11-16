@@ -93,7 +93,7 @@ export default function ComparisonAnalysis({ cards, onRemove }: Props) {
               const value = values[index]
               const isWinner = typeof value === 'number' && value === best
               return <div className={`comparison-attribute-value ${isWinner ? 'is-winner' : ''}`} key={card.id} style={{ '--comparison-player': palette[index] } as CSSProperties}>
-                <div className="comparison-value-top"><span>{card.playerName}</span><strong style={!isWinner && typeof value === 'number' && best !== null ? { color: `color-mix(in srgb, #b91c1c ${25 + Math.min(75, ((best - value) / 20) * 75)}%, #fca5a5)` } : undefined}>{typeof value === 'number' ? (isWinner ? value : `−${Number((best! - value).toFixed(1))}`) : '—'}</strong>{isWinner && <em>LEADER</em>}</div>
+                <div className="comparison-value-top"><span>{card.playerName}</span><strong style={!isWinner && typeof value === 'number' && best !== null ? { color: `color-mix(in srgb, #7f1d1d ${40 + Math.min(60, ((best - value) / 20) * 60)}%, #f87171)` } : undefined}>{typeof value === 'number' ? (isWinner ? value : `−${Number((best! - value).toFixed(1))}`) : '—'}</strong>{isWinner && <em>LEADER</em>}</div>
                 <div className="comparison-value-track"><i style={{ width: `${typeof value === 'number' ? Math.max(0, Math.min(100, value)) : 0}%` }} /></div>
               </div>
             })}</div>
