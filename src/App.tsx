@@ -2252,6 +2252,7 @@ export default function App() {
       faviconUrl: siteBranding.faviconUrl.trim(),
       backgroundImageUrls: parseBackgroundUrls(backgroundUrlsText),
       eventTypeBackgrounds: parseEventTypeBackgrounds(siteBranding.eventTypeBackgrounds),
+      eventTypeBadgeColors: parseEventTypeBadgeColors(siteBranding.eventTypeBadgeColors),
       perkTraitImages: parsePerkTraitImages(siteBranding.perkTraitImages),
     }
     if ((brandingToPublish.logoUrl && !isHttpUrl(brandingToPublish.logoUrl)) ||
