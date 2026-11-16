@@ -7967,3 +7967,9 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
  .comparison-player-info>b{font-size:16px}
  .comparison-score,.comparison-ties{min-height:70px;padding:11px 12px}
 }
+
+
+/* Make the largest deficit unmistakable without changing the comparison chart. */
+.comparison-attribute-value.is-biggest-loss{border-color:#dc2626;background:color-mix(in srgb,#dc2626 9%,var(--panel-bg));box-shadow:inset 3px 0 0 #dc2626}
+.comparison-attribute-value.is-biggest-loss .comparison-value-top>strong{display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:5px 8px;border:1px solid color-mix(in srgb,#dc2626 55%,transparent);border-radius:7px;background:color-mix(in srgb,#dc2626 17%,var(--panel-bg));font-size:21px;font-weight:900;letter-spacing:-.35px;text-shadow:0 0 12px color-mix(in srgb,#dc2626 28%,transparent)}
+@media(max-width:700px){.comparison-attribute-value.is-biggest-loss .comparison-value-top>strong{font-size:22px}}
