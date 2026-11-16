@@ -46,7 +46,7 @@ export default function ComparisonAnalysis({ cards, onRemove }: Props) {
       const bi = statOrder.indexOf(b)
       return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi) || a.localeCompare(b)
     })
-  const radarKeys = mainStats.filter(key => cards.some(card => typeof card.stats?.[key] === 'number'))
+  const radarKeys = mainStats.filter(key => cards.every(card => typeof card.stats?.[key] === 'number'))
   const leaders = statKeys.map(key => {
     const values = cards.map(card => card.stats?.[key]).filter((value): value is number => typeof value === 'number')
     const best = values.length ? Math.max(...values) : null
