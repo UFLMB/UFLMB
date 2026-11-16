@@ -1436,12 +1436,12 @@ export default function App() {
       setNotice(message)
       setImageImportProgress({ phase: uploaded === safeCandidates.length && skippedReasons.length === 0 ? 'success' : uploaded > 0 ? 'success' : 'error', current: safeCandidates.length, total: safeCandidates.length, message })
       } catch {
-        const message = 'The shared database was updated for ' + uploaded + ' image(s), but this browser could not save its local cache. Reload the page; do not re-upload these images.'
+        const message = 'The shared database was updated for ' + uploaded + ' image(s), but this browser could not save its local cache. Reload the page; do not re-upload these images.' + (auditWarnings.length ? ' AUDIT WARNING: ' + auditWarnings.slice(0, 3).join(' · ') : '')
       setNotice(message)
       setImageImportProgress({ phase: 'success', current: safeCandidates.length, total: safeCandidates.length, message })
       }
     } else {
-      const message = 'No images were uploaded successfully. ' + skippedReasons.length + ' file(s) skipped or failed. ' + skippedReasons.slice(0, 4).join(' · ')
+      const message = 'No images were uploaded successfully. ' + skippedReasons.length + ' file(s) skipped or failed. ' + skippedReasons.slice(0, 4).join(' · ') + (auditWarnings.length ? ' AUDIT WARNING: ' + auditWarnings.slice(0, 3).join(' · ') : '')
       setNotice(message)
       setImageImportProgress({ phase: 'error', current: safeCandidates.length, total: safeCandidates.length, message })
     }
