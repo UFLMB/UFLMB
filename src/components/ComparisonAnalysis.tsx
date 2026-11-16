@@ -61,7 +61,7 @@ export default function ComparisonAnalysis({ cards, onRemove }: Props) {
     <div className="comparison-player-strip">
       {cards.map((card, index) => <article className="comparison-player-card" key={card.id} style={{ '--comparison-player': palette[index] } as CSSProperties}>
         <div className="comparison-player-art">{card.imageUrl ? <img src={card.imageUrl} alt="" loading="lazy" /> : <span>UFL<span>MB</span></span>}</div>
-        <div className="comparison-player-info"><strong title={card.playerName}>{card.playerName}</strong><span>{card.positions.join(' / ')} · {card.nation}</span><b className={card.overallRating === bestOverall ? 'is-leading' : ''}>OVR {card.overallRating}</b></div>
+        <div className="comparison-player-info"><strong title={card.playerName}>{card.playerName}</strong><span>{card.positions.join(' / ')} · {card.nation}</span><b className={card.overallRating === bestOverall ? 'is-leading' : ''}><small>OVR</small>{card.overallRating}</b></div>
         <button type="button" onClick={() => onRemove(card.id)} aria-label={`Remove ${card.playerName} from comparison`}>×</button>
       </article>)}
     </div>
