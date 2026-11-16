@@ -187,7 +187,7 @@ Deno.serve(async (req: Request) => {
       if (typeof body.category === "string" && ["auth","profile","moderation","community","support","content","system"].includes(body.category)) query = query.eq("category", body.category);
       if (typeof body.outcome === "string" && ["success","failed","pending"].includes(body.outcome)) query = query.eq("outcome", body.outcome);
       if (typeof body.section === "string" && body.section !== "all" && body.section.length <= 120) query = query.contains("details", { section: body.section });
-      if (typeof body.operation === "string" && ["INSERT","UPDATE","DELETE"].includes(body.operation)) query = query.contains("details", { operation: body.operation });
+      if (typeof body.operation === "string" && ["INSERT","UPDATE","DELETE","STORAGE_UPLOAD","STORAGE_DELETE"].includes(body.operation)) query = query.contains("details", { operation: body.operation });
       if (typeof body.dateFrom === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.dateFrom)) query = query.gte("created_at", body.dateFrom + "T00:00:00.000Z");
       if (typeof body.dateTo === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.dateTo)) query = query.lte("created_at", body.dateTo + "T23:59:59.999Z");
       if (body.systemActions !== true) query = query.not("event_key", "in", '("LOGIN_SUCCESS","SESSION_RESTORED","LOGOUT","PASSWORD_CHANGED")');
