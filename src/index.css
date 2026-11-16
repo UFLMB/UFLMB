@@ -7996,5 +7996,5 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .stats-grid.goalkeeper-stats-grid span:nth-child(5){grid-column:4/span 2}
 
 
-/* Match detailed player sub-stat labels to the readable PAC label tone in light mode. */
-:root[data-ui-theme="light"] .profile-stat-label{color:#647084!important}
+/* Keep the main attribute names (Pace, Shooting, Passing, etc.) readable in light mode. */
+:root[data-ui-theme="light"] .profile-stat-group-name{color:#647084!important}
