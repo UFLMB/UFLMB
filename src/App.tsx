@@ -159,11 +159,11 @@ const emptyDraft = (): Draft => ({
 const makeId = () => `card-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
 const formatDateOfBirth = (value: string) => {
   const date = value.trim()
-  const dayFirst = date.match(/^(\\d{1,2})[./](\\d{1,2})[./](\\d{4})$/)
+  const dayFirst = date.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/)
   if (dayFirst) return `${dayFirst[3]}.${dayFirst[1].padStart(2, '0')}.${dayFirst[2].padStart(2, '0')}`
-  const iso = date.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})$/)
+  const iso = date.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)
   if (iso) return `${iso[1]}.${iso[3].padStart(2, '0')}.${iso[2].padStart(2, '0')}`
-  const formatted = date.match(/^(\\d{4})\\.(\\d{1,2})\\.(\\d{1,2})$/)
+  const formatted = date.match(/^(\d{4})\\.(\d{1,2})\\.(\d{1,2})$/)
   if (formatted) return `${formatted[1]}.${formatted[2].padStart(2, '0')}.${formatted[3].padStart(2, '0')}`
   return date
 }
