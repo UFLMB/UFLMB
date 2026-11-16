@@ -7998,3 +7998,15 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 
 /* Keep the main attribute names (Pace, Shooting, Passing, etc.) readable in light mode. */
 :root[data-ui-theme="light"] .profile-stat-group-name{color:#647084!important}
+
+
+/* Improve Community Reviews text contrast on the light theme only. */
+:root[data-ui-theme="light"] .community-review-list article > div > strong {
+  color: #18202b !important;
+}
+:root[data-ui-theme="light"] .community-review-list article > p {
+  color: #263140 !important;
+}
+:root[data-ui-theme="light"] .community-review-list article > small {
+  color: #647084 !important;
+}
