@@ -1338,8 +1338,9 @@ export default function App() {
       setImageImportProgress({ phase: 'uploading', current: index, total: safeCandidates.length, message: `Uploading image ${index + 1} of ${safeCandidates.length}: ${candidate.file.name}` })
       const objectPath = encodeURIComponent(candidate.card.id) + '.' + candidate.extension
       let storageObjectCreated = false
-      let confirmedUnlinked = false
       let storageUploadAttempted = false
+      let storageUploadSucceeded = false
+      let confirmedUnlinked = false
       try {
         storageUploadAttempted = true
         const uploadResponse = await fetch(baseUrl + '/storage/v1/object/uflmb-card-images/' + objectPath, {
@@ -1358,6 +1359,7 @@ export default function App() {
           throw new Error(errorBody.message || errorBody.error || 'Storage upload failed (' + uploadResponse.status + ')')
         }
         storageObjectCreated = true
+        storageUploadSucceeded = true
         try {
           await recordAssetAudit('storage_upload', 'success', candidate, objectPath)
         } catch (auditError) {
@@ -1416,7 +1418,7 @@ export default function App() {
           }
         }
         const failureReason = error instanceof Error ? error.message : 'upload failed'
-        if (storageUploadAttempted && !storageObjectCreated) {
+        if (storageUploadAttempted && !storageUploadSucceeded) {
           try {
             await recordAssetAudit('storage_upload', 'failed', candidate, objectPath, failureReason)
           } catch (auditError) {
