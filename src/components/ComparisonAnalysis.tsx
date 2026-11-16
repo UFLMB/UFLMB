@@ -86,13 +86,15 @@ export default function ComparisonAnalysis({ cards, onRemove }: Props) {
           const values = cards.map(card => card.stats?.[key])
           const numeric = values.filter((value): value is number => typeof value === 'number')
           const best = numeric.length ? Math.max(...numeric) : null
+          const worst = numeric.length > 1 ? Math.min(...numeric) : null
           const second = numeric.length > 1 ? [...new Set(numeric)].sort((a, b) => b - a)[1] : null
           return <div className="comparison-attribute-row" key={key}>
             <div className="comparison-attribute-label"><strong>{key}</strong>{best !== null && second !== null && best > second && <small>Leader +{Number((best - second).toFixed(1))}</small>}</div>
             <div className="comparison-attribute-values">{cards.map((card, index) => {
               const value = values[index]
               const isWinner = typeof value === 'number' && value === best
-              return <div className={`comparison-attribute-value ${isWinner ? 'is-winner' : ''}`} key={card.id} style={{ '--comparison-player': palette[index] } as CSSProperties}>
+              const isBiggestLoss = typeof value === 'number' && !isWinner && worst !== null && value === worst
+              return <div className={`comparison-attribute-value ${isWinner ? 'is-winner' : ''} ${isBiggestLoss ? 'is-biggest-loss' : ''}`} key={card.id} style={{ '--comparison-player': palette[index] } as CSSProperties}>
                 <div className="comparison-value-top"><span>{card.playerName}</span><strong style={!isWinner && typeof value === 'number' && best !== null ? { color: `color-mix(in srgb, #7f1d1d ${40 + Math.min(60, ((best - value) / 20) * 60)}%, #f87171)` } : undefined}>{typeof value === 'number' ? (isWinner ? value : `−${Number((best! - value).toFixed(1))}`) : '—'}</strong>{isWinner && <em>LEADER</em>}</div>
                 <div className="comparison-value-track"><i style={{ width: `${typeof value === 'number' ? Math.max(0, Math.min(100, value)) : 0}%` }} /></div>
               </div>
