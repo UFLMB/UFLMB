@@ -107,6 +107,55 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Unsupported account action." }, 403);
     }
 
+    if (body.action === "record_storage_event") {
+      const operation = body.operation === "storage_upload" || body.operation === "storage_delete" ? body.operation : null;
+      const outcome = body.outcome === "success" || body.outcome === "failed" ? body.outcome : null;
+      const fileName = typeof body.fileName === "string" ? body.fileName.trim().slice(0, 180) : "";
+      const objectPath = typeof body.objectPath === "string" ? body.objectPath.trim() : "";
+      const cardId = typeof body.cardId === "string" ? body.cardId.trim().slice(0, 128) : "";
+      const playerName = typeof body.playerName === "string" ? body.playerName.trim().slice(0, 120) : "";
+      const cardType = typeof body.cardType === "string" ? body.cardType.trim().slice(0, 100) : "";
+      const overallRating = typeof body.overallRating === "number" && Number.isFinite(body.overallRating) ? body.overallRating : null;
+      const positions = Array.isArray(body.positions)
+        ? body.positions.filter((value): value is string => typeof value === "string").slice(0, 8).map(value => value.slice(0, 12))
+        : [];
+      const reason = typeof body.reason === "string" ? body.reason.trim().slice(0, 240) : "";
+
+      if (!operation || !outcome ||
+          !fileName || !/^[A-Za-z0-9._-]{1,180}$/.test(objectPath) || !cardId || !playerName) {
+        return json({ error: "Invalid Assets audit event." }, 400);
+      }
+
+      const eventKey = operation === "storage_upload"
+        ? outcome === "success" ? "ASSET_STORAGE_UPLOADED" : "ASSET_STORAGE_UPLOAD_FAILED"
+        : outcome === "success" ? "ASSET_STORAGE_DELETED" : "ASSET_STORAGE_DELETE_FAILED";
+      const { data: profile } = await adminClient.from("profiles").select("username").eq("id", actor.id).maybeSingle();
+      const { error: logError } = await adminClient.from("action_logs").insert({
+        event_key: eventKey,
+        category: "content",
+        actor_user_id: actor.id,
+        actor_username: profile?.username ?? actor.email?.split("@")[0] ?? null,
+        details: {
+          section: "Admin / Assets",
+          operation: operation === "storage_upload" ? "STORAGE_UPLOAD" : "STORAGE_DELETE",
+          source: "admin_ui",
+          bucket: "uflmb-card-images",
+          object_path: objectPath,
+          file_name: fileName,
+          card_id: cardId,
+          target_label: playerName,
+          player_name: playerName,
+          overall_rating: overallRating,
+          positions,
+          card_type: cardType,
+          ...(reason ? { reason } : {}),
+        },
+        outcome,
+      });
+      if (logError) return json({ error: "The Assets Storage event could not be recorded." }, 500);
+      return json({ recorded: true, eventKey });
+    }
+
     if (body.action === "search_audit_users") {
       const searchTerm = typeof body.query === "string" ? body.query.trim() : "";
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(searchTerm);
