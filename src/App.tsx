@@ -1302,13 +1302,46 @@ export default function App() {
     }
 
     let uploaded = 0
+    const auditWarnings: string[] = []
+    const recordAssetAudit = async (
+      operation: 'storage_upload' | 'storage_delete',
+      outcome: 'success' | 'failed',
+      candidate: Candidate,
+      objectPath: string,
+      reason?: string,
+    ) => {
+      const response = await fetch(baseUrl + '/functions/v1/account-moderation', {
+        method: 'POST',
+        headers: { apikey: anonKey, Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'record_storage_event',
+          operation,
+          outcome,
+          fileName: candidate.file.name,
+          objectPath,
+          cardId: candidate.card.id,
+          playerName: candidate.card.playerName,
+          overallRating: candidate.card.overallRating,
+          positions: candidate.card.positions,
+          cardType: candidate.card.event || candidate.card.cardName || '',
+          reason: reason?.slice(0, 240) || '',
+        }),
+        cache: 'no-store',
+      })
+      if (!response.ok) {
+        const detail = await response.text().catch(() => '')
+        throw new Error(detail || 'The Assets audit event could not be recorded.')
+      }
+    }
     const nextById = new Map(allCards.map(card => [card.id, card]))
     for (const [index, candidate] of safeCandidates.entries()) {
       setImageImportProgress({ phase: 'uploading', current: index, total: safeCandidates.length, message: `Uploading image ${index + 1} of ${safeCandidates.length}: ${candidate.file.name}` })
       const objectPath = encodeURIComponent(candidate.card.id) + '.' + candidate.extension
       let storageObjectCreated = false
       let confirmedUnlinked = false
+      let storageUploadAttempted = false
       try {
+        storageUploadAttempted = true
         const uploadResponse = await fetch(baseUrl + '/storage/v1/object/uflmb-card-images/' + objectPath, {
           method: 'POST',
           headers: {
@@ -1325,6 +1358,11 @@ export default function App() {
           throw new Error(errorBody.message || errorBody.error || 'Storage upload failed (' + uploadResponse.status + ')')
         }
         storageObjectCreated = true
+        try {
+          await recordAssetAudit('storage_upload', 'success', candidate, objectPath)
+        } catch (auditError) {
+          auditWarnings.push(candidate.file.name + ': upload succeeded, but its Storage audit event could not be recorded (' + (auditError instanceof Error ? auditError.message : 'audit unavailable') + ')')
+        }
         const imageUrl = baseUrl + '/storage/v1/object/public/uflmb-card-images/' + objectPath
         const linkResponse = await fetch(baseUrl + '/rest/v1/cards?id=eq.' + encodeURIComponent(candidate.card.id) + '&image_url=is.null', {
           method: 'PATCH',
@@ -1359,13 +1397,33 @@ export default function App() {
         // in Storage over deleting an object that the database may already reference.
         if (storageObjectCreated && confirmedUnlinked) {
           try {
-            await fetch(baseUrl + '/storage/v1/object/uflmb-card-images/' + objectPath, {
+            const deleteResponse = await fetch(baseUrl + '/storage/v1/object/uflmb-card-images/' + objectPath, {
               method: 'DELETE',
               headers: { apikey: anonKey, Authorization: 'Bearer ' + accessToken },
             })
-          } catch { /* A confirmed-unlinked orphan can be cleaned up manually if deletion fails. */ }
+            const deleteOutcome = deleteResponse.ok ? 'success' : 'failed'
+            try {
+              await recordAssetAudit('storage_delete', deleteOutcome, candidate, objectPath, deleteOutcome === 'failed' ? 'Storage cleanup returned HTTP ' + deleteResponse.status : 'Unlinked upload cleanup')
+            } catch (auditError) {
+              auditWarnings.push(candidate.file.name + ': Storage cleanup audit event could not be recorded (' + (auditError instanceof Error ? auditError.message : 'audit unavailable') + ')')
+            }
+          } catch (deleteError) {
+            try {
+              await recordAssetAudit('storage_delete', 'failed', candidate, objectPath, deleteError instanceof Error ? deleteError.message : 'Storage cleanup request failed')
+            } catch (auditError) {
+              auditWarnings.push(candidate.file.name + ': failed cleanup could not be recorded in the audit log')
+            }
+          }
         }
-        skippedReasons.push(candidate.file.name + ': ' + (error instanceof Error ? error.message : 'upload failed'))
+        const failureReason = error instanceof Error ? error.message : 'upload failed'
+        if (storageUploadAttempted && !storageObjectCreated) {
+          try {
+            await recordAssetAudit('storage_upload', 'failed', candidate, objectPath, failureReason)
+          } catch (auditError) {
+            auditWarnings.push(candidate.file.name + ': failed upload could not be recorded in the audit log')
+          }
+        }
+        skippedReasons.push(candidate.file.name + ': ' + failureReason)
       }
     }
 
@@ -1374,7 +1432,7 @@ export default function App() {
       try {
         saveCards(next)
         setAllCards(next)
-        const message = 'Image import finished: ' + uploaded + ' image(s) uploaded and confirmed in the shared database. ' + skippedReasons.length + ' file(s) skipped or failed.'
+        const message = 'Image import finished: ' + uploaded + ' image(s) uploaded and confirmed in the shared database. ' + skippedReasons.length + ' file(s) skipped or failed.' + (auditWarnings.length ? ' AUDIT WARNING: ' + auditWarnings.slice(0, 3).join(' · ') : '')
       setNotice(message)
       setImageImportProgress({ phase: uploaded === safeCandidates.length && skippedReasons.length === 0 ? 'success' : uploaded > 0 ? 'success' : 'error', current: safeCandidates.length, total: safeCandidates.length, message })
       } catch {
