@@ -108,8 +108,8 @@ Deno.serve(async (req: Request) => {
     }
 
     if (body.action === "record_storage_event") {
-      const operation = body.operation;
-      const outcome = body.outcome;
+      const operation = body.operation === "storage_upload" || body.operation === "storage_delete" ? body.operation : null;
+      const outcome = body.outcome === "success" || body.outcome === "failed" ? body.outcome : null;
       const fileName = typeof body.fileName === "string" ? body.fileName.trim().slice(0, 180) : "";
       const objectPath = typeof body.objectPath === "string" ? body.objectPath.trim() : "";
       const cardId = typeof body.cardId === "string" ? body.cardId.trim().slice(0, 128) : "";
@@ -121,8 +121,7 @@ Deno.serve(async (req: Request) => {
         : [];
       const reason = typeof body.reason === "string" ? body.reason.trim().slice(0, 240) : "";
 
-      if (!["storage_upload", "storage_delete"].includes(String(operation)) ||
-          !["success", "failed"].includes(String(outcome)) ||
+      if (!operation || !outcome ||
           !fileName || !/^[A-Za-z0-9._-]{1,180}$/.test(objectPath) || !cardId || !playerName) {
         return json({ error: "Invalid Assets audit event." }, 400);
       }
