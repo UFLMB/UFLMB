@@ -13,6 +13,7 @@ type LogEntry = {
   outcome: 'success' | 'failed' | 'pending'
   created_at: string
 }
+type AuditChange = { field: string; from: unknown; to: unknown }
 type Props = { accessToken?: string }
 type AuditUser = { id: string; username: string }
 const findAuditUsers = async (term: string, accessToken?: string): Promise<AuditUser[]> => {
@@ -43,7 +44,8 @@ const labels: Record<string, string> = {
   CARD_DELETED: 'Player card deleted', PREFERENCES_UPDATED: 'User preferences updated', SITE_SETTINGS_UPDATED: 'Site settings updated',
 }
 const eventLabel = (key: string) => labels[key] || key.toLowerCase().replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase())
-const dateLabel = (value: string) => new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
+const dateLabel = (value: string) => new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'medium' })
+const auditValue = (value: unknown) => value === null || value === undefined ? '—' : typeof value === 'string' ? value : JSON.stringify(value)
 
 export default function ActionLog({ accessToken }: Props) {
   const [logs, setLogs] = useState<LogEntry[]>([])
@@ -113,7 +115,7 @@ export default function ActionLog({ accessToken }: Props) {
     if (!term) return logs
     return logs.filter(log => [
       log.event_key, eventLabel(log.event_key), log.actor_username, log.target_username,
-      log.actor_user_id, log.target_user_id, log.details?.reason, JSON.stringify(log.details ?? {}),
+      log.actor_user_id, log.target_user_id, log.details?.reason, log.details?.section, log.details?.operation, JSON.stringify(log.details ?? {}),
     ].some(value => String(value ?? '').toLowerCase().includes(term)))
   }, [logs, search])
 
@@ -164,12 +166,19 @@ export default function ActionLog({ accessToken }: Props) {
           <div className="action-log-entry-title"><strong>{eventLabel(log.event_key)}</strong><span className={'action-log-outcome ' + log.outcome}>{log.outcome}</span></div>
           <p>{log.actor_username ? <><b>@{log.actor_username}</b> </> : 'System '}<span className="action-log-verb">{log.event_key === 'ACCOUNT_BANNED' ? 'permanently banned and deleted' : log.event_key === 'ACCOUNT_DELETED' ? 'deleted their account' : 'performed this action'}</span>{log.target_username && log.target_username !== log.actor_username ? <> · Target: <b>@{log.target_username}</b></> : ''}</p>
           {typeof log.details?.reason === 'string' && <small className="action-log-reason">Reason: {log.details.reason}</small>}
-          <small className="action-log-meta">{log.category} · {dateLabel(log.created_at)} · Event {log.id.slice(0, 8)}</small>
-          <details className="action-log-details"><summary>Event details &amp; identifiers</summary><dl>
-            {Object.entries(log.details ?? {}).filter(([key, value]) => key !== 'reason' && value !== null && value !== '').map(([key, value]) => <div key={key}><dt>{key.replaceAll('_', ' ')}</dt><dd>{typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}
-            {log.actor_user_id && <div><dt>Actor UUID</dt><dd>{log.actor_user_id}</dd></div>}
-            {log.target_user_id && <div><dt>Target UUID</dt><dd>{log.target_user_id}</dd></div>}
-          </dl></details>
+          <small className="action-log-meta">{typeof log.details?.section === 'string' ? log.details.section + ' · ' : ''}{typeof log.details?.operation === 'string' ? log.details.operation + ' · ' : ''}{log.category} · {dateLabel(log.created_at)} · Event {log.id.slice(0, 8)}</small>
+          <details className="action-log-details"><summary>Full audit details &amp; field changes</summary>
+            {typeof log.details?.section === 'string' && <p className="action-log-context"><b>Section</b><span>{log.details.section}</span></p>}
+            {typeof log.details?.operation === 'string' && <p className="action-log-context"><b>Action</b><span>{log.details.operation}</span></p>}
+            {typeof log.details?.target_label === 'string' && <p className="action-log-context"><b>Target</b><span>{log.details.target_label}</span></p>}
+            {Array.isArray(log.details?.changes) && log.details.changes.length > 0 && <div className="action-log-changes"><strong>Changed fields</strong>{(log.details.changes as AuditChange[]).map((change, index) => <div className="action-log-change" key={change.field + '-' + index}><b>{change.field.replaceAll('_', ' ').replaceAll('.', ' › ')}</b><div><span><small>Before</small><code>{auditValue(change.from)}</code></span><span><small>After</small><code>{auditValue(change.to)}</code></span></div></div>)}</div>}
+            <dl>
+              {Object.entries(log.details ?? {}).filter(([key, value]) => !['reason','section','operation','target_label','target_id','changes'].includes(key) && value !== null && value !== '').map(([key, value]) => <div key={key}><dt>{key.replaceAll('_', ' ')}</dt><dd>{typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}
+              {log.actor_user_id && <div><dt>Actor UUID</dt><dd>{log.actor_user_id}</dd></div>}
+              {log.target_user_id && <div><dt>Target UUID</dt><dd>{log.target_user_id}</dd></div>}
+              {typeof log.details?.target_id === 'string' && !log.target_user_id && <div><dt>Target ID</dt><dd>{log.details.target_id}</dd></div>}
+            </dl>
+          </details>
         </div>
       </article>)}
     </div>
