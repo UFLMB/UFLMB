@@ -7987,3 +7987,10 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .event-type-badge-preview{display:inline-flex;align-items:center;justify-self:start;gap:6px;max-width:100%;padding:7px 10px;border:1px solid;border-radius:8px;font:9px 'DM Mono',monospace;letter-spacing:.65px;overflow-wrap:anywhere}
 .event-type-badge-preview span{font-size:10px}
 @media(max-width:700px){.event-type-badge-color-row{grid-template-columns:minmax(0,1fr) 38px 72px;gap:8px;padding:10px}.event-type-badge-preview{grid-column:1/-1;justify-self:start;margin-top:2px}}
+
+
+/* Keep the five goalkeeper attributes balanced: three above, two centered below. */
+.stats-grid.goalkeeper-stats-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+.stats-grid.goalkeeper-stats-grid span{grid-column:span 2}
+.stats-grid.goalkeeper-stats-grid span:nth-child(4){grid-column:2/span 2}
+.stats-grid.goalkeeper-stats-grid span:nth-child(5){grid-column:4/span 2}
