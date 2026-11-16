@@ -68,9 +68,9 @@ export default function ComparisonAnalysis({ cards, onRemove }: Props) {
 
     <div className="comparison-overview">
       {cards.map((card, index) => <div className="comparison-score" key={card.id} style={{ '--comparison-player': palette[index] } as CSSProperties}>
-        <span>{card.playerName}</span><strong>{wins[index]}</strong><small>attribute wins</small>
+        <span>{card.playerName}</span><strong>{wins[index]}<small>/ {leaders.length}</small></strong><small>attribute wins</small>
       </div>)}
-      {tied > 0 && <div className="comparison-ties"><strong>{tied}</strong><span>tied attributes</span></div>}
+      {tied > 0 && <div className="comparison-ties"><strong>{tied}<small>/ {leaders.length}</small></strong><span>tied attributes</span></div>}
     </div>
 
     <section className="comparison-visual-panel">
@@ -93,9 +93,9 @@ export default function ComparisonAnalysis({ cards, onRemove }: Props) {
               const value = values[index]
               const isWinner = typeof value === 'number' && value === best
               return <div className={`comparison-attribute-value ${isWinner ? 'is-winner' : ''}`} key={card.id} style={{ '--comparison-player': palette[index] } as CSSProperties}>
-                <div className="comparison-value-top"><span>{card.playerName}</span><strong>{typeof value === 'number' ? value : '—'}</strong>{isWinner && <em>BEST</em>}</div>
+                <div className="comparison-value-top"><span>{card.playerName}</span><strong>{typeof value === 'number' ? value : '—'}</strong>{isWinner && <em>LEADER</em>}</div>
                 <div className="comparison-value-track"><i style={{ width: `${typeof value === 'number' ? Math.max(0, Math.min(100, value)) : 0}%` }} /></div>
-                {typeof value === 'number' && best !== null && value !== best && <small className="comparison-value-delta">−{Number((best - value).toFixed(1))} vs leader</small>}
+                {typeof value === 'number' && best !== null && <small className={`comparison-value-delta ${isWinner ? 'is-level' : ''}`}>{isWinner ? 'Top value' : `−${Number((best - value).toFixed(1))} behind leader`}</small>}
               </div>
             })}</div>
           </div>
