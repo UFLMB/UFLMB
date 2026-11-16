@@ -13,6 +13,7 @@ type LogEntry = {
   outcome: 'success' | 'failed' | 'pending'
   created_at: string
 }
+type AuditChange = { field: string; from: unknown; to: unknown }
 type Props = { accessToken?: string }
 type AuditUser = { id: string; username: string }
 const findAuditUsers = async (term: string, accessToken?: string): Promise<AuditUser[]> => {
@@ -43,7 +44,8 @@ const labels: Record<string, string> = {
   CARD_DELETED: 'Player card deleted', PREFERENCES_UPDATED: 'User preferences updated', SITE_SETTINGS_UPDATED: 'Site settings updated',
 }
 const eventLabel = (key: string) => labels[key] || key.toLowerCase().replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase())
-const dateLabel = (value: string) => new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
+const dateLabel = (value: string) => new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'medium' })
+const auditValue = (value: unknown) => value === null || value === undefined ? '—' : typeof value === 'string' ? value : JSON.stringify(value)
 
 export default function ActionLog({ accessToken }: Props) {
   const [logs, setLogs] = useState<LogEntry[]>([])
@@ -51,6 +53,10 @@ export default function ActionLog({ accessToken }: Props) {
   const [offset, setOffset] = useState(0)
   const [category, setCategory] = useState('all')
   const [outcome, setOutcome] = useState('all')
+  const [section, setSection] = useState('all')
+  const [operation, setOperation] = useState('all')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [systemActions, setSystemActions] = useState(false)
   const [executorSearch, setExecutorSearch] = useState('')
   const [targetSearch, setTargetSearch] = useState('')
@@ -71,7 +77,7 @@ export default function ActionLog({ accessToken }: Props) {
       const response = await fetch(endpoint + '/functions/v1/account-moderation', {
         method: 'POST',
         headers: { apikey: anonKey, Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'list_action_logs', limit: 50, offset: nextOffset, category, outcome, systemActions, actorUserId: executorUser?.id ?? null, targetUserId: targetUser?.id ?? null }),
+        body: JSON.stringify({ action: 'list_action_logs', limit: 50, offset: nextOffset, category, outcome, section, operation, dateFrom, dateTo, systemActions, actorUserId: executorUser?.id ?? null, targetUserId: targetUser?.id ?? null }),
         cache: 'no-store',
       })
       const result = await response.json() as { logs?: LogEntry[]; count?: number; error?: string }
@@ -84,7 +90,7 @@ export default function ActionLog({ accessToken }: Props) {
     } finally { setBusy(false) }
   }
 
-  useEffect(() => { void load(true) }, [accessToken, category, outcome, systemActions, executorUser?.id, targetUser?.id, refreshKey])
+  useEffect(() => { void load(true) }, [accessToken, category, outcome, section, operation, dateFrom, dateTo, systemActions, executorUser?.id, targetUser?.id, refreshKey])
 
   useEffect(() => {
     let cancelled = false
@@ -113,7 +119,7 @@ export default function ActionLog({ accessToken }: Props) {
     if (!term) return logs
     return logs.filter(log => [
       log.event_key, eventLabel(log.event_key), log.actor_username, log.target_username,
-      log.actor_user_id, log.target_user_id, log.details?.reason, JSON.stringify(log.details ?? {}),
+      log.actor_user_id, log.target_user_id, log.details?.reason, log.details?.section, log.details?.operation, JSON.stringify(log.details ?? {}),
     ].some(value => String(value ?? '').toLowerCase().includes(term)))
   }, [logs, search])
 
@@ -127,6 +133,10 @@ export default function ActionLog({ accessToken }: Props) {
       <label className="action-log-search"><span aria-hidden="true">⌕</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search loaded events, users or IDs…" aria-label="Search action log" /></label>
       <label>Category<select value={category} onChange={event => { setCategory(event.target.value); setOffset(0) }}><option value="all">All categories</option><option value="auth">Authentication</option><option value="profile">Profiles</option><option value="moderation">Moderation</option><option value="community">Community</option><option value="support">Support</option><option value="content">Content</option><option value="system">System</option></select></label>
       <label>Outcome<select value={outcome} onChange={event => { setOutcome(event.target.value); setOffset(0) }}><option value="all">All outcomes</option><option value="success">Successful</option><option value="failed">Failed</option><option value="pending">Pending</option></select></label>
+      <label>Section<select value={section} onChange={event => { setSection(event.target.value); setOffset(0) }}><option value="all">All sections</option><option value="Account Management / Profile">Account Management / Profile</option><option value="Account Management / Suspensions">Account Management / Suspensions</option><option value="Moderation & Warnings / User Warnings">Moderation &amp; Warnings</option><option value="Moderation Center / Review Queue">Moderation Center</option><option value="Community Reviews">Community Reviews</option><option value="Support / Conversations">Support / Conversations</option><option value="Support / Messages">Support / Messages</option><option value="Players / Card Database">Players / Card Database</option><option value="User Preferences">User Preferences</option><option value="Admin / Branding & Site Settings">Branding &amp; Site Settings</option><option value="Admin / Shared Database & App State">Shared Database &amp; App State</option><option value="Admin / Access Control">Admin Access Control</option></select></label>
+      <label>Action type<select value={operation} onChange={event => { setOperation(event.target.value); setOffset(0) }}><option value="all">All actions</option><option value="INSERT">Create</option><option value="UPDATE">Update</option><option value="DELETE">Delete</option></select></label>
+      <label>From<input type="date" value={dateFrom} onChange={event => { setDateFrom(event.target.value); setOffset(0) }} /></label>
+      <label>To<input type="date" value={dateTo} onChange={event => { setDateTo(event.target.value); setOffset(0) }} /></label>
       <div className="action-log-user-filter">
         <label htmlFor="action-log-executor">Executor</label>
         <div className="action-log-user-input-wrap">
@@ -164,12 +174,19 @@ export default function ActionLog({ accessToken }: Props) {
           <div className="action-log-entry-title"><strong>{eventLabel(log.event_key)}</strong><span className={'action-log-outcome ' + log.outcome}>{log.outcome}</span></div>
           <p>{log.actor_username ? <><b>@{log.actor_username}</b> </> : 'System '}<span className="action-log-verb">{log.event_key === 'ACCOUNT_BANNED' ? 'permanently banned and deleted' : log.event_key === 'ACCOUNT_DELETED' ? 'deleted their account' : 'performed this action'}</span>{log.target_username && log.target_username !== log.actor_username ? <> · Target: <b>@{log.target_username}</b></> : ''}</p>
           {typeof log.details?.reason === 'string' && <small className="action-log-reason">Reason: {log.details.reason}</small>}
-          <small className="action-log-meta">{log.category} · {dateLabel(log.created_at)} · Event {log.id.slice(0, 8)}</small>
-          <details className="action-log-details"><summary>Event details &amp; identifiers</summary><dl>
-            {Object.entries(log.details ?? {}).filter(([key, value]) => key !== 'reason' && value !== null && value !== '').map(([key, value]) => <div key={key}><dt>{key.replaceAll('_', ' ')}</dt><dd>{typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}
-            {log.actor_user_id && <div><dt>Actor UUID</dt><dd>{log.actor_user_id}</dd></div>}
-            {log.target_user_id && <div><dt>Target UUID</dt><dd>{log.target_user_id}</dd></div>}
-          </dl></details>
+          <small className="action-log-meta">{typeof log.details?.section === 'string' ? log.details.section + ' · ' : ''}{typeof log.details?.operation === 'string' ? log.details.operation + ' · ' : ''}{log.category} · {dateLabel(log.created_at)} · Event {log.id.slice(0, 8)}</small>
+          <details className="action-log-details"><summary>Full audit details &amp; field changes</summary>
+            {typeof log.details?.section === 'string' && <p className="action-log-context"><b>Section</b><span>{log.details.section}</span></p>}
+            {typeof log.details?.operation === 'string' && <p className="action-log-context"><b>Action</b><span>{log.details.operation}</span></p>}
+            {typeof log.details?.target_label === 'string' && <p className="action-log-context"><b>Target</b><span>{log.details.target_label}</span></p>}
+            {Array.isArray(log.details?.changes) && log.details.changes.length > 0 && <div className="action-log-changes"><strong>Changed fields</strong>{(log.details.changes as AuditChange[]).map((change, index) => <div className="action-log-change" key={change.field + '-' + index}><b>{change.field.replaceAll('_', ' ').replaceAll('.', ' › ')}</b><div><span><small>Before</small><code>{auditValue(change.from)}</code></span><span><small>After</small><code>{auditValue(change.to)}</code></span></div></div>)}</div>}
+            <dl>
+              {Object.entries(log.details ?? {}).filter(([key, value]) => !['reason','section','operation','target_label','target_id','changes'].includes(key) && value !== null && value !== '').map(([key, value]) => <div key={key}><dt>{key.replaceAll('_', ' ')}</dt><dd>{typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}
+              {log.actor_user_id && <div><dt>Actor UUID</dt><dd>{log.actor_user_id}</dd></div>}
+              {log.target_user_id && <div><dt>Target UUID</dt><dd>{log.target_user_id}</dd></div>}
+              {typeof log.details?.target_id === 'string' && !log.target_user_id && <div><dt>Target ID</dt><dd>{log.details.target_id}</dd></div>}
+            </dl>
+          </details>
         </div>
       </article>)}
     </div>
