@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import type { PlayerCard } from '../types/card'
 
 type Props = {
@@ -58,7 +59,7 @@ export default function ComparisonAnalysis({ cards, onRemove }: Props) {
 
   return <div className="comparison-analysis">
     <div className="comparison-player-strip">
-      {cards.map((card, index) => <article className="comparison-player-card" key={card.id} style={{ '--comparison-player': palette[index] } as React.CSSProperties}>
+      {cards.map((card, index) => <article className="comparison-player-card" key={card.id} style={{ '--comparison-player': palette[index] } as CSSProperties}>
         <div className="comparison-player-art">{card.imageUrl ? <img src={card.imageUrl} alt="" loading="lazy" /> : <span>UFL<span>MB</span></span>}</div>
         <div className="comparison-player-info"><strong title={card.playerName}>{card.playerName}</strong><span>{card.positions.join(' / ')} · {card.nation}</span><b className={card.overallRating === bestOverall ? 'is-leading' : ''}>OVR {card.overallRating}</b></div>
         <button type="button" onClick={() => onRemove(card.id)} aria-label={`Remove ${card.playerName} from comparison`}>×</button>
@@ -66,7 +67,7 @@ export default function ComparisonAnalysis({ cards, onRemove }: Props) {
     </div>
 
     <div className="comparison-overview">
-      {cards.map((card, index) => <div className="comparison-score" key={card.id} style={{ '--comparison-player': palette[index] } as React.CSSProperties}>
+      {cards.map((card, index) => <div className="comparison-score" key={card.id} style={{ '--comparison-player': palette[index] } as CSSProperties}>
         <span>{card.playerName}</span><strong>{wins[index]}</strong><small>attribute wins</small>
       </div>)}
       {tied > 0 && <div className="comparison-ties"><strong>{tied}</strong><span>tied attributes</span></div>}
@@ -75,7 +76,7 @@ export default function ComparisonAnalysis({ cards, onRemove }: Props) {
     <section className="comparison-visual-panel">
       <div className="comparison-panel-heading"><div><p className="eyebrow">ATTRIBUTE PROFILE</p><h3>Radar comparison</h3></div><span>Higher value = further out</span></div>
       <RadarChart cards={cards} keys={radarKeys} />
-      <div className="comparison-legend">{cards.map((card, index) => <span key={card.id} style={{ '--comparison-player': palette[index] } as React.CSSProperties}><i />{card.playerName}</span>)}</div>
+      <div className="comparison-legend">{cards.map((card, index) => <span key={card.id} style={{ '--comparison-player': palette[index] } as CSSProperties}><i />{card.playerName}</span>)}</div>
     </section>
 
     <section className="comparison-visual-panel comparison-attributes-panel">
@@ -91,7 +92,7 @@ export default function ComparisonAnalysis({ cards, onRemove }: Props) {
             <div className="comparison-attribute-values">{cards.map((card, index) => {
               const value = values[index]
               const isWinner = typeof value === 'number' && value === best
-              return <div className={`comparison-attribute-value ${isWinner ? 'is-winner' : ''}`} key={card.id} style={{ '--comparison-player': palette[index] } as React.CSSProperties}>
+              return <div className={`comparison-attribute-value ${isWinner ? 'is-winner' : ''}`} key={card.id} style={{ '--comparison-player': palette[index] } as CSSProperties}>
                 <div className="comparison-value-top"><span>{card.playerName}</span><strong>{typeof value === 'number' ? value : '—'}</strong>{isWinner && <em>BEST</em>}</div>
                 <div className="comparison-value-track"><i style={{ width: `${typeof value === 'number' ? Math.max(0, Math.min(100, value)) : 0}%` }} /></div>
                 {typeof value === 'number' && best !== null && value !== best && <small className="comparison-value-delta">−{Number((best - value).toFixed(1))} vs leader</small>}
