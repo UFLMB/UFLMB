@@ -7934,3 +7934,36 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .comparison-panel-heading>span{text-align:left}
   .comparison-radar-label{font-size:9px}
 }
+
+/* Comparison numeric hierarchy — diagram styles intentionally unchanged */
+.comparison-player-info>b{display:inline-flex;align-items:baseline;gap:6px;width:max-content;margin-top:3px;padding:4px 8px;border:1px solid var(--line);border-radius:7px;background:var(--page-bg);font:800 17px/1 'DM Mono',monospace;color:var(--text-color)}
+.comparison-player-info>b small{font:700 9px/1 'Manrope',sans-serif;letter-spacing:.7px;color:var(--muted)}
+.comparison-player-info>b.is-leading{border-color:color-mix(in srgb,var(--comparison-player) 42%,var(--line));background:color-mix(in srgb,var(--comparison-player) 10%,var(--panel-bg));color:var(--comparison-player)}
+.comparison-score,.comparison-ties{padding:13px 15px;min-height:76px}
+.comparison-score>strong,.comparison-ties>strong{display:flex;align-items:baseline;gap:3px;font-size:27px;line-height:1}
+.comparison-score>strong small,.comparison-ties>strong small{font:600 10px/1 'DM Mono',monospace;color:var(--muted)}
+.comparison-score>small,.comparison-ties>span{font-size:10px;letter-spacing:.15px}
+.comparison-attribute-row{grid-template-columns:88px minmax(0,1fr);gap:15px;padding:15px 0}
+.comparison-attribute-label strong{font-size:13px;letter-spacing:.45px}
+.comparison-attribute-label small{display:inline-flex;align-self:flex-start;padding:3px 6px;border-radius:5px;background:color-mix(in srgb,var(--accent) 11%,transparent);font:700 9px/1.2 'DM Mono',monospace}
+.comparison-attribute-values{gap:12px 14px}
+.comparison-attribute-value{padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--page-bg)}
+.comparison-attribute-value.is-winner{border-color:color-mix(in srgb,var(--comparison-player) 48%,var(--line));background:color-mix(in srgb,var(--comparison-player) 6%,var(--panel-bg))}
+.comparison-value-top{gap:8px;margin-bottom:8px}
+.comparison-value-top>span{font-size:10px;font-weight:650}
+.comparison-value-top>strong{font-size:20px;line-height:1;font-weight:800;letter-spacing:-.5px}
+.comparison-attribute-value.is-winner .comparison-value-top>strong{font-size:22px}
+.comparison-value-top em{padding:3px 6px;font-size:8px;letter-spacing:.55px}
+.comparison-value-track{height:5px}
+.comparison-value-delta{margin-top:6px;font:600 9px/1.2 'DM Mono',monospace;letter-spacing:.1px}
+.comparison-value-delta:not(.is-level){color:var(--muted)}
+.comparison-value-delta.is-level{color:var(--comparison-player)}
+@media(max-width:700px){
+ .comparison-attribute-row{grid-template-columns:1fr;gap:9px;padding:13px 0}
+ .comparison-attribute-values{grid-template-columns:1fr;gap:8px}
+ .comparison-attribute-value{padding:10px 11px}
+ .comparison-value-top>strong{font-size:21px}
+ .comparison-attribute-value.is-winner .comparison-value-top>strong{font-size:23px}
+ .comparison-player-info>b{font-size:16px}
+ .comparison-score,.comparison-ties{min-height:70px;padding:11px 12px}
+}
