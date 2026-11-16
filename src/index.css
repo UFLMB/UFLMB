@@ -7973,3 +7973,17 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 .comparison-attribute-value.is-biggest-loss{border-color:color-mix(in srgb,#dc2626 28%,var(--border-color));background:color-mix(in srgb,#dc2626 5%,var(--panel-bg));box-shadow:inset 2px 0 0 color-mix(in srgb,#dc2626 42%,transparent)}
 .comparison-attribute-value.is-biggest-loss .comparison-value-top>strong{display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:5px 8px;border:1px solid color-mix(in srgb,#dc2626 28%,transparent);border-radius:7px;background:color-mix(in srgb,#dc2626 10%,var(--panel-bg));font-size:21px;font-weight:900;letter-spacing:-.35px}
 @media(max-width:700px){.comparison-attribute-value.is-biggest-loss .comparison-value-top>strong{font-size:22px}}
+
+
+/* Event-type badge color controls in Admin > Assets. */
+.event-type-badge-color-list{display:grid;gap:9px;margin-top:14px}
+.event-type-badge-color-row{display:grid;grid-template-columns:minmax(150px,1fr) 42px 86px minmax(150px,auto);align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--border-color);border-radius:11px;background:var(--panel-bg)}
+.event-type-badge-color-name{display:grid;gap:3px;min-width:0}
+.event-type-badge-color-name strong{font-size:12px;color:var(--text-primary)}
+.event-type-badge-color-name small{font-size:10px;color:var(--text-muted)}
+.event-type-color-picker{display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--border-color);border-radius:9px;background:var(--surface-bg);overflow:hidden;cursor:pointer}
+.event-type-color-picker input{width:48px;height:48px;padding:0;border:0;background:transparent;cursor:pointer}
+.event-type-color-hex{font:10px 'DM Mono',monospace;color:var(--text-muted)}
+.event-type-badge-preview{display:inline-flex;align-items:center;justify-self:start;gap:6px;max-width:100%;padding:7px 10px;border:1px solid;border-radius:8px;font:9px 'DM Mono',monospace;letter-spacing:.65px;overflow-wrap:anywhere}
+.event-type-badge-preview span{font-size:10px}
+@media(max-width:700px){.event-type-badge-color-row{grid-template-columns:minmax(0,1fr) 38px 72px;gap:8px;padding:10px}.event-type-badge-preview{grid-column:1/-1;justify-self:start;margin-top:2px}}
