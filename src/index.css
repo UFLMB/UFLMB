@@ -8006,3 +8006,9 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
 :root[data-ui-theme="light"] .community-review-list article > small {
   color: #647084 !important;
 }
+
+
+/* Remove the gradient sheen from event badges in light mode while preserving each event's configured color. */
+:root[data-ui-theme="light"] .event-ribbon {
+  background-image: none !important;
+}
