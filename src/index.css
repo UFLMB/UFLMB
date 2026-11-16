@@ -4054,11 +4054,7 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   background:#f1f8e7!important;
   border-color:#c5e39a!important;
 }
-:root[data-ui-theme="light"] .event-ribbon{
-  color:#365314!important;
-  background:linear-gradient(90deg,rgba(163,230,53,.24),rgba(255,255,255,.88))!important;
-}
-:root[data-ui-theme="light"] .event-ribbon span{color:#365314!important}
+/* Event badges keep their configured event-specific colors in both themes. */
 :root[data-ui-theme="light"] .perk-row span{
   color:#4b5563!important;
   border-color:rgba(24,32,43,.14)!important;
