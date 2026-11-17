@@ -34,10 +34,6 @@ export default function UpgradeLab({ cards }: Props) {
   const { search, selectedId, currentRank, currentLevel, targetRank, targetLevel } = savedState
   const setSearch = (search: string) => setSavedState(current => ({ ...current, search }))
   const setSelectedId = (selectedId: string) => setSavedState(current => ({ ...current, selectedId }))
-  const setCurrentRank = (currentRank: number) => setSavedState(current => ({ ...current, currentRank }))
-  const setCurrentLevel = (currentLevel: number) => setSavedState(current => ({ ...current, currentLevel }))
-  const setTargetRank = (targetRank: number) => setSavedState(current => ({ ...current, targetRank }))
-  const setTargetLevel = (targetLevel: number) => setSavedState(current => ({ ...current, targetLevel }))
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState)) } catch { /* Keep the current simulation active if browser storage is unavailable. */ }
   }, [savedState])
