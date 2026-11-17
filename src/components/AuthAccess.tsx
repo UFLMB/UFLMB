@@ -293,10 +293,9 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAdminViewerChange
       void recordAuthEvent(restored, 'record_login', 'session_restore')
       setSession(restored)
       setSessionEmail(restored.user.email || '')
-      onAuthReady()
       const restoredUsername = await getProfileUsername(restored)
       setSessionUsername(restoredUsername)
-      if (!cancelled) onAccountChange({ userId: restored.user.id, username: restoredUsername, email: restored.user.email || '', accessToken: restored.access_token })
+      if (!cancelled) { onAccountChange({ userId: restored.user.id, username: restoredUsername, email: restored.user.email || '', accessToken: restored.access_token }); onAuthReady() }
       const adminAccess = await checkAdmin(restored)
       if (!cancelled) {
         onAdminChange(adminAccess.admin || adminAccess.viewer)
