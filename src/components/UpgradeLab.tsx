@@ -102,10 +102,8 @@ export default function UpgradeLab({ cards }: Props) {
             <div className="upgrade-lab-disclaimer"><strong>Attribute calculation not enabled yet</strong><p>The progression selection is validated, but exact stat growth and OVR changes are not calculated until the in-game formula is confirmed. No estimated or invented values are shown.</p></div>
             <div className="upgrade-lab-rule-list">
               <div><span>Rank-up card requirement</span><strong>{rankUps} × 1 matching card</strong></div>
-              <div><span>New perk choices</span><strong>{rankUps * 2} available</strong></div>
-              <div><span>Additional active perk slots</span><strong>+{rankUps}</strong></div>
             </div>
-            <p className="upgrade-lab-footnote">Perk choices and slots are displayed as progression rules only. Perk selection itself is intentionally excluded from this first version.</p>
+            <p className="upgrade-lab-footnote">The perk system is intentionally excluded from this first version.</p>
           </>}
         </section>
       </div>
