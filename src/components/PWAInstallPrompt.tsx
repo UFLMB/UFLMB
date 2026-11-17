@@ -64,7 +64,7 @@ export default function PWAInstallPrompt() {
 
   return (
     <aside className="pwa-install-prompt" role="status" aria-label="Install UFLMB">
-      <img src={`${import.meta.env.BASE_URL}app-icon.svg`} alt="" width="42" height="42" />
+      <img src={`${import.meta.env.BASE_URL}app-icon-v2.svg`} alt="" width="42" height="42" />
       <div className="pwa-install-copy">
         <strong>Install UFLMB</strong>
         <span>Add the database to your home screen.</span>
