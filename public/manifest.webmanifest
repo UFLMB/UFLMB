@@ -17,10 +17,10 @@
   ],
   "icons": [
     {
-      "src": "./app-icon.svg",
+      "src": "./app-icon-v2.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
