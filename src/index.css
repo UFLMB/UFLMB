@@ -5235,6 +5235,9 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
   .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .site-nav .upgrade-lab-nav-item {
     display: none !important;
   }
+  .mobile-bottom-nav .upgrade-lab-mobile-item {
+    display: none !important;
+  }
   .app-shell:not(.admin-shell) > .app-content-scroll > .topbar .top-actions {
     flex: 0 0 auto !important;
     height: 44px !important;
