@@ -101,9 +101,9 @@ export default function UpgradeLab({ cards }: Props) {
             </div>
             <div className="upgrade-lab-disclaimer"><strong>Attribute calculation not enabled yet</strong><p>The progression selection is validated, but exact stat growth and OVR changes are not calculated until the in-game formula is confirmed. No estimated or invented values are shown.</p></div>
             <div className="upgrade-lab-rule-list">
-              <div><span>Rank-up card requirement</span><strong>{rankUps} × 1 matching card</strong></div>
+              <div><span>Rank-up card requirement</span><strong>{rankUps} × 1 same card type</strong></div>
             </div>
-            <p className="upgrade-lab-footnote">The perk system is intentionally excluded from this first version.</p>
+            <p className="upgrade-lab-footnote">A rank-up requires any card of the same card type, not the same player (for example: Legendary → Legendary, Icon → Icon). The perk system is intentionally excluded from this first version.</p>
           </>}
         </section>
       </div>
