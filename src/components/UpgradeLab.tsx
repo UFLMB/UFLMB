@@ -56,15 +56,15 @@ export default function UpgradeLab({ cards }: Props) {
   const levelUps = Math.max(0, targetLevel - currentLevel)
 
   const chooseRank = (value: number, target: boolean) => {
-    if (target) {
-      setTargetRank(value)
-      setTargetLevel(level => Math.min(Math.max(level, currentLevel), capForRank(value)))
-    } else {
-      setCurrentRank(value)
-      setCurrentLevel(level => Math.min(level, capForRank(value)))
-      setTargetRank(rank => Math.max(rank, value))
-      setTargetLevel(level => Math.max(level, currentLevel))
-    }
+    setSavedState(current => target
+      ? { ...current, targetRank: value, targetLevel: Math.min(Math.max(current.targetLevel, current.currentLevel), capForRank(value)) }
+      : {
+          ...current,
+          currentRank: value,
+          currentLevel: Math.min(current.currentLevel, capForRank(value)),
+          targetRank: Math.max(current.targetRank, value),
+          targetLevel: Math.max(current.targetLevel, current.currentLevel),
+        })
   }
 
   return (
@@ -100,7 +100,7 @@ export default function UpgradeLab({ cards }: Props) {
               <select value={currentRank} onChange={event => chooseRank(Number(event.target.value), false)}>{rankOptions.map(rank => <option key={rank} value={rank}>{rank} {rank === 1 ? 'Star' : 'Stars'}</option>)}</select>
             </label>
             <label className="upgrade-lab-field">Current Level
-              <select value={currentLevel} onChange={event => { const next = Number(event.target.value); setCurrentLevel(next); setTargetLevel(level => Math.max(level, next)) }}>{Array.from({ length: capForRank(currentRank) }, (_, index) => index + 1).map(level => <option key={level} value={level}>Level {level}</option>)}</select>
+              <select value={currentLevel} onChange={event => { const next = Number(event.target.value); setSavedState(current => ({ ...current, currentLevel: next, targetLevel: Math.max(current.targetLevel, next) })) }}>{Array.from({ length: capForRank(currentRank) }, (_, index) => index + 1).map(level => <option key={level} value={level}>Level {level}</option>)}</select>
             </label>
           </div>
           <p className="upgrade-lab-hint">Rank {currentRank} unlocks progression up to Level {capForRank(currentRank)}.</p>
