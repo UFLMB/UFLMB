@@ -31,6 +31,7 @@ type Props = {
   onAdminChange: (value: boolean) => void
   onAdminViewerChange: (value: boolean) => void
   onAccountChange: (value: { userId: string; username: string; email?: string; accessToken: string } | null) => void
+  onAuthReady: () => void
   themeMode: 'dark' | 'light' | 'system'
   onThemeModeChange: (value: 'dark' | 'light' | 'system') => void
   onDashboardChange: (value: boolean) => void
@@ -199,7 +200,7 @@ async function restoreSession(): Promise<AuthSession | null> {
   }
 }
 
-export default function AuthAccess({ isAdmin, onAdminChange, onAdminViewerChange, onAccountChange, themeMode, onThemeModeChange, onDashboardChange, onProfileChange, dashboardOpen }: Props) {
+export default function AuthAccess({ isAdmin, onAdminChange, onAdminViewerChange, onAccountChange, onAuthReady, themeMode, onThemeModeChange, onDashboardChange, onProfileChange, dashboardOpen }: Props) {
   const [open, setOpen] = useState(false)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const accountMenuRef = useRef<HTMLDivElement>(null)
@@ -288,10 +289,11 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAdminViewerChange
     }
     void restoreSession().then(async restored => {
       if (cancelled) return
-      if (!restored) { onDashboardChange(false); return }
+      if (!restored) { onDashboardChange(false); onAuthReady(); return }
       void recordAuthEvent(restored, 'record_login', 'session_restore')
       setSession(restored)
       setSessionEmail(restored.user.email || '')
+      onAuthReady()
       const restoredUsername = await getProfileUsername(restored)
       setSessionUsername(restoredUsername)
       if (!cancelled) onAccountChange({ userId: restored.user.id, username: restoredUsername, email: restored.user.email || '', accessToken: restored.access_token })
