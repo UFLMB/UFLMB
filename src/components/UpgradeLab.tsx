@@ -23,7 +23,7 @@ const loadUpgradeLabState = (): UpgradeLabState => {
 }
 const getCardType = (card: PlayerCard): string => {
   const source = card.sourceData || {}
-  return (source.card_type || source['card type'] || source.rarity || source.type || card.event || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase()
+  return (source.card_type || source['card type'] || source.rarity || source.type || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase()
 }
 const formatCardType = (value: string): string => value ? value.replace(/\b\w/g, letter => letter.toLocaleUpperCase()) : 'Unknown card type'
 
@@ -129,9 +129,9 @@ export default function UpgradeLab({ cards }: Props) {
             </div>
             <div className="upgrade-lab-disclaimer"><strong>Attribute calculation not enabled yet</strong><p>The progression selection is validated, but exact stat growth and OVR changes are not calculated until the in-game formula is confirmed. No estimated or invented values are shown.</p></div>
             <div className="upgrade-lab-rule-list">
-              <div><span>Rank-up card requirement</span><strong>{rankUps > 0 ? `${rankUps} × ${cardTypeLabel} card` : 'No rank-up card needed'}</strong></div>
+              <div><span>Rank-up card requirement</span><strong>{rankUps > 0 ? (cardType ? `${rankUps} × ${cardTypeLabel} card` : `${rankUps} × any card of the same type`) : 'No rank-up card needed'}</strong></div>
             </div>
-            <p className="upgrade-lab-footnote">A rank-up accepts any player card with the same card type. It does not need to be the same player (for example: Legendary → Legendary, Icon → Icon). The perk system is intentionally excluded from this first version.</p>
+            <p className="upgrade-lab-footnote">A rank-up accepts any player card with the same card type. It does not need to be the same player (for example: Legendary → Legendary, Icon → Icon). {cardType ? '' : 'The current card dataset does not expose a separate card-type field yet, so the type match cannot be verified automatically.'} The perk system is intentionally excluded from this first version.</p>
           </>}
         </section>
       </div>
