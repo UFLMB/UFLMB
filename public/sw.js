@@ -1,7 +1,14 @@
-/* UFLMB offline shell cache. Card data remains in this browser's local storage. */
-const CACHE_NAME = 'uflmb-shell-v1'
+/* UFLMB offline shell cache. Dynamic API and authenticated data are never cached. */
+const CACHE_NAME = 'uflmb-shell-v2'
 const BASE = new URL('.', self.registration.scope).pathname
-const APP_SHELL = [BASE, BASE + 'manifest.webmanifest', BASE + 'icon.svg']
+const APP_SHELL = [
+  BASE,
+  BASE + 'manifest.webmanifest',
+  BASE + 'icon.svg',
+  BASE + 'icon-192.png',
+  BASE + 'icon-512.png',
+  BASE + 'icon-maskable-512.png',
+]
 
 self.addEventListener('install', event => {
   event.waitUntil(
