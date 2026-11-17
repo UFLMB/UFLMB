@@ -25,9 +25,9 @@ const loadUpgradeLabState = (): UpgradeLabState => {
 }
 const getCardType = (card: PlayerCard): string => {
   const source = card.sourceData || {}
-  return (source.card_type || source['card type'] || source.rarity || source.type || '').trim().replace(/\\s+/g, ' ').toLocaleLowerCase()
+  return (source.card_type || source['card type'] || source.rarity || source.type || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase()
 }
-const formatCardType = (value: string): string => value ? value.replace(/\\b\\w/g, letter => letter.toLocaleUpperCase()) : 'Unknown card type'
+const formatCardType = (value: string): string => value ? value.replace(/\b\w/g, letter => letter.toLocaleUpperCase()) : 'Unknown card type'
 const statValue = (card: PlayerCard, key: string): number | null => {
   const value = card.stats?.[key]
   return typeof value === 'number' && Number.isFinite(value) ? value : null
