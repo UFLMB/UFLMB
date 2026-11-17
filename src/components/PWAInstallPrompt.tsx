@@ -6,8 +6,6 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<InstallChoice>
 }
 
-const DISMISSED_KEY = 'uflmb.pwa-install-dismissed.v2'
-
 export default function PWAInstallPrompt() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [installed, setInstalled] = useState(false)
@@ -20,12 +18,6 @@ export default function PWAInstallPrompt() {
       return
     }
 
-    try {
-      if (window.localStorage.getItem(DISMISSED_KEY) === '1') return
-    } catch {
-      // The install prompt can still work when storage is unavailable.
-    }
-
     const handleBeforeInstall = (event: Event) => {
       event.preventDefault()
       setInstallPrompt(event as BeforeInstallPromptEvent)
@@ -33,7 +25,6 @@ export default function PWAInstallPrompt() {
     const handleInstalled = () => {
       setInstalled(true)
       setInstallPrompt(null)
-      try { window.localStorage.removeItem(DISMISSED_KEY) } catch { /* Ignore storage restrictions. */ }
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall)
@@ -45,7 +36,7 @@ export default function PWAInstallPrompt() {
   }, [])
 
   const dismiss = () => {
-    try { window.localStorage.setItem(DISMISSED_KEY, '1') } catch { /* Ignore storage restrictions. */ }
+    // Hide only this instance; never persist a dismissal across visits.
     setInstallPrompt(null)
   }
 
@@ -57,8 +48,6 @@ export default function PWAInstallPrompt() {
     const choice = await prompt.userChoice
     if (choice.outcome === 'accepted') {
       setInstalled(true)
-    } else {
-      try { window.localStorage.setItem(DISMISSED_KEY, '1') } catch { /* Ignore storage restrictions. */ }
     }
   }
 
