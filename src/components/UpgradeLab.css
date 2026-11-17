@@ -12,3 +12,5 @@
 :root[data-ui-theme="light"] .upgrade-lab-card-placeholder{background:linear-gradient(145deg,#dce5d2,#f4f6f8);color:#34451e}
 @media(max-width:700px){.upgrade-lab-page{padding:26px 0 112px}.upgrade-lab-grid{grid-template-columns:minmax(0,1fr);gap:12px}.upgrade-lab-panel{padding:16px;border-radius:13px}.upgrade-lab-results{grid-column:auto}.upgrade-lab-summary-grid{gap:7px}.upgrade-lab-summary-grid>div{padding:10px 8px}.upgrade-lab-summary-grid span,.upgrade-lab-summary-grid small{font-size:9px}.upgrade-lab-summary-grid strong{font-size:18px}.upgrade-lab-rule-list>div{font-size:10px}}
 @media(max-width:390px){.upgrade-lab-progression-fields{grid-template-columns:minmax(0,1fr)}.upgrade-lab-summary-grid{grid-template-columns:1fr}.upgrade-lab-summary-grid>div{grid-template-columns:1fr auto;align-items:center}.upgrade-lab-summary-grid strong{grid-column:2;grid-row:1/3;text-align:right}}
+
+@media(max-width:700px){.public-mobile-bottom-nav{grid-template-columns:repeat(6,minmax(0,1fr))!important}.public-mobile-bottom-nav .mobile-nav-item{font-size:clamp(7px,1.9vw,9px)!important}.public-mobile-bottom-nav .mobile-nav-icon{font-size:17px!important}}
