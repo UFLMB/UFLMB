@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { PlayerCard } from '../types/card'
+import './UpgradeLab.css'
 import { formatCardDisplayName } from '../types/card'
 
 type Props = { cards: PlayerCard[] }
