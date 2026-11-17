@@ -295,7 +295,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAdminViewerChange
       setSessionEmail(restored.user.email || '')
       const restoredUsername = await getProfileUsername(restored)
       setSessionUsername(restoredUsername)
-      if (!cancelled) { onAccountChange({ userId: restored.user.id, username: restoredUsername, email: restored.user.email || '', accessToken: restored.access_token }); onAuthReady() }
+      if (!cancelled) { onAccountChange({ userId: restored.user.id, username: restoredUsername, email: restored.user.email || '', accessToken: restored.access_token }); onAuthReady(true) }
       const adminAccess = await checkAdmin(restored)
       if (!cancelled) {
         onAdminChange(adminAccess.admin || adminAccess.viewer)
