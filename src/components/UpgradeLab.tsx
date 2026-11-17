@@ -1,20 +1,46 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { PlayerCard } from '../types/card'
 import './UpgradeLab.css'
 import { formatCardDisplayName } from '../types/card'
 
 type Props = { cards: PlayerCard[] }
 
+const STORAGE_KEY = 'uflmb.upgrade-lab.v1'
+type UpgradeLabState = { search: string; selectedId: string; currentRank: number; currentLevel: number; targetRank: number; targetLevel: number }
+const defaultState: UpgradeLabState = { search: '', selectedId: '', currentRank: 0, currentLevel: 1, targetRank: 0, targetLevel: 1 }
 const capForRank = (rank: number) => (rank + 1) * 5
+const loadUpgradeLabState = (): UpgradeLabState => {
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
+    if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return defaultState
+    const value = saved as Partial<UpgradeLabState>
+    const currentRank = Number.isInteger(value.currentRank) ? Math.min(5, Math.max(0, value.currentRank!)) : 0
+    const currentLevel = Number.isInteger(value.currentLevel) ? Math.min(capForRank(currentRank), Math.max(1, value.currentLevel!)) : 1
+    const targetRank = Number.isInteger(value.targetRank) ? Math.min(5, Math.max(currentRank, value.targetRank!)) : currentRank
+    const targetLevel = Number.isInteger(value.targetLevel) ? Math.min(capForRank(targetRank), Math.max(currentLevel, value.targetLevel!)) : currentLevel
+    return { search: typeof value.search === 'string' ? value.search : '', selectedId: typeof value.selectedId === 'string' ? value.selectedId : '', currentRank, currentLevel, targetRank, targetLevel }
+  } catch { return defaultState }
+}
+const getCardType = (card: PlayerCard): string => {
+  const source = card.sourceData || {}
+  return (source.card_type || source['card type'] || source.rarity || source.type || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase()
+}
+const formatCardType = (value: string): string => value ? value.replace(/\b\w/g, letter => letter.toLocaleUpperCase()) : 'Unknown card type'
+
 const rankOptions = [0, 1, 2, 3, 4, 5]
 
 export default function UpgradeLab({ cards }: Props) {
-  const [search, setSearch] = useState('')
-  const [selectedId, setSelectedId] = useState('')
-  const [currentRank, setCurrentRank] = useState(0)
-  const [currentLevel, setCurrentLevel] = useState(1)
-  const [targetRank, setTargetRank] = useState(0)
-  const [targetLevel, setTargetLevel] = useState(1)
+  const [savedState, setSavedState] = useState<UpgradeLabState>(loadUpgradeLabState)
+  const { search, selectedId, currentRank, currentLevel, targetRank, targetLevel } = savedState
+  const setSearch = (search: string) => setSavedState(current => ({ ...current, search }))
+  const setSelectedId = (selectedId: string) => setSavedState(current => ({ ...current, selectedId }))
+  const setCurrentRank = (currentRank: number) => setSavedState(current => ({ ...current, currentRank }))
+  const setCurrentLevel = (currentLevel: number) => setSavedState(current => ({ ...current, currentLevel }))
+  const setTargetRank = (targetRank: number) => setSavedState(current => ({ ...current, targetRank }))
+  const setTargetLevel = (targetLevel: number) => setSavedState(current => ({ ...current, targetLevel }))
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState)) } catch { /* Keep the current simulation active if browser storage is unavailable. */ }
+  }, [savedState])
 
   const orderedCards = useMemo(() => [...cards].sort((a, b) => a.playerName.localeCompare(b.playerName)), [cards])
   const matches = useMemo(() => {
@@ -25,18 +51,20 @@ export default function UpgradeLab({ cards }: Props) {
   const validCurrent = currentLevel <= capForRank(currentRank)
   const validTarget = targetLevel <= capForRank(targetRank) && targetRank >= currentRank && targetLevel >= currentLevel
   const rankUps = Math.max(0, targetRank - currentRank)
+  const cardType = selected ? getCardType(selected) : ''
+  const cardTypeLabel = formatCardType(cardType)
   const levelUps = Math.max(0, targetLevel - currentLevel)
 
   const chooseRank = (value: number, target: boolean) => {
-    if (target) {
-      setTargetRank(value)
-      setTargetLevel(level => Math.min(Math.max(level, currentLevel), capForRank(value)))
-    } else {
-      setCurrentRank(value)
-      setCurrentLevel(level => Math.min(level, capForRank(value)))
-      setTargetRank(rank => Math.max(rank, value))
-      setTargetLevel(level => Math.max(level, currentLevel))
-    }
+    setSavedState(current => target
+      ? { ...current, targetRank: value, targetLevel: Math.min(Math.max(current.targetLevel, current.currentLevel), capForRank(value)) }
+      : {
+          ...current,
+          currentRank: value,
+          currentLevel: Math.min(current.currentLevel, capForRank(value)),
+          targetRank: Math.max(current.targetRank, value),
+          targetLevel: Math.max(current.targetLevel, current.currentLevel),
+        })
   }
 
   return (
@@ -72,7 +100,7 @@ export default function UpgradeLab({ cards }: Props) {
               <select value={currentRank} onChange={event => chooseRank(Number(event.target.value), false)}>{rankOptions.map(rank => <option key={rank} value={rank}>{rank} {rank === 1 ? 'Star' : 'Stars'}</option>)}</select>
             </label>
             <label className="upgrade-lab-field">Current Level
-              <select value={currentLevel} onChange={event => { const next = Number(event.target.value); setCurrentLevel(next); setTargetLevel(level => Math.max(level, next)) }}>{Array.from({ length: capForRank(currentRank) }, (_, index) => index + 1).map(level => <option key={level} value={level}>Level {level}</option>)}</select>
+              <select value={currentLevel} onChange={event => { const next = Number(event.target.value); setSavedState(current => ({ ...current, currentLevel: next, targetLevel: Math.max(current.targetLevel, next) })) }}>{Array.from({ length: capForRank(currentRank) }, (_, index) => index + 1).map(level => <option key={level} value={level}>Level {level}</option>)}</select>
             </label>
           </div>
           <p className="upgrade-lab-hint">Rank {currentRank} unlocks progression up to Level {capForRank(currentRank)}.</p>
@@ -101,13 +129,13 @@ export default function UpgradeLab({ cards }: Props) {
             </div>
             <div className="upgrade-lab-disclaimer"><strong>Attribute calculation not enabled yet</strong><p>The progression selection is validated, but exact stat growth and OVR changes are not calculated until the in-game formula is confirmed. No estimated or invented values are shown.</p></div>
             <div className="upgrade-lab-rule-list">
-              <div><span>Rank-up card requirement</span><strong>{rankUps} × 1 same card type</strong></div>
+              <div><span>Rank-up card requirement</span><strong>{rankUps > 0 ? (cardType ? `${rankUps} × ${cardTypeLabel} card` : `${rankUps} × any card of the same type`) : 'No rank-up card needed'}</strong></div>
             </div>
-            <p className="upgrade-lab-footnote">A rank-up requires any card of the same card type, not the same player (for example: Legendary → Legendary, Icon → Icon). The perk system is intentionally excluded from this first version.</p>
+            <p className="upgrade-lab-footnote">A rank-up accepts any player card with the same card type. It does not need to be the same player (for example: Legendary → Legendary, Icon → Icon). {cardType ? '' : 'The current card dataset does not expose a separate card-type field yet, so the type match cannot be verified automatically.'} The perk system is intentionally excluded from this first version.</p>
           </>}
         </section>
       </div>
-      <div className="upgrade-lab-safety-note"><span aria-hidden="true">◈</span><p><strong>Safe sandbox.</strong> This tool never edits the source card, saved collection, or shared database. Rank-up card requirements are shown for planning only; no card is consumed.</p></div>
+      <div className="upgrade-lab-safety-note"><span aria-hidden="true">◈</span><p><strong>Safe sandbox.</strong> Your player selection and progression settings are saved in this browser and restored after refresh or when you return to Upgrade Lab. This tool never edits the source card, saved collection, or shared database. Rank-up requirements are shown for planning only; no card is consumed.</p></div>
     </section>
   )
 }
