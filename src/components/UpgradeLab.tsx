@@ -1,0 +1,114 @@
+import { useMemo, useState } from 'react'
+import type { PlayerCard } from '../types/card'
+import { formatCardDisplayName } from '../types/card'
+
+type Props = { cards: PlayerCard[] }
+
+const capForRank = (rank: number) => (rank + 1) * 5
+const rankOptions = [0, 1, 2, 3, 4, 5]
+
+export default function UpgradeLab({ cards }: Props) {
+  const [search, setSearch] = useState('')
+  const [selectedId, setSelectedId] = useState('')
+  const [currentRank, setCurrentRank] = useState(0)
+  const [currentLevel, setCurrentLevel] = useState(1)
+  const [targetRank, setTargetRank] = useState(0)
+  const [targetLevel, setTargetLevel] = useState(1)
+
+  const orderedCards = useMemo(() => [...cards].sort((a, b) => a.playerName.localeCompare(b.playerName)), [cards])
+  const matches = useMemo(() => {
+    const term = search.trim().toLocaleLowerCase()
+    return orderedCards.filter(card => !term || [card.playerName, card.cardName, card.club, ...card.positions].some(value => value?.toLocaleLowerCase().includes(term))).slice(0, 80)
+  }, [orderedCards, search])
+  const selected = orderedCards.find(card => card.id === selectedId) ?? null
+  const validCurrent = currentLevel <= capForRank(currentRank)
+  const validTarget = targetLevel <= capForRank(targetRank) && targetRank >= currentRank && targetLevel >= currentLevel
+  const rankUps = Math.max(0, targetRank - currentRank)
+  const levelUps = Math.max(0, targetLevel - currentLevel)
+
+  const chooseRank = (value: number, target: boolean) => {
+    if (target) {
+      setTargetRank(value)
+      setTargetLevel(level => Math.min(Math.max(level, currentLevel), capForRank(value)))
+    } else {
+      setCurrentRank(value)
+      setCurrentLevel(level => Math.min(level, capForRank(value)))
+      setTargetRank(rank => Math.max(rank, value))
+      setTargetLevel(level => Math.max(level, currentLevel))
+    }
+  }
+
+  return (
+    <section className="upgrade-lab-page" aria-labelledby="upgrade-lab-title">
+      <div className="upgrade-lab-heading">
+        <p className="eyebrow">PLAYER DEVELOPMENT WORKSPACE</p>
+        <h1 id="upgrade-lab-title">Upgrade <span>Lab.</span></h1>
+        <p className="hero-copy">Explore a player's Rank and Level progression without changing the original card or database record.</p>
+      </div>
+
+      <div className="upgrade-lab-grid">
+        <section className="upgrade-lab-panel upgrade-lab-player-panel">
+          <div className="upgrade-lab-panel-heading"><div><p className="eyebrow">STEP 01</p><h2>Select player</h2></div><span className="upgrade-lab-count">{cards.length.toLocaleString()} cards</span></div>
+          <label className="upgrade-lab-field">Find a player
+            <input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Search player, card or position…" />
+          </label>
+          <label className="upgrade-lab-field">Player card
+            <select value={selectedId} onChange={event => setSelectedId(event.target.value)}>
+              <option value="">Choose a player card…</option>
+              {matches.map(card => <option key={card.id} value={card.id}>{formatCardDisplayName(card)} · {card.overallRating} OVR · {card.positions.join('/')}</option>)}
+            </select>
+          </label>
+          {selected && <div className="upgrade-lab-selected-card">
+            {selected.imageUrl ? <img src={selected.imageUrl} alt={`${selected.playerName} player card`} /> : <div className="upgrade-lab-card-placeholder"><strong>{selected.overallRating}</strong><span>OVR</span></div>}
+            <div><strong>{formatCardDisplayName(selected)}</strong><span>{selected.positions.join(' / ')} · {selected.nation}</span><span>Base OVR <b>{selected.overallRating}</b></span>{typeof selected.maxRating === 'number' && <span>Recorded MAX <b>{selected.maxRating}</b></span>}</div>
+          </div>}
+        </section>
+
+        <section className="upgrade-lab-panel">
+          <div className="upgrade-lab-panel-heading"><div><p className="eyebrow">STEP 02</p><h2>Current progression</h2></div></div>
+          <div className="upgrade-lab-progression-fields">
+            <label className="upgrade-lab-field">Current Rank
+              <select value={currentRank} onChange={event => chooseRank(Number(event.target.value), false)}>{rankOptions.map(rank => <option key={rank} value={rank}>{rank} {rank === 1 ? 'Star' : 'Stars'}</option>)}</select>
+            </label>
+            <label className="upgrade-lab-field">Current Level
+              <select value={currentLevel} onChange={event => { const next = Number(event.target.value); setCurrentLevel(next); setTargetLevel(level => Math.max(level, next)) }}>{Array.from({ length: capForRank(currentRank) }, (_, index) => index + 1).map(level => <option key={level} value={level}>Level {level}</option>)}</select>
+            </label>
+          </div>
+          <p className="upgrade-lab-hint">Rank {currentRank} unlocks progression up to Level {capForRank(currentRank)}.</p>
+        </section>
+
+        <section className="upgrade-lab-panel">
+          <div className="upgrade-lab-panel-heading"><div><p className="eyebrow">STEP 03</p><h2>Target progression</h2></div></div>
+          <div className="upgrade-lab-progression-fields">
+            <label className="upgrade-lab-field">Target Rank
+              <select value={targetRank} onChange={event => chooseRank(Number(event.target.value), true)}>{rankOptions.filter(rank => rank >= currentRank).map(rank => <option key={rank} value={rank}>{rank} {rank === 1 ? 'Star' : 'Stars'}</option>)}</select>
+            </label>
+            <label className="upgrade-lab-field">Target Level
+              <select value={targetLevel} onChange={event => setTargetLevel(Number(event.target.value))}>{Array.from({ length: capForRank(targetRank) - currentLevel + 1 }, (_, index) => currentLevel + index).map(level => <option key={level} value={level}>Level {level}</option>)}</select>
+            </label>
+          </div>
+          <p className="upgrade-lab-hint">Rank {targetRank} unlocks progression up to Level {capForRank(targetRank)}.</p>
+        </section>
+
+        <section className="upgrade-lab-panel upgrade-lab-results">
+          <div className="upgrade-lab-panel-heading"><div><p className="eyebrow">SIMULATION SUMMARY</p><h2>Progression preview</h2></div><span className="upgrade-lab-simulation-tag">SIMULATION ONLY</span></div>
+          {!selected ? <p className="upgrade-lab-empty">Select a player card to prepare a progression preview.</p> : !validCurrent || !validTarget ? <p className="upgrade-lab-validation" role="alert">The selected Rank and Level combination is not valid. Each Rank unlocks five additional Levels.</p> : <>
+            <div className="upgrade-lab-summary-grid">
+              <div><span>Level change</span><strong>{currentLevel} <i>→</i> {targetLevel}</strong><small>+{levelUps} levels</small></div>
+              <div><span>Rank change</span><strong>{currentRank} <i>→</i> {targetRank}</strong><small>+{rankUps} rank-ups</small></div>
+              <div><span>Unlocked cap</span><strong>{capForRank(currentRank)} <i>→</i> {capForRank(targetRank)}</strong><small>Maximum Level</small></div>
+            </div>
+            <div className="upgrade-lab-disclaimer"><strong>Attribute calculation not enabled yet</strong><p>The progression selection is validated, but exact stat growth and OVR changes are not calculated until the in-game formula is confirmed. No estimated or invented values are shown.</p></div>
+            <div className="upgrade-lab-rule-list">
+              <div><span>Rank-up card requirement</span><strong>{rankUps} × 1 matching card</strong></div>
+              <div><span>New perk choices</span><strong>{rankUps * 2} available</strong></div>
+              <div><span>Additional active perk slots</span><strong>+{rankUps}</strong></div>
+            </div>
+            <p className="upgrade-lab-footnote">Perk choices and slots are displayed as progression rules only. Perk selection itself is intentionally excluded from this first version.</p>
+          </>}
+        </section>
+      </div>
+      <div className="upgrade-lab-safety-note"><span aria-hidden="true">◈</span><p><strong>Safe sandbox.</strong> This tool never edits the source card, saved collection, or shared database. Rank-up card requirements are shown for planning only; no card is consumed.</p></div>
+    </section>
+  )
+}
