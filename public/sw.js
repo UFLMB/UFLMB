@@ -1,5 +1,5 @@
 /* UFLMB offline shell cache. Dynamic API and authenticated data are never cached. */
-const CACHE_NAME = 'uflmb-shell-v2'
+const CACHE_NAME = 'uflmb-shell-v3'
 const BASE = new URL('.', self.registration.scope).pathname
 const APP_SHELL = [
   BASE,
