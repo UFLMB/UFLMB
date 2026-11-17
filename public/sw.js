@@ -5,6 +5,7 @@ const APP_SHELL = [
   BASE,
   BASE + 'manifest.webmanifest',
   BASE + 'icon.svg',
+  BASE + 'app-icon.svg',
   BASE + 'icon-192.png',
   BASE + 'icon-512.png',
   BASE + 'icon-maskable-512.png',
