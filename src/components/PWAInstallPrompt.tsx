@@ -6,7 +6,7 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<InstallChoice>
 }
 
-const DISMISSED_KEY = 'uflmb.pwa-install-dismissed.v1'
+const DISMISSED_KEY = 'uflmb.pwa-install-dismissed.v2'
 
 export default function PWAInstallPrompt() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
