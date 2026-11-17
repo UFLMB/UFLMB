@@ -31,7 +31,7 @@ type Props = {
   onAdminChange: (value: boolean) => void
   onAdminViewerChange: (value: boolean) => void
   onAccountChange: (value: { userId: string; username: string; email?: string; accessToken: string } | null) => void
-  onAuthReady: () => void
+  onAuthReady: (ready: boolean) => void
   themeMode: 'dark' | 'light' | 'system'
   onThemeModeChange: (value: 'dark' | 'light' | 'system') => void
   onDashboardChange: (value: boolean) => void
@@ -289,7 +289,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAdminViewerChange
     }
     void restoreSession().then(async restored => {
       if (cancelled) return
-      if (!restored) { onDashboardChange(false); onAuthReady(); return }
+      if (!restored) { onDashboardChange(false); onAuthReady(true); return }
       void recordAuthEvent(restored, 'record_login', 'session_restore')
       setSession(restored)
       setSessionEmail(restored.user.email || '')
