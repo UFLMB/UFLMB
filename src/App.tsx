@@ -8,6 +8,7 @@ import { validateUsernamePolicy } from './lib/usernamePolicy'
 import { matchCardImageFilename } from './lib/cardImageImport'
 import ProfileStatGroups from './components/ProfileStatGroups'
 import ComparisonAnalysis from './components/ComparisonAnalysis'
+import UpgradeLab from './components/UpgradeLab'
 
 const CommunityReviews = lazy(() => import('./components/CommunityReviews'))
 const SharedDatabasePanel = lazy(() => import('./components/SharedDatabasePanel'))
@@ -40,13 +41,13 @@ const loadBrowseFilters = (scope: BrowseFilterScope): BrowseFilters => {
   } catch { /* Start with default filters if saved state is invalid. */ }
   return { ...defaultBrowseFilters }
 }
-type PublicPage = 'home' | 'players' | 'compare' | 'profile' | 'settings'
+type PublicPage = 'home' | 'players' | 'compare' | 'upgrade-lab' | 'profile' | 'settings'
 const loadViewState = (): { page: PublicPage; showBookmarked: boolean } => {
   try {
     const saved: unknown = JSON.parse(localStorage.getItem(VIEW_STATE_KEY) || 'null')
     if (saved && typeof saved === 'object') {
       const value = saved as { page?: unknown; showBookmarked?: unknown }
-      const page: PublicPage = value.page === 'players' || value.page === 'compare' || value.page === 'profile' || value.page === 'settings' ? value.page : 'home'
+      const page: PublicPage = value.page === 'players' || value.page === 'compare' || value.page === 'upgrade-lab' || value.page === 'profile' || value.page === 'settings' ? value.page : 'home'
       return { page, showBookmarked: page === 'players' && value.showBookmarked === true }
     }
   } catch { /* Start on the home page when saved view state is unavailable. */ }
@@ -2479,6 +2480,7 @@ export default function App() {
           <button type="button" className={!showBookmarked && page === 'players' ? 'nav-page active' : 'nav-page'} aria-current={!showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { if (page === 'players' && !showBookmarked) { window.location.reload(); return } setPage('players'); switchBrowseMode(false); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}>Players <span className="nav-count">{allCards.length}</span></button>
           <button type="button" className={showBookmarked && page === 'players' ? 'nav-page active' : 'nav-page'} aria-current={showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { if (page === 'players' && showBookmarked) { document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }); return } setPage('players'); switchBrowseMode(true); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}>Favorites {bookmarkedIds.length > 0 && <span className="nav-count">{bookmarkedIds.length}</span>}</button>
           <button type="button" className={page === 'compare' ? 'nav-page active' : 'nav-page'} aria-current={page === 'compare' ? 'page' : undefined} onClick={() => { if (page === 'compare') { window.location.reload(); return } setPage('compare'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}>Compare {compareIds.length > 0 && <span className="nav-count">{compareIds.length}</span>}</button>
+          <button type="button" className={page === 'upgrade-lab' ? 'nav-page active' : 'nav-page'} aria-current={page === 'upgrade-lab' ? 'page' : undefined} onClick={() => { setPage('upgrade-lab'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}>Upgrade Lab</button>
         </nav>
         <div className="top-actions"><button type="button" className="public-refresh-toggle" aria-label="Refresh UFLMB" title="Refresh" onClick={() => window.location.reload()}><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></button><AuthAccess isAdmin={isAdminSession} onAdminChange={setIsAdminSession} onAdminViewerChange={setIsAdminViewer} onAccountChange={setAccount} themeMode={themeMode} onThemeModeChange={setThemeMode} onDashboardChange={setAdminDashboardOpen} dashboardOpen={adminDashboardOpen} onProfileChange={() => { setAdminDashboardOpen(false); setPage('profile'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }} /><button className="menu-toggle" type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} aria-controls="uflmb-main-navigation" onClick={() => setMenuOpen(value => !value)}><span className={menuOpen ? "menu-toggle-icon menu-toggle-icon-open" : "menu-toggle-icon"} aria-hidden="true"><i /><i /><i /></span><span>{menuOpen ? "Close" : "Menu"}</span></button></div>
       </header>
@@ -2542,6 +2544,7 @@ export default function App() {
           {profileMessage && <p className={profileMessageType === 'error' ? 'profile-feedback error' : 'profile-feedback success'} role="status" aria-live="polite">{profileMessage}</p>}
         </> : <div className="account-signin-note"><span aria-hidden="true">✦</span><div><strong>Make yourself at home</strong><p>Create an account or sign in from the account button above to change your username, password and user logo.</p></div></div>}
       </section>}
+      {page === 'upgrade-lab' && <UpgradeLab cards={allCards} />}
       {page === 'home' && <section className="home-page">
         <section className="home-hero"><p className="eyebrow">UFL MOBILE DATABASE</p><h1>Every card.<br /><span>One arena.</span></h1>
           <p className="hero-copy">Explore the community player-card collection, search player data, and compare attributes in one place.</p>
@@ -2624,6 +2627,7 @@ export default function App() {
         <button type="button" className={!showBookmarked && page === 'players' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={!showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { setPage('players'); switchBrowseMode(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon player-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="7" r="4" fill="currentColor" /><path d="M4.5 21v-2.2a7.5 7.5 0 0 1 15 0V21z" fill="currentColor" /></svg></span><span>Players</span><small>{allCards.length}</small></button>
         <button type="button" className={showBookmarked && page === 'players' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={showBookmarked && page === 'players' ? 'page' : undefined} onClick={() => { if (page === 'players' && showBookmarked) { window.location.reload(); return } setPage('players'); switchBrowseMode(true); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">★</span><span>Favorites</span>{bookmarkedIds.length > 0 && <small>{bookmarkedIds.length}</small>}</button>
         <button type="button" className={page === 'compare' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={page === 'compare' ? 'page' : undefined} onClick={() => { setPage('compare'); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">⇄</span><span>Compare</span>{compareIds.length > 0 && <small>{compareIds.length}</small>}</button>
+        <button type="button" className={page === 'upgrade-lab' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={page === 'upgrade-lab' ? 'page' : undefined} onClick={() => { setPage('upgrade-lab'); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">✦</span><span>Upgrade</span></button>
         <button type="button" className={page === 'settings' || page === 'profile' ? 'mobile-nav-item active' : 'mobile-nav-item'} aria-current={page === 'settings' || page === 'profile' ? 'page' : undefined} onClick={() => { setPage('settings'); setMenuOpen(false); document.querySelector('.app-content-scroll')?.scrollTo({ top: 0, behavior: 'auto' }) }}><span className="mobile-nav-icon" aria-hidden="true">⚙</span><span>Settings</span></button>
         </nav>,
         document.body,
