@@ -306,7 +306,7 @@ export default function AuthAccess({ isAdmin, onAdminChange, onAdminViewerChange
       if (!cancelled && fragmentType === 'signup') showMessage('Email confirmed. Your account is ready.', 'success')
     })
     return () => { cancelled = true }
-  }, [onAdminChange, onAdminViewerChange, onAccountChange, onDashboardChange])
+  }, [onAdminChange, onAdminViewerChange, onAccountChange, onAuthReady, onDashboardChange])
 
   const signOut = async (recordEvent = true) => {
     const { url, key } = getConfig()
