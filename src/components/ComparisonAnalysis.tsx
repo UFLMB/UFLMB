@@ -15,26 +15,61 @@ const RadarChart = ({ cards, keys }: { cards: PlayerCard[]; keys: string[] }) =>
   const cx = 160
   const cy = 126
   const radius = 82
-  const point = (index: number, value: number, scale = 1) => {
+  const minimumVisualGap = 4.5
+  const point = (index: number, distance: number) => {
     const angle = -Math.PI / 2 + (Math.PI * 2 * index) / keys.length
-    const distance = radius * scale * Math.max(0, Math.min(100, value)) / 100
     return [cx + Math.cos(angle) * distance, cy + Math.sin(angle) * distance] as const
   }
   const labelPoint = (index: number) => {
     const angle = -Math.PI / 2 + (Math.PI * 2 * index) / keys.length
     return [cx + Math.cos(angle) * 106, cy + Math.sin(angle) * 106] as const
   }
+  const getVisualDistances = (values: number[]) => {
+    const distances = values.map(value => radius * Math.max(0, Math.min(100, value)) / 100)
+    if (distances.length < 2) return distances
+
+    // Preserve the real ranking while opening a small visual gap for overlapping values.
+    const ordered = distances
+      .map((distance, playerIndex) => ({ distance, playerIndex }))
+      .sort((a, b) => a.distance - b.distance || a.playerIndex - b.playerIndex)
+
+    for (let index = 1; index < ordered.length; index += 1) {
+      ordered[index].distance = Math.max(ordered[index].distance, ordered[index - 1].distance + minimumVisualGap)
+    }
+
+    const overflow = Math.max(0, ordered[ordered.length - 1].distance - radius)
+    if (overflow > 0) ordered.forEach(item => { item.distance -= overflow })
+
+    const underflow = Math.max(0, -ordered[0].distance)
+    if (underflow > 0) ordered.forEach(item => { item.distance += underflow })
+
+    const result = [...distances]
+    ordered.forEach(item => { result[item.playerIndex] = item.distance })
+    return result
+  }
+
   return <svg className="comparison-radar" viewBox="0 0 320 252" role="img" aria-label={`Radar chart comparing ${cards.map(card => card.playerName).join(', ')}`}>
-    {[25, 50, 75, 100].map(level => <polygon key={level} points={keys.map((_, index) => point(index, 100, level / 100).join(',')).join(' ')} className="comparison-radar-grid" />)}
+    {[25, 50, 75, 100].map(level => <polygon key={level} points={keys.map((_, index) => point(index, radius * level / 100).join(',')).join(' ')} className="comparison-radar-grid" />)}
     {keys.map((key, index) => {
-      const [x, y] = point(index, 100)
+      const [x, y] = point(index, radius)
       const [lx, ly] = labelPoint(index)
       return <g key={key}><line x1={cx} y1={cy} x2={x} y2={y} className="comparison-radar-axis" /><text x={lx} y={ly} className="comparison-radar-label" textAnchor={Math.abs(lx - cx) < 12 ? 'middle' : lx < cx ? 'end' : 'start'} dominantBaseline="middle">{key}</text></g>
     })}
     {cards.map((card, playerIndex) => {
       const values = keys.map(key => card.stats?.[key] ?? 0)
-      const points = values.map((value, index) => point(index, value).join(',')).join(' ')
-      return <g key={card.id}><polygon points={points} fill={palette[playerIndex]} fillOpacity=".12" stroke={palette[playerIndex]} strokeWidth="2" strokeLinejoin="round" />{values.map((value, index) => { const [x, y] = point(index, value); return <circle key={keys[index]} cx={x} cy={y} r="3" fill={palette[playerIndex]} stroke="var(--panel-bg, #11141b)" strokeWidth="1.5" /> })}</g>
+      const distances = getVisualDistances(values)
+      const points = distances.map((distance, index) => point(index, distance).join(',')).join(' ')
+      return <g key={card.id}>
+        <polygon points={points} fill={palette[playerIndex]} fillOpacity=".12" stroke={palette[playerIndex]} strokeWidth="2" strokeLinejoin="round">
+          <title>{card.playerName} — radar profile</title>
+        </polygon>
+        {values.map((value, index) => {
+          const [x, y] = point(index, distances[index])
+          return <circle key={keys[index]} cx={x} cy={y} r="3" fill={palette[playerIndex]} stroke="var(--panel-bg, #11141b)" strokeWidth="1.5">
+            <title>{`${card.playerName} · ${keys[index]}: ${value}`}</title>
+          </circle>
+        })}
+      </g>
     })}
   </svg>
 }
