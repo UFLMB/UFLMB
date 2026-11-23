@@ -8089,3 +8089,47 @@ input::placeholder,textarea::placeholder{color:#737c8b;opacity:1}
     width: calc(100vw - 24px);
   }
 }
+
+
+/* Comparison mobile readability: keep full names legible without widening the layout. */
+@media(max-width:700px){
+  .comparison-player-info strong,
+  .comparison-score>span,
+  .comparison-value-top>span{
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    white-space:normal;
+    overflow:hidden;
+    overflow-wrap:anywhere;
+    text-overflow:clip;
+    line-height:1.25;
+    max-height:2.5em;
+  }
+  .comparison-player-info>span{
+    white-space:normal;
+    overflow:hidden;
+    overflow-wrap:anywhere;
+    line-height:1.25;
+    max-height:2.5em;
+  }
+  .comparison-legend>span{
+    white-space:normal;
+    overflow-wrap:anywhere;
+    line-height:1.25;
+    max-height:2.5em;
+  }
+  .comparison-attribute-label strong{
+    white-space:nowrap;
+    letter-spacing:.02em;
+  }
+  .comparison-value-top{
+    align-items:flex-start;
+  }
+}
+@media(max-width:380px){
+  .comparison-player-info strong{font-size:12px}
+  .comparison-player-info>span{font-size:9px}
+  .comparison-value-top>span{font-size:9px}
+  .comparison-attribute-label strong{font-size:11px}
+}
